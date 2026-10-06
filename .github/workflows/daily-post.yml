@@ -1,0 +1,50 @@
+name: Daily Threads post
+
+on:
+  schedule:
+    # 11:00 Toronto is 15:00 UTC in summer (EDT) and 16:00 UTC in winter (EST).
+    # Both are scheduled; the script only posts when it is 11am in Toronto,
+    # and never posts twice on the same day.
+    - cron: "0 15 * * *"
+    - cron: "0 16 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (choose and check the post, do not publish)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post to Threads
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              python3 scripts/post_threads.py --dry-run
+            else
+              python3 scripts/post_threads.py --force
+            fi
+          else
+            python3 scripts/post_threads.py
+          fi
+      - name: Save post history
+        run: |
+          if ! git diff --quiet bloor-assets/state.json; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add bloor-assets/state.json
+            git commit -m "Record today's post"
+            git push
+          fi
