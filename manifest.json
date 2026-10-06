@@ -1,0 +1,18 @@
+{
+  "assets": [
+    {
+      "file": "special-mochi.jpeg",
+      "alt_text": "Menu graphic listing six specialty mochi donut flavors available Oct 5–18, including Japanese Neapolitan, Pumpkin Tiramisu and Mango Pandan Sticky Rice, from Isabella's.",
+      "keywords": ["mochi donuts Toronto", "specialty flavors"],
+      "use_when": "Announcing the current specialty flavors",
+      "expires": "2026-10-18"
+    },
+    {
+      "file": "donut-videos.mp4",
+      "alt_text": "Slow pan across trays of freshly made mochi donuts in the Isabella's display case, including sweet potato pecan, churro, pumpkin tiramisu and mango pandan.",
+      "keywords": ["mochi donuts Toronto", "donuts near Bloor"],
+      "use_when": "Showing the current flavors in the shop",
+      "expires": "2026-10-18"
+    }
+  ]
+}
