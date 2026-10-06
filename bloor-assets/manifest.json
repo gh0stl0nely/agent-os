@@ -3,16 +3,62 @@
     {
       "file": "special-mochi.jpeg",
       "alt_text": "Menu graphic listing six specialty mochi donut flavors available Oct 5–18, including Japanese Neapolitan, Pumpkin Tiramisu and Mango Pandan Sticky Rice, from Isabella's.",
-      "keywords": ["mochi donuts Toronto", "specialty flavors"],
+      "keywords": [
+        "mochi donuts Toronto",
+        "specialty flavors"
+      ],
       "use_when": "Announcing the current specialty flavors",
       "expires": "2026-10-18"
     },
     {
       "file": "donut-videos.mp4",
       "alt_text": "Slow pan across trays of freshly made mochi donuts in the Isabella's display case, including sweet potato pecan, churro, pumpkin tiramisu and mango pandan.",
-      "keywords": ["mochi donuts Toronto", "donuts near Bloor"],
+      "keywords": [
+        "mochi donuts Toronto",
+        "donuts near Bloor"
+      ],
       "use_when": "Showing the current flavors in the shop",
       "expires": "2026-10-18"
+    },
+    {
+      "file": "menu.jpeg",
+      "alt_text": "Isabella's full menu board listing mochi donuts, nama donuts, donut boxes, espresso classics, matchas, seasonal pumpkin spice latte, in-house signature drinks, and add-ons, with prices.",
+      "keywords": [
+        "Toronto cafe menu",
+        "mochi donuts Toronto"
+      ],
+      "use_when": "Showing the full menu or prices. Check prices are current before posting.",
+      "expires": null
+    },
+    {
+      "file": "nama-donuts.jpeg",
+      "alt_text": "Menu graphic of eight nama donuts available Oct 5–18: Nutella, Original, Ube, Japanese Neapolitan, Pumpkin Tiramisu, Matcha, Plain and Cinnamon Sugar.",
+      "keywords": [
+        "nama donuts Toronto",
+        "filled donuts"
+      ],
+      "use_when": "Announcing the current nama donut flavors",
+      "expires": "2026-10-18"
+    },
+    {
+      "file": "savoury-nama-donuts.jpeg",
+      "alt_text": "Menu graphic of five savoury nama donuts available Oct 5–18: Ube Pork Adobo, Pepperoni Pizza, Longganisa, Korean Garlic Cream Cheese Bun and Japanese Veg. Curry.",
+      "keywords": [
+        "savoury donuts Toronto",
+        "nama donuts Toronto"
+      ],
+      "use_when": "Announcing the current savoury nama donuts",
+      "expires": "2026-10-18"
+    },
+    {
+      "file": "top-picks-drinks.png",
+      "alt_text": "Isabella's top picks drinks: Iced Yuzu Lemonade, Pink Drink, Extra Strong Iced Vietnamese Coffee, Iced Banana Shaken Espresso, Matcha Yuzu, Banana Matcha Latte, Vietnamese Matcha Latte and Strawberry Matcha Latte.",
+      "keywords": [
+        "Vietnamese coffee Toronto",
+        "matcha latte Toronto"
+      ],
+      "use_when": "Promoting drinks",
+      "expires": null
     }
   ]
 }
