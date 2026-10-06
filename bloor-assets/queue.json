@@ -1,26 +1,100 @@
 {
   "posts": [
-    {"on": "2026-10-08", "media": ["special-mochi.jpeg"], "topic_tag": "Toronto Donuts",
-     "text": "Pumpkin tiramisu. Mango pandan sticky rice. Rose pistachio honeycomb.\n\nSix specialty mochi donuts, here until Oct 18 only. Made fresh daily at 607 Bloor St W, Toronto."},
-    {"on": "2026-10-09", "media": ["top-picks-drinks.png"], "topic_tag": "Toronto Coffee",
-     "text": "Extra strong iced Vietnamese coffee: two shots of espresso on top of the regular one.\n\nOr go pink: dragonfruit, peach and lychee with sparkling water.\n\nTop picks from our drink menu at 607 Bloor St W, Toronto."},
-    {"on": "2026-10-10", "media": ["nama-donuts.jpeg"], "topic_tag": "Toronto Donuts",
-     "text": "Eight nama donuts this rotation: nutella, ube custard, matcha diplomat cream, and a pumpkin tiramisu with mascarpone buttercream, plus four more.\n\nHere until Oct 18 at 607 Bloor St W, Toronto."},
-    {"on": "2026-10-11", "media": ["donut-videos.mp4"], "topic_tag": "Toronto Donuts",
-     "text": "Fresh trays at the shop right now: sweet potato maple pecan, pumpkin tiramisu, mango pandan, matcha.\n\nMochi donuts Toronto, made fresh daily at 607 Bloor St W. Specialty flavours end Oct 18."},
-    {"on": "2026-10-12", "media": ["savoury-nama-donuts.jpeg"], "topic_tag": "Toronto Food",
-     "text": "Donuts that aren't sweet: ube pork adobo, longganisa, pepperoni pizza, Korean garlic cream cheese bun, Japanese veggie curry.\n\nSavoury nama donuts until Oct 18 at 607 Bloor St W, Toronto."},
-    {"on": "2026-10-13", "media": ["menu.jpeg"], "topic_tag": "Toronto Donuts",
-     "text": "Box of 6 is $25. Box of 12 is $45. Before tax.\n\nMix in specialty or savoury nama for $0.50 more per donut.\n\nFull menu below. 607 Bloor St W, open daily from 11am."},
-    {"on": "2026-10-14", "media": ["special-mochi.jpeg"], "topic_tag": "Toronto Donuts",
-     "text": "Sweet potato maple pecan. Champurrado dipped churro. Japanese Neapolitan with matcha glaze and black sesame drizzle.\n\nThree of this rotation's six specialty mochi donuts. Until Oct 18, 607 Bloor St W, Toronto."},
-    {"on": "2026-10-15", "media": ["top-picks-drinks.png"], "topic_tag": "Toronto Coffee",
-     "text": "Matcha four ways: Matcha Yuzu, Banana Matcha Latte, Vietnamese Matcha Latte with condensed milk, Strawberry Matcha Latte.\n\nAll top picks at 607 Bloor St W, Toronto."},
-    {"on": "2026-10-16", "media": ["savoury-nama-donuts.jpeg"], "topic_tag": "Toronto Food",
-     "text": "Ube pork adobo: ube jam, pork adobo, mozzarella.\n\nOne of five savoury nama donuts, here until Oct 18 at 607 Bloor St W, Toronto."},
-    {"on": "2026-10-17", "media": ["nama-donuts.jpeg"], "topic_tag": "Toronto Donuts",
-     "text": "Two days left for this nama rotation: ube custard, nutella, matcha diplomat cream, pumpkin tiramisu and more.\n\n607 Bloor St W, Toronto, open daily from 11am."},
-    {"on": "2026-10-18", "media": ["special-mochi.jpeg"], "topic_tag": "Toronto Donuts",
-     "text": "Last day for the specialty mochi donuts: pumpkin tiramisu, mango pandan sticky rice, rose pistachio honeycomb and three more.\n\nOpen today from 11am at 607 Bloor St W, Toronto."}
+    {
+      "on": "2026-10-07",
+      "media": [
+        "donut-videos.mp4"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Fresh out of the case at 607 Bloor St W: sweet potato maple pecan, champurrado churro and matcha mochi donuts, all made today.\n\nThe specialty flavours run until Oct 18."
+    },
+    {
+      "on": "2026-10-08",
+      "media": [
+        "special-mochi.jpeg"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Pumpkin tiramisu. Mango pandan sticky rice. Rose pistachio honeycomb.\n\nSix specialty mochi donuts, here until Oct 18 only. Made fresh daily at 607 Bloor St W, Toronto."
+    },
+    {
+      "on": "2026-10-09",
+      "media": [
+        "top-picks-drinks.png"
+      ],
+      "topic_tag": "Toronto Coffee",
+      "text": "Extra strong iced Vietnamese coffee: two shots of espresso on top of the regular one.\n\nOr go pink: dragonfruit, peach and lychee with sparkling water.\n\nTop picks from our drink menu at 607 Bloor St W, Toronto."
+    },
+    {
+      "on": "2026-10-10",
+      "media": [
+        "nama-donuts.jpeg"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Eight nama donuts this rotation: nutella, ube custard, matcha diplomat cream, and a pumpkin tiramisu with mascarpone buttercream, plus four more.\n\nHere until Oct 18 at 607 Bloor St W, Toronto."
+    },
+    {
+      "on": "2026-10-11",
+      "media": [
+        "donut-videos.mp4"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Fresh trays at the shop right now: sweet potato maple pecan, pumpkin tiramisu, mango pandan, matcha.\n\nMochi donuts Toronto, made fresh daily at 607 Bloor St W. Specialty flavours end Oct 18."
+    },
+    {
+      "on": "2026-10-12",
+      "media": [
+        "savoury-nama-donuts.jpeg"
+      ],
+      "topic_tag": "Toronto Food",
+      "text": "Donuts that aren't sweet: ube pork adobo, longganisa, pepperoni pizza, Korean garlic cream cheese bun, Japanese veggie curry.\n\nSavoury nama donuts until Oct 18 at 607 Bloor St W, Toronto."
+    },
+    {
+      "on": "2026-10-13",
+      "media": [
+        "menu.jpeg"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Box of 6 is $25. Box of 12 is $45. Before tax.\n\nMix in specialty or savoury nama for $0.50 more per donut.\n\nFull menu below. 607 Bloor St W, open daily from 11am."
+    },
+    {
+      "on": "2026-10-14",
+      "media": [
+        "special-mochi.jpeg"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Sweet potato maple pecan. Champurrado dipped churro. Japanese Neapolitan with matcha glaze and black sesame drizzle.\n\nThree of this rotation's six specialty mochi donuts. Until Oct 18, 607 Bloor St W, Toronto."
+    },
+    {
+      "on": "2026-10-15",
+      "media": [
+        "top-picks-drinks.png"
+      ],
+      "topic_tag": "Toronto Coffee",
+      "text": "Matcha four ways: Matcha Yuzu, Banana Matcha Latte, Vietnamese Matcha Latte with condensed milk, Strawberry Matcha Latte.\n\nAll top picks at 607 Bloor St W, Toronto."
+    },
+    {
+      "on": "2026-10-16",
+      "media": [
+        "savoury-nama-donuts.jpeg"
+      ],
+      "topic_tag": "Toronto Food",
+      "text": "Ube pork adobo: ube jam, pork adobo, mozzarella.\n\nOne of five savoury nama donuts, here until Oct 18 at 607 Bloor St W, Toronto."
+    },
+    {
+      "on": "2026-10-17",
+      "media": [
+        "nama-donuts.jpeg"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Two days left for this nama rotation: ube custard, nutella, matcha diplomat cream, pumpkin tiramisu and more.\n\n607 Bloor St W, Toronto, open daily from 11am."
+    },
+    {
+      "on": "2026-10-18",
+      "media": [
+        "special-mochi.jpeg"
+      ],
+      "topic_tag": "Toronto Donuts",
+      "text": "Last day for the specialty mochi donuts: pumpkin tiramisu, mango pandan sticky rice, rose pistachio honeycomb and three more.\n\nOpen today from 11am at 607 Bloor St W, Toronto."
+    }
   ]
 }

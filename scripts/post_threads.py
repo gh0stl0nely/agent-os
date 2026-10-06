@@ -92,8 +92,8 @@ def main():
     if cfg.get("paused") and not args.dry_run:
         print("Posting is paused (config.json). Nothing done.")
         return
-    if not args.force and not args.dry_run and now.hour != cfg["post_hour_local"]:
-        print(f"It is {now:%H:%M} in Toronto, not {cfg['post_hour_local']}:00. Nothing done.")
+    if not args.force and not args.dry_run and not (cfg["post_hour_local"] <= now.hour <= cfg["post_hour_local"] + 3):
+        print(f"It is {now:%H:%M} in Toronto, outside the posting window. Nothing done.")
         return
     if today in state["posted"] and not args.dry_run:
         print(f"Already posted for {today}: {state['posted'][today].get('permalink')}")
