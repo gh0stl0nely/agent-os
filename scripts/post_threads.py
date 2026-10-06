@@ -75,8 +75,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--check", action="store_true", help="verify the token only; posts nothing")
     ap.add_argument("--date")
     args = ap.parse_args()
+
+    if args.check:
+        token = os.environ.get("THREADS_ACCESS_TOKEN") or fail("THREADS_ACCESS_TOKEN is not set")
+        me = call("GET", "me", {"fields": "id,username"}, token)
+        print(f"Token works. Connected as @{me.get('username')} (id {me.get('id')}). Nothing posted.")
+        return
 
     cfg, state = load("config.json"), load("state.json")
     now = datetime.now(ZoneInfo(cfg["timezone"]))
