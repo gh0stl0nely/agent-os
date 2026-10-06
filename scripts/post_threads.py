@@ -61,7 +61,7 @@ def choose(today):
     if len(entry["text"]) > MAX_TEXT:
         fail(f"post text is {len(entry['text'])} chars, Threads allows {MAX_TEXT}")
     media = []
-    for f in entry["media"]:
+    for f in entry.get("media", load("config.json").get("default_media", [])):
         a = assets.get(f)
         if a is None:
             fail(f"{f} is not in manifest.json")

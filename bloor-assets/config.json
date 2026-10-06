@@ -3,5 +3,12 @@
   "timezone": "America/Toronto",
   "post_hour_local": 11,
   "raw_base_url": "https://raw.githubusercontent.com/gh0stl0nely/business-assets/main/bloor-assets/",
-  "footer": "📍Isabella Donuts 607 Bloor St W, Toronto\nM-SAT 11am - 9pm SUN 11am - 8pm\n🚚 Order now: https://www.ubereats.com/store-browse-uuid/40925d96-5ebb-475e-a793-bd3b85138d7a?diningMode=DELIVERY"
+  "footer": "📍Isabella Donuts 607 Bloor St W, Toronto\nM-SAT 11am - 9pm SUN 11am - 8pm\n🚚 Order now: https://www.ubereats.com/store-browse-uuid/40925d96-5ebb-475e-a793-bd3b85138d7a?diningMode=DELIVERY",
+  "default_media": [
+    "special-mochi.jpeg",
+    "nama-donuts.jpeg",
+    "savoury-nama-donuts.jpeg",
+    "donut-videos.mp4",
+    "menu.jpeg"
+  ]
 }
