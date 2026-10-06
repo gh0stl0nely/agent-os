@@ -51,11 +51,13 @@ def wait_ready(cid, token):
 
 
 def choose(today):
+    footer = load("config.json").get("footer", "")
     queue, manifest = load("queue.json")["posts"], load("manifest.json")["assets"]
     assets = {a["file"]: a for a in manifest}
     entry = next((p for p in queue if p["on"] == today), None)
     if entry is None:
         fail(f"nothing is queued for {today}. The queue has run out: ask Claude for the next batch.")
+    entry = dict(entry, text=entry["text"] + ("\n\n" + footer if footer else ""))
     if len(entry["text"]) > MAX_TEXT:
         fail(f"post text is {len(entry['text'])} chars, Threads allows {MAX_TEXT}")
     media = []
