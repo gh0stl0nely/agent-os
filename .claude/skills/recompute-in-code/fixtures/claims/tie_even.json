@@ -1,0 +1,20 @@
+{
+  "claim_id": "C-rc-round",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "Synthetic: tie case sums to 2.66 CAD.",
+  "kind": "number",
+  "value": 2.66,
+  "unit": "CAD",
+  "evidence": [
+    {
+      "type": "computation",
+      "ref": "scripts/sum_lines.py",
+      "locator": "data",
+      "retrieved_at": "2026-10-07T12:00:00-04:00",
+      "script": "scripts/sum_lines.py"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

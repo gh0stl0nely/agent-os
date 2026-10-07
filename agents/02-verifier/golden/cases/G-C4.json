@@ -1,0 +1,139 @@
+{
+  "id": "G-C4",
+  "error_type": "control",
+  "layer": "control",
+  "description": "Two different quantities that happen to be equal, cited from different lines: no double counting.",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-gc4c",
+    "caught": false
+  },
+  "envelope": {
+    "task_id": "T-g-c4",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-gc4a",
+      "C-gc4b",
+      "C-gc4c"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-gc4a",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "In-store sales were 2,700 CAD.",
+      "kind": "number",
+      "evidence": [
+        {
+          "type": "document",
+          "ref": "sources/sales_log.md",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "locator": "line:5"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00",
+      "value": 2700.0,
+      "unit": "CAD"
+    },
+    {
+      "claim_id": "C-gc4b",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "Online sales were 1,900 CAD.",
+      "kind": "number",
+      "evidence": [
+        {
+          "type": "document",
+          "ref": "sources/sales_log.md",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "locator": "line:6"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00",
+      "value": 1900.0,
+      "unit": "CAD"
+    },
+    {
+      "claim_id": "C-gc4c",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "Online sales were 1,900 CAD (restated).",
+      "kind": "number",
+      "evidence": [
+        {
+          "type": "document",
+          "ref": "sources/sales_log.md",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "locator": "line:6"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00",
+      "value": 1900.0,
+      "unit": "CAD"
+    }
+  ],
+  "specs": [],
+  "judgments": {
+    "source_support": [
+      {
+        "claim_id": "C-gc4a",
+        "evidence_index": 0,
+        "reasoning": "Line 5 gives the figure.",
+        "supporting_quote": "In-store sales: 2,700 CAD",
+        "supports": "yes",
+        "judge": "builder-session (replay, non-independent)"
+      },
+      {
+        "claim_id": "C-gc4b",
+        "evidence_index": 0,
+        "reasoning": "Line 6 gives the figure.",
+        "supporting_quote": "Online sales: 1,900 CAD",
+        "supports": "yes",
+        "judge": "builder-session (replay, non-independent)"
+      },
+      {
+        "claim_id": "C-gc4c",
+        "evidence_index": 0,
+        "reasoning": "Line 6 gives the figure.",
+        "supporting_quote": "Online sales: 1,900 CAD",
+        "supports": "yes",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ],
+    "adversarial": [
+      {
+        "claim_id": "C-gc4a",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      },
+      {
+        "claim_id": "C-gc4b",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      },
+      {
+        "claim_id": "C-gc4c",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}

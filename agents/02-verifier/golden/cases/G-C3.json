@@ -1,0 +1,76 @@
+{
+  "id": "G-C3",
+  "error_type": "control",
+  "layer": "control",
+  "description": "Rounding only: 2.67 shown for a true 2.665 (rubric allows 2 decimals).",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-gc3",
+    "caught": false
+  },
+  "envelope": {
+    "task_id": "T-g-c3",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-gc3"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-gc3",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "Synthetic: the two parts sum to 2.67 CAD.",
+      "kind": "number",
+      "evidence": [
+        {
+          "type": "computation",
+          "ref": "scripts/sum_lines.py",
+          "locator": "data",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "script": "scripts/sum_lines.py"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00",
+      "value": 2.67,
+      "unit": "CAD"
+    }
+  ],
+  "specs": [
+    {
+      "claim_id": "C-gc3",
+      "script": "scripts/sum_lines.py",
+      "args": [
+        "data/tie_case.csv"
+      ],
+      "inputs": [
+        {
+          "path": "data/tie_case.csv",
+          "sha256": "@sha256:data/tie_case.csv"
+        }
+      ],
+      "timeout_s": 20
+    }
+  ],
+  "judgments": {
+    "source_support": [],
+    "adversarial": [
+      {
+        "claim_id": "C-gc3",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}

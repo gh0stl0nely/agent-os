@@ -1,0 +1,14 @@
+{
+  "claim_id": "C-rc-unit",
+  "script": "scripts/sum_lines.py",
+  "args": [
+    "data/hours.csv"
+  ],
+  "inputs": [
+    {
+      "path": "data/hours.csv",
+      "sha256": "099448f6f9c16f6c71440244cd9bfa0b9cd0591e8b0703f97a6648570131b0e4"
+    }
+  ],
+  "timeout_s": 20
+}

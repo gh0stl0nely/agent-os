@@ -1,0 +1,21 @@
+{
+  "source_support": [
+    {
+      "claim_id": "C-fx-hedged",
+      "evidence_index": 0,
+      "reasoning": "The passage gives the same figure the claim gives.",
+      "supporting_quote": "Average weekday: 64 units.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    }
+  ],
+  "adversarial": [
+    {
+      "claim_id": "C-fx-hedged",
+      "reasoning": "Claim, evidence, unit and scope agree.",
+      "weaknesses": [],
+      "result": "clear",
+      "judge": "builder-session (replay, non-independent)"
+    }
+  ]
+}

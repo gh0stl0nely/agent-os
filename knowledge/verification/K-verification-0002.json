@@ -1,0 +1,19 @@
+{
+  "id": "K-verification-0002",
+  "type": "fact",
+  "namespace": "verification",
+  "claim": "A 2023 human audit of four generative search engines found that only about half of generated sentences (51.5%) were fully supported by their attached citations and about three in four citations (74.5%) supported the sentence they were attached to. Lesson used here: a cited source on the same topic is not proof it supports the statement. The figures describe 2023 products and illustrate the failure mode; they are not current rates.",
+  "source": {
+    "ref": "https://arxiv.org/abs/2304.09848",
+    "locator": "abstract (Liu, Zhang and Liang, 2023)",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-10-07T14:45:00-04:00",
+  "status": "verified",
+  "owner_agent": "02-verifier"
+}

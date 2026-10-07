@@ -1,0 +1,20 @@
+{
+  "claim_id": "C-rc-exact",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "Synthetic: invoice A lines sum to 300.00 CAD.",
+  "kind": "number",
+  "value": 300.0,
+  "unit": "CAD",
+  "evidence": [
+    {
+      "type": "computation",
+      "ref": "scripts/sum_lines.py",
+      "locator": "data",
+      "retrieved_at": "2026-10-07T12:00:00-04:00",
+      "script": "scripts/sum_lines.py"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

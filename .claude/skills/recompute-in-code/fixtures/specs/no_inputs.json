@@ -1,0 +1,9 @@
+{
+  "claim_id": "C-rc-noin",
+  "script": "scripts/sum_lines.py",
+  "args": [
+    "data/invoice_a.csv"
+  ],
+  "inputs": [],
+  "timeout_s": 20
+}

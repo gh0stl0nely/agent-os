@@ -1,0 +1,17 @@
+{
+  "claim_id": "C-sc-unsupported",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "The supplier's minimum order is 24 boxes.",
+  "kind": "fact",
+  "evidence": [
+    {
+      "type": "document",
+      "ref": "sources/supplier_terms.md",
+      "locator": "section:Ordering",
+      "retrieved_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

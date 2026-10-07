@@ -1,0 +1,19 @@
+{
+  "id": "K-verification-0003",
+  "type": "fact",
+  "namespace": "verification",
+  "claim": "OWASP's LLM01:2025 guidance describes indirect prompt injection as instructions hidden in external content such as web pages or files that change a model's behaviour when it reads that content. Its listed mitigations include separating and labelling untrusted content, validating expected output formats with deterministic code, least privilege, human approval for high-risk actions, and regular adversarial testing.",
+  "source": {
+    "ref": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+    "locator": "page last modified 2025-04-17 per the page",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-04-07T14:45:00-04:00",
+  "status": "verified",
+  "owner_agent": "02-verifier"
+}

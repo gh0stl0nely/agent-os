@@ -1,0 +1,8 @@
+{
+  "order": [
+    "src-old",
+    "src-new"
+  ],
+  "reasoning": "Both give the same figure.",
+  "preferred_position": "tie"
+}

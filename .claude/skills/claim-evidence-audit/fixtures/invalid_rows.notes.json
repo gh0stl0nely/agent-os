@@ -1,0 +1,22 @@
+{
+  "C-i01": "status 'assumed' is not allowed",
+  "C-i02": "verified with empty evidence",
+  "C-i03": "verified with no verification object",
+  "C-i04": "verified with verification result 'fail'",
+  "C-i05": "verified with verification result 'unverifiable'",
+  "C-i06": "blocked without blocked_reason",
+  "C-i07": "blocked with empty blocked_reason",
+  "C-i08": "unknown status",
+  "C-i09": "unknown kind",
+  "X-i10": "claim_id without the C- prefix",
+  "C-i11": "missing run_id",
+  "C-i12": "missing evidence array",
+  "C-i13": "empty claim text",
+  "C-i14": "evidence item missing retrieved_at",
+  "C-i15": "evidence type not in the list",
+  "C-i16": "evidence ref empty",
+  "C-i17": "extra field not in the schema",
+  "C-i18": "confidence outside high/medium/low",
+  "C-i19": "verification method not in the list",
+  "C-i20": "missing created_at"
+}

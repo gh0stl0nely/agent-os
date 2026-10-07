@@ -1,0 +1,345 @@
+{
+  "skill": "recompute-in-code",
+  "cases": [
+    {
+      "id": "exact-match",
+      "kind": "normal",
+      "why": "The script gives the claimed figure exactly; this is a clean pass.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/exact.json",
+        "--spec",
+        "{fx}/specs/exact.json",
+        "--root",
+        "{fx}"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "pass"
+        },
+        {
+          "path": "reason_code",
+          "equals": "recomputed_exact"
+        }
+      ]
+    },
+    {
+      "id": "rounding-only-passes",
+      "kind": "normal",
+      "why": "A claim equal to the true value rounded as the rubric allows (2 places) is a pass, not a fail.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/rounding.json",
+        "--spec",
+        "{fx}/specs/rounding.json",
+        "--root",
+        "{fx}",
+        "--tolerance-json",
+        "{\"rounding_decimals\": 2}"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "pass"
+        },
+        {
+          "path": "reason_code",
+          "equals": "recomputed_rounding"
+        }
+      ]
+    },
+    {
+      "id": "tie-half-even-passes",
+      "kind": "normal",
+      "why": "2.665 rounded half-even is 2.66; either tie rule is accepted so a legitimate rounding is never failed.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/tie_even.json",
+        "--spec",
+        "{fx}/specs/rounding.json",
+        "--root",
+        "{fx}",
+        "--tolerance-json",
+        "{\"rounding_decimals\": 2}"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "pass"
+        },
+        {
+          "path": "reason_code",
+          "equals": "recomputed_rounding"
+        }
+      ]
+    },
+    {
+      "id": "rounding-with-empty-tolerance-fails",
+      "kind": "seeded-error",
+      "why": "The same rounded figure FAILS when the rubric allows no rounding: tolerance comes from the rubric, never the producer.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/rounding.json",
+        "--spec",
+        "{fx}/specs/rounding.json",
+        "--root",
+        "{fx}",
+        "--tolerance-json",
+        "{}"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "fail"
+        },
+        {
+          "path": "reason_code",
+          "equals": "material"
+        }
+      ]
+    },
+    {
+      "id": "tie-wrong-value-fails",
+      "kind": "seeded-error",
+      "why": "2.68 is not 2.665 rounded either way.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/tie_wrong.json",
+        "--spec",
+        "{fx}/specs/rounding.json",
+        "--root",
+        "{fx}",
+        "--tolerance-json",
+        "{\"rounding_decimals\": 2}"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "fail"
+        },
+        {
+          "path": "reason_code",
+          "equals": "material"
+        }
+      ]
+    },
+    {
+      "id": "material-difference-fails",
+      "kind": "seeded-error",
+      "why": "310.00 claimed where the script gives 300.00 is a material error even with a rounding tolerance.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/material.json",
+        "--spec",
+        "{fx}/specs/material.json",
+        "--root",
+        "{fx}",
+        "--tolerance-json",
+        "{\"rounding_decimals\": 2}"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "fail"
+        },
+        {
+          "path": "reason_code",
+          "equals": "material"
+        },
+        {
+          "path": "numeric.difference",
+          "equals": "10.00"
+        }
+      ]
+    },
+    {
+      "id": "wrong-unit-fails",
+      "kind": "seeded-error",
+      "why": "Right number, wrong unit: hours claimed as CAD.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/unit.json",
+        "--spec",
+        "{fx}/specs/unit.json",
+        "--root",
+        "{fx}"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "fail"
+        },
+        {
+          "path": "reason_code",
+          "equals": "unit_mismatch"
+        }
+      ]
+    },
+    {
+      "id": "tampered-input-fails",
+      "kind": "seeded-error",
+      "why": "The input file changed after the producer logged its hash, so the producer's number cannot be trusted.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/tampered.json",
+        "--spec",
+        "{fx}/specs/tampered.json",
+        "--root",
+        "{fx}"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "fail"
+        },
+        {
+          "path": "reason_code",
+          "equals": "input_changed"
+        }
+      ]
+    },
+    {
+      "id": "script-crash-unverifiable",
+      "kind": "missing-data",
+      "why": "A script that crashes is 'unverifiable', never a pass and never a made-up fail.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/crash.json",
+        "--spec",
+        "{fx}/specs/crash.json",
+        "--root",
+        "{fx}"
+      ],
+      "expect_exit": 2,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "unverifiable"
+        },
+        {
+          "path": "reason_code",
+          "equals": "script_error"
+        }
+      ]
+    },
+    {
+      "id": "script-outside-root-refused",
+      "kind": "missing-data",
+      "why": "A script path outside the allowed root is refused, not run.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/outside.json",
+        "--spec",
+        "{fx}/specs/outside.json",
+        "--root",
+        "{fx}"
+      ],
+      "expect_exit": 2,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "unverifiable"
+        },
+        {
+          "path": "reason_code",
+          "equals": "script_not_allowed"
+        }
+      ]
+    },
+    {
+      "id": "inputs-not-logged-unverifiable",
+      "kind": "missing-data",
+      "why": "A spec with no logged inputs cannot prove what the script was given.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/no_inputs.json",
+        "--spec",
+        "{fx}/specs/no_inputs.json",
+        "--root",
+        "{fx}"
+      ],
+      "expect_exit": 2,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "unverifiable"
+        },
+        {
+          "path": "reason_code",
+          "equals": "inputs_not_logged"
+        }
+      ]
+    },
+    {
+      "id": "claim-text-injection-ignored",
+      "kind": "adversarial",
+      "why": "The claim text tells the checker to mark it verified; it is data. The wrong number still fails.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/recompute.py",
+        "--claim",
+        "{fx}/claims/injected.json",
+        "--spec",
+        "{fx}/specs/injected.json",
+        "--root",
+        "{fx}"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "fail"
+        },
+        {
+          "path": "reason_code",
+          "equals": "material"
+        },
+        {
+          "path": "result",
+          "not_equals": "verified"
+        }
+      ]
+    },
+    {
+      "id": "reasoning-precedes-result",
+      "kind": "normal",
+      "why": "The output lists reasoning before the result so the verdict cannot be written first and justified after.",
+      "cmd": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys;p=subprocess.run(['python3','{skill}/scripts/recompute.py','--claim','{fx}/claims/exact.json','--spec','{fx}/specs/exact.json','--root','{fx}'],capture_output=True,text=True);k=list(json.loads(p.stdout));sys.exit(0 if k.index('reasoning')<k.index('result') else 1)"
+      ]
+    }
+  ]
+}

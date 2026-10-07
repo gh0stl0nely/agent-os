@@ -1,0 +1,17 @@
+{
+  "claim_id": "C-sc-saturday",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "Next Saturday's demand will exceed this Saturday's.",
+  "kind": "fact",
+  "evidence": [
+    {
+      "type": "document",
+      "ref": "sources/sales_log.md",
+      "locator": "section:Saturdays",
+      "retrieved_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

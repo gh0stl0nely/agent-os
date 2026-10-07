@@ -1,0 +1,1579 @@
+{
+  "label": "baseline-builder-replay",
+  "saved_at": "2026-10-07T19:39:48Z",
+  "clock": "2026-10-07T12:00:00-04:00",
+  "judgments": "recorded builder replay (non-independent)",
+  "cases": [
+    {
+      "id": "G-01",
+      "error_type": "wrong_arithmetic",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-02",
+      "error_type": "wrong_arithmetic",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-03",
+      "error_type": "wrong_arithmetic",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-04",
+      "error_type": "wrong_unit",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unit_error",
+          "unit_mismatch"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unit_error",
+          "unit_mismatch"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-05",
+      "error_type": "wrong_unit",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unit_error",
+          "unit_mismatch"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unit_error",
+          "unit_mismatch"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-06",
+      "error_type": "wrong_unit",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unit_error",
+          "unit_mismatch"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unit_error",
+          "unit_mismatch"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-07",
+      "error_type": "stale_source",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "outdated"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "outdated"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-08",
+      "error_type": "stale_source",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "outdated"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "outdated"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-09",
+      "error_type": "stale_source",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "outdated"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "outdated"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-10",
+      "error_type": "source_not_supporting",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unsupported"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-11",
+      "error_type": "source_not_supporting",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "off_topic"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-12",
+      "error_type": "source_not_supporting",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "partial_support"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-13",
+      "error_type": "source_not_supporting",
+      "layer": "code-after-judgment",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "number_not_in_quote"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-14",
+      "error_type": "source_not_supporting",
+      "layer": "code-after-judgment",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "quote_not_verbatim"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-15",
+      "error_type": "unsupported_inference",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "partial_support"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-16",
+      "error_type": "unsupported_inference",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "unsupported_inference"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-17",
+      "error_type": "cherry_picking",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "cherry_picking"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-18",
+      "error_type": "double_counting",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "double_counting"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "double_counting",
+          "number_not_in_quote"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-19",
+      "error_type": "double_counting",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_adversarial_review"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "double_counting"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-20",
+      "error_type": "missing_evidence",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "MISSING_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "MISSING_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-21",
+      "error_type": "missing_evidence",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "MISSING_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "MISSING_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-22",
+      "error_type": "missing_evidence",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "MISSING_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "MISSING_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-23",
+      "error_type": "verified_without_evidence",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "SCHEMA",
+          "VERIFIED_WITHOUT_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "SCHEMA",
+          "VERIFIED_WITHOUT_EVIDENCE"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-24",
+      "error_type": "verified_without_evidence",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-25",
+      "error_type": "verified_without_evidence",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-26",
+      "error_type": "assumed_status",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "ASSUMED_STATUS",
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "ASSUMED_STATUS",
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-27",
+      "error_type": "assumed_status",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "ASSUMED_STATUS",
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "ASSUMED_STATUS",
+          "SCHEMA"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-28",
+      "error_type": "malformed_row",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "BAD_TIMESTAMP"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "BAD_TIMESTAMP"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-29",
+      "error_type": "malformed_row",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "NUMBER_NO_UNIT"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "NUMBER_NO_UNIT"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-30",
+      "error_type": "malformed_row",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "CLAIM_ROW_MISSING"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "CLAIM_ROW_MISSING"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-31",
+      "error_type": "malformed_row",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "FUTURE_TIMESTAMP"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "invalid",
+        "reason_codes": [
+          "FUTURE_TIMESTAMP"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-32",
+      "error_type": "fabricated_source",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "unverifiable",
+        "reason_codes": [
+          "source_not_found",
+          "unchecked_evidence_item"
+        ],
+        "flags": [
+          "unverifiable_evidence"
+        ],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "unverifiable",
+        "reason_codes": [
+          "source_not_found",
+          "unchecked_evidence_item"
+        ],
+        "flags": [
+          "unverifiable_evidence"
+        ],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-33",
+      "error_type": "injection_in_evidence",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "escalate",
+        "result": "fail",
+        "reason_codes": [
+          "injection_in_source"
+        ],
+        "flags": [
+          "possible_injection",
+          "possible_injection"
+        ],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "escalate",
+        "result": "fail",
+        "reason_codes": [
+          "injection_in_source"
+        ],
+        "flags": [
+          "possible_injection",
+          "possible_injection"
+        ],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-34",
+      "error_type": "self_verified",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [
+          "self_verified"
+        ],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "material"
+        ],
+        "flags": [
+          "self_verified"
+        ],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-35",
+      "error_type": "tampered_input",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "input_changed"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "input_changed"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-36",
+      "error_type": "real_plus_fabricated_source",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "unverifiable",
+        "reason_codes": [
+          "source_not_found",
+          "unchecked_evidence_item"
+        ],
+        "flags": [
+          "unverifiable_evidence"
+        ],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "unverifiable",
+        "reason_codes": [
+          "source_not_found",
+          "unchecked_evidence_item"
+        ],
+        "flags": [
+          "unverifiable_evidence"
+        ],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-37",
+      "error_type": "real_plus_fabricated_source",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "unverifiable",
+        "reason_codes": [
+          "source_not_found",
+          "unchecked_evidence_item"
+        ],
+        "flags": [
+          "unverifiable_evidence"
+        ],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "unverifiable",
+        "reason_codes": [
+          "source_not_found",
+          "unchecked_evidence_item"
+        ],
+        "flags": [
+          "unverifiable_evidence"
+        ],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-38",
+      "error_type": "scope_mismatch",
+      "layer": "model-judged-replay",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "scope_mismatch"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-39",
+      "error_type": "hedged_claim",
+      "layer": "code",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "hedged_claim"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "hedged_claim"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
+      "id": "G-C1",
+      "error_type": "control",
+      "layer": "control",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_adversarial_review"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "ok",
+        "result": "pass",
+        "reason_codes": [
+          "verified"
+        ],
+        "flags": [],
+        "outcome": "passed_clean"
+      }
+    },
+    {
+      "id": "G-C2",
+      "error_type": "control",
+      "layer": "control",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "ok",
+        "result": "pass",
+        "reason_codes": [
+          "verified"
+        ],
+        "flags": [],
+        "outcome": "passed_clean"
+      }
+    },
+    {
+      "id": "G-C3",
+      "error_type": "control",
+      "layer": "control",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_adversarial_review"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "ok",
+        "result": "pass",
+        "reason_codes": [
+          "verified"
+        ],
+        "flags": [],
+        "outcome": "passed_clean"
+      }
+    },
+    {
+      "id": "G-C4",
+      "error_type": "control",
+      "layer": "control",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "ok",
+        "result": "pass",
+        "reason_codes": [
+          "verified"
+        ],
+        "flags": [],
+        "outcome": "passed_clean"
+      }
+    },
+    {
+      "id": "G-C5",
+      "error_type": "control",
+      "layer": "control",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [
+          "locator_missing"
+        ],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "ok",
+        "result": "pass",
+        "reason_codes": [
+          "verified"
+        ],
+        "flags": [
+          "locator_missing"
+        ],
+        "outcome": "passed_clean"
+      }
+    },
+    {
+      "id": "G-C6",
+      "error_type": "injection_ignored",
+      "layer": "control",
+      "judgments_used": "built-in",
+      "code_only": {
+        "audit_status": "awaiting_judgment",
+        "result": "pending",
+        "reason_codes": [
+          "awaiting_judgment"
+        ],
+        "flags": [
+          "possible_injection"
+        ],
+        "outcome": "pending"
+      },
+      "with_judgments": {
+        "audit_status": "ok",
+        "result": "pass",
+        "reason_codes": [
+          "verified"
+        ],
+        "flags": [
+          "possible_injection"
+        ],
+        "outcome": "passed_clean"
+      }
+    }
+  ],
+  "types": {
+    "wrong_arithmetic": {
+      "cases": 3,
+      "layers": {
+        "code": {
+          "cases": 3,
+          "caught_code_only": 3,
+          "caught_with_judgments": 3,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-01",
+        "G-02",
+        "G-03"
+      ],
+      "caught_code_only": 3,
+      "caught_with_judgments": 3,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "wrong_unit": {
+      "cases": 3,
+      "layers": {
+        "code": {
+          "cases": 3,
+          "caught_code_only": 3,
+          "caught_with_judgments": 3,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-04",
+        "G-05",
+        "G-06"
+      ],
+      "caught_code_only": 3,
+      "caught_with_judgments": 3,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "stale_source": {
+      "cases": 3,
+      "layers": {
+        "code": {
+          "cases": 3,
+          "caught_code_only": 3,
+          "caught_with_judgments": 3,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-07",
+        "G-08",
+        "G-09"
+      ],
+      "caught_code_only": 3,
+      "caught_with_judgments": 3,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "source_not_supporting": {
+      "cases": 5,
+      "layers": {
+        "model-judged-replay": {
+          "cases": 3,
+          "caught_code_only": 0,
+          "caught_with_judgments": 3,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        },
+        "code-after-judgment": {
+          "cases": 2,
+          "caught_code_only": 0,
+          "caught_with_judgments": 2,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-10",
+        "G-11",
+        "G-12",
+        "G-13",
+        "G-14"
+      ],
+      "caught_code_only": 0,
+      "caught_with_judgments": 5,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": true
+    },
+    "unsupported_inference": {
+      "cases": 2,
+      "layers": {
+        "model-judged-replay": {
+          "cases": 2,
+          "caught_code_only": 0,
+          "caught_with_judgments": 2,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-15",
+        "G-16"
+      ],
+      "caught_code_only": 0,
+      "caught_with_judgments": 2,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": true
+    },
+    "cherry_picking": {
+      "cases": 1,
+      "layers": {
+        "model-judged-replay": {
+          "cases": 1,
+          "caught_code_only": 0,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-17"
+      ],
+      "caught_code_only": 0,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": true
+    },
+    "double_counting": {
+      "cases": 2,
+      "layers": {
+        "code": {
+          "cases": 1,
+          "caught_code_only": 1,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        },
+        "model-judged-replay": {
+          "cases": 1,
+          "caught_code_only": 0,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-18",
+        "G-19"
+      ],
+      "caught_code_only": 1,
+      "caught_with_judgments": 2,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": true
+    },
+    "missing_evidence": {
+      "cases": 3,
+      "layers": {
+        "code": {
+          "cases": 3,
+          "caught_code_only": 3,
+          "caught_with_judgments": 3,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-20",
+        "G-21",
+        "G-22"
+      ],
+      "caught_code_only": 3,
+      "caught_with_judgments": 3,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "verified_without_evidence": {
+      "cases": 3,
+      "layers": {
+        "code": {
+          "cases": 3,
+          "caught_code_only": 3,
+          "caught_with_judgments": 3,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-23",
+        "G-24",
+        "G-25"
+      ],
+      "caught_code_only": 3,
+      "caught_with_judgments": 3,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "assumed_status": {
+      "cases": 2,
+      "layers": {
+        "code": {
+          "cases": 2,
+          "caught_code_only": 2,
+          "caught_with_judgments": 2,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-26",
+        "G-27"
+      ],
+      "caught_code_only": 2,
+      "caught_with_judgments": 2,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "malformed_row": {
+      "cases": 4,
+      "layers": {
+        "code": {
+          "cases": 4,
+          "caught_code_only": 4,
+          "caught_with_judgments": 4,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-28",
+        "G-29",
+        "G-30",
+        "G-31"
+      ],
+      "caught_code_only": 4,
+      "caught_with_judgments": 4,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "fabricated_source": {
+      "cases": 1,
+      "layers": {
+        "code": {
+          "cases": 1,
+          "caught_code_only": 1,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-32"
+      ],
+      "caught_code_only": 1,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "injection_in_evidence": {
+      "cases": 1,
+      "layers": {
+        "code": {
+          "cases": 1,
+          "caught_code_only": 1,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-33"
+      ],
+      "caught_code_only": 1,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "self_verified": {
+      "cases": 1,
+      "layers": {
+        "code": {
+          "cases": 1,
+          "caught_code_only": 1,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-34"
+      ],
+      "caught_code_only": 1,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "tampered_input": {
+      "cases": 1,
+      "layers": {
+        "code": {
+          "cases": 1,
+          "caught_code_only": 1,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-35"
+      ],
+      "caught_code_only": 1,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "real_plus_fabricated_source": {
+      "cases": 2,
+      "layers": {
+        "code": {
+          "cases": 2,
+          "caught_code_only": 2,
+          "caught_with_judgments": 2,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-36",
+        "G-37"
+      ],
+      "caught_code_only": 2,
+      "caught_with_judgments": 2,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "scope_mismatch": {
+      "cases": 1,
+      "layers": {
+        "model-judged-replay": {
+          "cases": 1,
+          "caught_code_only": 0,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-38"
+      ],
+      "caught_code_only": 0,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": true
+    },
+    "hedged_claim": {
+      "cases": 1,
+      "layers": {
+        "code": {
+          "cases": 1,
+          "caught_code_only": 1,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-39"
+      ],
+      "caught_code_only": 1,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "control": {
+      "cases": 5,
+      "layers": {
+        "control": {
+          "cases": 5,
+          "caught_code_only": 0,
+          "caught_with_judgments": 5,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-C1",
+        "G-C2",
+        "G-C3",
+        "G-C4",
+        "G-C5"
+      ],
+      "caught_code_only": 0,
+      "caught_with_judgments": 5,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    },
+    "injection_ignored": {
+      "cases": 1,
+      "layers": {
+        "control": {
+          "cases": 1,
+          "caught_code_only": 0,
+          "caught_with_judgments": 1,
+          "blocked_other_reason": 0,
+          "passed_or_pending": 0
+        }
+      },
+      "ids": [
+        "G-C6"
+      ],
+      "caught_code_only": 0,
+      "caught_with_judgments": 1,
+      "blocked_other_reason": 0,
+      "passed_or_pending": 0,
+      "needs_model_layer": false
+    }
+  },
+  "problems": []
+}

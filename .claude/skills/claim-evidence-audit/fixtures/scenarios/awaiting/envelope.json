@@ -1,0 +1,16 @@
+{
+  "task_id": "T-fx-awaiting",
+  "from_agent": "fixture-producer",
+  "to_agent": "02-verifier",
+  "goal": "Synthetic: verify these claims before they reach the owner.",
+  "status": "requested",
+  "inputs": [],
+  "constraints": {
+    "revise_loops_left": 2
+  },
+  "claims": [
+    "C-fx-total",
+    "C-fx-cutoff"
+  ],
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

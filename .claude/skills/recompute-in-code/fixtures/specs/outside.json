@@ -1,0 +1,14 @@
+{
+  "claim_id": "C-rc-out",
+  "script": "../../../../etc/hostname",
+  "args": [
+    "data/invoice_a.csv"
+  ],
+  "inputs": [
+    {
+      "path": "data/invoice_a.csv",
+      "sha256": "e5a1c9cfa98d3e43a1f5345babf82dfdc550a429b56e2d00eedd5a343b956317"
+    }
+  ],
+  "timeout_s": 20
+}

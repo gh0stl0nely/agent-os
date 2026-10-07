@@ -1,0 +1,17 @@
+{
+  "id": "K-golden-0001",
+  "type": "fact",
+  "namespace": "ordering",
+  "claim": "Synthetic: the supplier order cutoff is 8:00 pm Eastern.",
+  "source": {
+    "ref": "sources/supplier_terms.md",
+    "retrieved_at": "2026-10-07T12:00:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "written_at": "2026-10-07T12:00:00-04:00",
+  "last_confirmed_at": "2026-10-01T12:00:00-04:00",
+  "expires_at": "2027-01-01T12:00:00-05:00",
+  "status": "verified",
+  "owner_agent": "04-librarian"
+}

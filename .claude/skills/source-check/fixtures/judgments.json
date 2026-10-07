@@ -1,0 +1,132 @@
+{
+  "source_support": [
+    {
+      "claim_id": "C-sc-supported",
+      "evidence_index": 0,
+      "reasoning": "The Ordering section states the cutoff as 8:00 pm Eastern, which is what the claim says.",
+      "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-unsupported",
+      "evidence_index": 0,
+      "reasoning": "The section discusses the minimum order but gives 12 boxes, not 24; nothing states 24.",
+      "supporting_quote": null,
+      "supports": "no",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-number",
+      "evidence_index": 0,
+      "reasoning": "The sentence is about the minimum order; I read it as supporting the claim.",
+      "supporting_quote": "Minimum order is 12 boxes.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-offtopic",
+      "evidence_index": 0,
+      "reasoning": "The page is about the shop's own opening hours, not a supplier cutoff.",
+      "supporting_quote": null,
+      "supports": "no",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-outdated",
+      "evidence_index": 0,
+      "reasoning": "The passage states the cutoff correctly.",
+      "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-notverb",
+      "evidence_index": 0,
+      "reasoning": "The page says the supplier stops taking orders in the evening.",
+      "supporting_quote": "The cutoff is eight in the evening.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-poison",
+      "evidence_index": 0,
+      "reasoning": "The passage states the cutoff.",
+      "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-partial",
+      "evidence_index": 0,
+      "reasoning": "The policy allows returns within 14 days but only for unopened items, so 'all items' overstates it.",
+      "supporting_quote": "Returns are accepted within 14 days for unopened items.",
+      "supports": "partial",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-nodate",
+      "evidence_index": 0,
+      "reasoning": "States the cutoff.",
+      "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-locbad",
+      "evidence_index": 0,
+      "reasoning": "States the cutoff.",
+      "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-url",
+      "evidence_index": 0,
+      "reasoning": "The page says the supplier stops taking orders in the evening.",
+      "supporting_quote": "orders close at eight in the evening",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-kbok",
+      "evidence_index": 0,
+      "reasoning": "The record states the cutoff.",
+      "supporting_quote": "the supplier order cutoff is 8:00 pm Eastern",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-kbold",
+      "evidence_index": 0,
+      "reasoning": "The record states the cutoff.",
+      "supporting_quote": "the supplier order cutoff is 8:00 pm Eastern",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-malformed",
+      "evidence_index": 0,
+      "supports": "yes",
+      "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+      "reasoning": "result came before reasoning: this judgment must be rejected",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-urlok",
+      "evidence_index": 0,
+      "reasoning": "The page states the cutoff as 8:00 pm Eastern.",
+      "supporting_quote": "accepts orders until 8:00 pm Eastern",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-saturday",
+      "evidence_index": 0,
+      "reasoning": "The Saturdays section lists three past Saturdays. It says nothing about next Saturday, so it does not state the forecast.",
+      "supporting_quote": null,
+      "supports": "no",
+      "judge": "builder-session (replay, non-independent)"
+    }
+  ]
+}

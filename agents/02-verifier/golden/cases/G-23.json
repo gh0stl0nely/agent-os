@@ -1,0 +1,61 @@
+{
+  "id": "G-23",
+  "error_type": "verified_without_evidence",
+  "layer": "code",
+  "description": "Marked verified with an empty evidence list.",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-g23",
+    "caught": true,
+    "reason_codes_any": [
+      "VERIFIED_WITHOUT_EVIDENCE",
+      "SCHEMA"
+    ]
+  },
+  "envelope": {
+    "task_id": "T-g-23",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-g23"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-g23",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "Synthetic: the shop is open on Sundays.",
+      "kind": "fact",
+      "evidence": [],
+      "status": "verified",
+      "created_at": "2026-10-07T12:00:00-04:00",
+      "verification": {
+        "method": "source-checked",
+        "verifier": "fixture-producer",
+        "verified_at": "2026-10-07T12:00:00-04:00",
+        "result": "pass"
+      }
+    }
+  ],
+  "specs": [],
+  "judgments": {
+    "source_support": [],
+    "adversarial": [
+      {
+        "claim_id": "C-g23",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}

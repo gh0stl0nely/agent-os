@@ -1,0 +1,8 @@
+{
+  "order": [
+    "src-old",
+    "src-new"
+  ],
+  "reasoning": "The newer source states the figure; the older one is superseded.",
+  "preferred_position": 2
+}
