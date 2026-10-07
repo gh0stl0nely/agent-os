@@ -1,0 +1,166 @@
+{
+  "description": "Synthetic plans for building Preflight Briefs, one per class from R2 to R6 plus extra R2 and R4 cases. They cite claims from fixtures/ledger.jsonl. No real data.",
+  "plans": [
+    {
+      "id": "P1-brain-rule", "expected_class": "R2",
+      "plan": {
+        "action": "Change the Saturday weighting in the forecast brain rule from 1.0 to 1.1",
+        "requested_by": "06-operations-manager",
+        "action_class": "R2",
+        "decision_by": "2026-10-09 18:00 America/Toronto, before the next Friday forecast run",
+        "default_if_no_answer": "Nothing changes; the current weighting stays.",
+        "what_exactly": "In the shared brain-rule file for the nightly forecast, change the Saturday weighting value from 1.0 to 1.1. No other rule changes. The change takes effect at the next nightly run.",
+        "why": "The backtest in claim C-fix-001 shows the current weighting under-forecasts Saturdays; the owner's correction is recorded in C-fix-002.",
+        "claim_ids": ["C-fix-001", "C-fix-002"],
+        "alternatives": ["Do nothing and keep 1.0.", "Raise the weighting to 1.2 instead; rejected because the backtest error grows."],
+        "blast_radius": "Only the Saturday quantity in the nightly recommendation. The owner still approves every order.",
+        "rollback": "Restore the previous value 1.0 in the same file from version control. The Operations Manager does this in under five minutes. Test: run the forecast on a saved Saturday input and confirm it reproduces the old quantities.",
+        "cost": "No money. About two minutes of owner review.",
+        "safety_checks": {
+          "no_secrets": {"status": "done", "note": "the diff was scanned"},
+          "target_verified": {"status": "done", "note": "the file path and key name exist"},
+          "dry_run": {"status": "done", "note": "forecast preview attached"},
+          "rollback_tested": {"status": "done", "note": "restore tested on a copy"}
+        }
+      }
+    },
+    {
+      "id": "P2-install-skill", "expected_class": "R2",
+      "plan": {
+        "action": "Install the reviewed skill sample-notes into .claude/skills",
+        "requested_by": "04-librarian",
+        "action_class": "R2",
+        "decision_by": "2026-10-12 12:00 America/Toronto, start of the research pass",
+        "default_if_no_answer": "Nothing is installed.",
+        "what_exactly": "Copy the reviewed folder sample-notes, pinned to the recorded commit in the skill inventory, into .claude/skills/sample-notes. Nothing else is installed and no setting changes.",
+        "why": "Skill vetting found no failed checks (claim C-fix-002 records the source check) and the folder matches the pinned commit.",
+        "claim_ids": ["C-fix-002"],
+        "alternatives": ["Do nothing and keep doing the research by hand.", "Use the skill from a sandbox copy only."],
+        "blast_radius": "Every session in this repository can load the skill. It has no scripts and no network access.",
+        "rollback": "Remove the folder .claude/skills/sample-notes in a new commit. The Librarian does this in about five minutes. Test: list the skills and confirm sample-notes no longer appears.",
+        "cost": "No money. No extra tokens beyond normal use.",
+        "safety_checks": {
+          "no_secrets": {"status": "done", "note": "every file scanned"},
+          "target_verified": {"status": "done", "note": "the commit hash matches the inventory"},
+          "dry_run": {"status": "na", "note": "a copy into a folder has no preview mode"},
+          "rollback_tested": {"status": "done", "note": "removal tested in a temp clone"}
+        }
+      }
+    },
+    {
+      "id": "P3-delete-drafts", "expected_class": "R3",
+      "plan": {
+        "action": "Delete the superseded draft files in the shared drafts folder",
+        "requested_by": "05-data-steward",
+        "action_class": "R3",
+        "decision_by": "2026-10-14 17:00 America/Toronto, before the monthly clean-up",
+        "default_if_no_answer": "Nothing is deleted.",
+        "what_exactly": "Delete exactly three draft files that a newer version has replaced, listed by path in the attached dry-run listing. A dated backup copy is stored first.",
+        "why": "Claim C-fix-001 confirms the three files are exact duplicates of the newer versions.",
+        "claim_ids": ["C-fix-001"],
+        "alternatives": ["Do nothing and leave the clutter.", "Move the files into an archive folder instead of deleting them."],
+        "blast_radius": "Three files nobody has opened since the newer versions replaced them.",
+        "rollback": "Copy the three files back from the dated backup folder. The Data Steward does this in about two minutes. Test: restore one file into a scratch folder and compare its checksum with the original.",
+        "cost": "No money.",
+        "safety_checks": {
+          "no_secrets": {"status": "done", "note": "file names and contents scanned"},
+          "target_verified": {"status": "done", "note": "paths match the listing"},
+          "dry_run": {"status": "done", "note": "dry-run listing attached"},
+          "rollback_tested": {"status": "done", "note": "one file restored and compared"}
+        }
+      }
+    },
+    {
+      "id": "P4-submit-order", "expected_class": "R4",
+      "plan": {
+        "action": "Submit tonight's order in the supplier portal after the owner says yes",
+        "requested_by": "06-operations-manager",
+        "action_class": "R4",
+        "decision_by": "2026-10-07 19:30 America/Toronto, supplier cutoff is 20:00",
+        "default_if_no_answer": "Nothing is submitted; the owner is pushed again at 19:40.",
+        "what_exactly": "Submit one order for the quantities in the approved recommendation, once, before the supplier cutoff. No other item is added.",
+        "why": "Claim C-fix-001 verifies the quantities and C-fix-002 verifies the cutoff time.",
+        "claim_ids": ["C-fix-001", "C-fix-002"],
+        "alternatives": ["Do nothing; the shop runs short tomorrow.", "Submit last week's quantities unchanged."],
+        "blast_radius": "One supplier order for tomorrow's stock; a wrong quantity means waste or a shortage.",
+        "rollback": "Change or cancel the order in the supplier portal before the cutoff. The owner does this in about three minutes. Test: confirm in the portal help page that an order can be edited before the cutoff.",
+        "cost": "The cost of the goods ordered, already inside the normal budget.",
+        "safety_checks": {
+          "no_secrets": {"status": "done", "note": "the plan holds no credentials"},
+          "target_verified": {"status": "done", "note": "supplier and portal are the ones named in the terms"},
+          "dry_run": {"status": "done", "note": "prepared cart preview attached"},
+          "rollback_tested": {"status": "done", "note": "edit option confirmed in the portal documentation"}
+        }
+      }
+    },
+    {
+      "id": "P5-public-post", "expected_class": "R4",
+      "plan": {
+        "action": "Publish the queued Threads post for tomorrow",
+        "requested_by": "10-growth-marketer",
+        "action_class": "R4",
+        "decision_by": "2026-10-08 10:00 America/Toronto, an hour before the scheduled post",
+        "default_if_no_answer": "Nothing is posted; the post is skipped for the day.",
+        "what_exactly": "Publish the post and photo already listed in the poster queue for tomorrow, at the scheduled time. No edits to the text.",
+        "why": "Claim C-fix-002 confirms the photo is within its use window.",
+        "claim_ids": ["C-fix-002"],
+        "alternatives": ["Do nothing and skip tomorrow.", "Swap in the backup post from the queue."],
+        "blast_radius": "A public post on the shop's account that customers can see and share.",
+        "rollback": "Delete the post from the Threads app within minutes of publishing. The owner does this in about two minutes. Test: confirm the delete option exists on a prior post before relying on it.",
+        "cost": "No money.",
+        "safety_checks": {
+          "no_secrets": {"status": "done", "note": "post text and image names scanned"},
+          "target_verified": {"status": "done", "note": "queue entry matches tomorrow's date"},
+          "dry_run": {"status": "done", "note": "poster dry run output attached"},
+          "rollback_tested": {"status": "done", "note": "delete option seen on an earlier post"}
+        }
+      }
+    },
+    {
+      "id": "P6-rotate-password", "expected_class": "R5",
+      "plan": {
+        "action": "Ask the owner to rotate the supplier portal password",
+        "requested_by": "06-operations-manager",
+        "action_class": "R5",
+        "decision_by": "2026-10-20 12:00 America/Toronto, end of the security review",
+        "default_if_no_answer": "Nothing changes; the current password stays.",
+        "what_exactly": "The owner rotates the password on the supplier's own site and keeps the new one in the password manager. The agent writes the steps and never sees the value.",
+        "why": "The review in claim C-fix-002 recommends rotating shared credentials every year.",
+        "claim_ids": ["C-fix-002"],
+        "alternatives": ["Do nothing and rotate next year.", "Turn on two-step sign-in instead of rotating."],
+        "blast_radius": "Only the owner's own access to the supplier portal.",
+        "rollback": "Use the supplier's password reset page to set another password. The owner does this in about five minutes. Test: confirm the reset page works by reading its help article before rotating.",
+        "cost": "No money. About ten minutes of owner time.",
+        "safety_checks": {
+          "no_secrets": {"status": "done", "note": "the plan names no value"},
+          "target_verified": {"status": "done", "note": "the portal address is the one in the supplier terms"},
+          "dry_run": {"status": "na", "note": "a password change has no preview mode"},
+          "rollback_tested": {"status": "done", "note": "reset page documented"}
+        }
+      }
+    },
+    {
+      "id": "P7-paid-feed", "expected_class": "R6",
+      "plan": {
+        "action": "Subscribe to a paid event-listings feed for the forecast",
+        "requested_by": "04-librarian",
+        "action_class": "R6",
+        "decision_by": "2026-10-16 12:00 America/Toronto, end of the trial week",
+        "default_if_no_answer": "Nothing is bought.",
+        "what_exactly": "Subscribe the shop's account to the feed for a one-month trial. The owner enters the payment details; the agent does not.",
+        "why": "Claim C-fix-001 shows the forecast misses event days; the free sources in C-fix-002 do not cover them.",
+        "claim_ids": ["C-fix-001", "C-fix-002"],
+        "alternatives": ["Do nothing and keep the free sources.", "Check the city's free events page by hand each week."],
+        "blast_radius": "A monthly charge to the shop's card until the subscription ends.",
+        "rollback": "Cancel the subscription in the account page and ask for a refund of the last charge. The owner does this in about ten minutes. Test: read the cancellation terms and confirm that a cancel button exists before subscribing.",
+        "cost": "20 CAD per month, 240 CAD per year, beyond the plan allowance. Justified only if forecast error on event days improves.",
+        "safety_checks": {
+          "no_secrets": {"status": "done", "note": "no card details in the plan"},
+          "target_verified": {"status": "done", "note": "vendor site matches the one reviewed"},
+          "dry_run": {"status": "na", "note": "a trial sign-up has no preview mode"},
+          "rollback_tested": {"status": "done", "note": "cancellation terms read"}
+        }
+      }
+    }
+  ]
+}
