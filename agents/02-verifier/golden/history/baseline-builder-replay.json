@@ -1,6 +1,6 @@
 {
   "label": "baseline-builder-replay",
-  "saved_at": "2026-10-07T19:00:51Z",
+  "saved_at": "2026-10-07T19:09:57Z",
   "clock": "2026-10-07T12:00:00-04:00",
   "judgments": "recorded builder replay (non-independent)",
   "cases": [
@@ -810,6 +810,29 @@
       }
     },
     {
+      "id": "G-35",
+      "error_type": "tampered_input",
+      "layer": "code",
+      "code_only": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "input_changed"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      },
+      "with_judgments": {
+        "audit_status": "needs_revision",
+        "result": "fail",
+        "reason_codes": [
+          "input_changed"
+        ],
+        "flags": [],
+        "outcome": "caught"
+      }
+    },
+    {
       "id": "G-C1",
       "error_type": "control",
       "layer": "control",
@@ -1206,6 +1229,22 @@
       },
       "ids": [
         "G-34"
+      ],
+      "caught_code_only": 1,
+      "caught_with_judgments": 1,
+      "needs_model_layer": false
+    },
+    "tampered_input": {
+      "cases": 1,
+      "layers": {
+        "code": {
+          "cases": 1,
+          "caught_code_only": 1,
+          "caught_with_judgments": 1
+        }
+      },
+      "ids": [
+        "G-35"
       ],
       "caught_code_only": 1,
       "caught_with_judgments": 1,

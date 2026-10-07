@@ -1,0 +1,79 @@
+{
+  "id": "G-35",
+  "error_type": "tampered_input",
+  "layer": "code",
+  "description": "The input file no longer matches the hash the producer logged.",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-g35",
+    "caught": true,
+    "reason_codes_any": [
+      "input_changed"
+    ]
+  },
+  "envelope": {
+    "task_id": "T-g-35",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-g35"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-g35",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "Synthetic: invoice A lines sum to 300.00 CAD.",
+      "kind": "number",
+      "evidence": [
+        {
+          "type": "computation",
+          "ref": "scripts/sum_lines.py",
+          "locator": "data",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "script": "scripts/sum_lines.py"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00",
+      "value": 300.0,
+      "unit": "CAD"
+    }
+  ],
+  "specs": [
+    {
+      "claim_id": "C-g35",
+      "script": "scripts/sum_lines.py",
+      "args": [
+        "data/invoice_a.csv"
+      ],
+      "inputs": [
+        {
+          "path": "data/invoice_a.csv",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ],
+      "timeout_s": 20
+    }
+  ],
+  "judgments": {
+    "source_support": [],
+    "adversarial": [
+      {
+        "claim_id": "C-g35",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}

@@ -9,7 +9,7 @@ Usage:
   run_golden.py [--cases DIR] [--only IDS] [--judgments FILE] [--save LABEL] [--compare latest|LABEL] [--json]
                 [--simulate-broken recompute|structure]
 Exit code: 0 ok; 1 if a structural type is below 100% caught by code alone, any code-layer case is missed by code alone,
-a control failed, or a case errored.
+a control failed, a case errored, or (with the recorded judgments only) any seeded error is missed.
 """
 import argparse
 import copy
@@ -113,7 +113,7 @@ def fmt_rate(n, d):
     return f"{n}/{d} ({100 * n // d if d else 0}%)"
 
 
-def report(records, types, label_judge, partial=False):
+def report(records, types, label_judge, partial=False, replay=True):
     lines = []
     lines.append(f"Golden set run. Clock fixed at {FIXED_NOW}. Judgments: {label_judge}.")
     lines.append("")
@@ -154,6 +154,11 @@ def report(records, types, label_judge, partial=False):
         for k in ("code_only", "with_judgments"):
             if r[k]["outcome"] == "error":
                 problems.append(f"{r['id']} crashed ({k}): {r[k].get('error')}")
+    if replay:  # with the recorded judgments the outcome is fixed, so any miss is a regression in the code
+        for r in records:
+            if r["error_type"] not in CONTROL_TYPES and r["with_judgments"]["outcome"] != "caught":
+                problems.append(f"{r['id']} ({r['error_type']}) was caught when the cases were written but is not now: "
+                                f"{r['with_judgments'].get('outcome')} {r['with_judgments'].get('reason_codes')}")
     not_caught = [(r["id"], r["error_type"], r["with_judgments"]["outcome"], r["with_judgments"].get("reason_codes"))
                   for r in records if r["error_type"] not in CONTROL_TYPES and r["with_judgments"]["outcome"] != "caught"]
     for cid, typ, outc, rc in not_caught:
@@ -241,7 +246,7 @@ def main():
     records = [run_case(c, override) for c in cases]
     types = summarise(records)
     label = "fresh judgments from " + a.judgments if override is not None else "recorded builder replay (non-independent)"
-    lines, problems = report(records, types, label, partial=bool(a.only))
+    lines, problems = report(records, types, label, partial=bool(a.only), replay=override is None)
     if a.simulate_broken:
         lines.insert(0, f"*** SIMULATED BREAKAGE: {a.simulate_broken} checker disabled on purpose; this is a test of the runner ***")
     if a.json:

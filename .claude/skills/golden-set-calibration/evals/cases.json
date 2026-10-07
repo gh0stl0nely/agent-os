@@ -10,7 +10,7 @@
         "{skill}/scripts/run_golden.py"
       ],
       "text_contains": [
-        "Seeded errors: 34",
+        "Seeded errors: 35",
         "Controls: 6. Passed clean: 6. False positives: 0",
         "builder replay (non-independent)",
         "not measurable by code alone"
@@ -108,7 +108,7 @@
       ],
       "text_contains": [
         "fresh judgments from",
-        "Caught with judgments (all layers): 29/34",
+        "Caught with judgments (all layers): 30/35",
         "not caught with judgments: G-17 (cherry_picking)"
       ]
     },

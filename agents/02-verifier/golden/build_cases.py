@@ -272,6 +272,11 @@ def build_cases():
          [row("C-g34", "Synthetic: invoice A lines sum to 310.00 CAD.", "number", [comp()], 310.0, "CAD", status="verified",
               verification=dict(ver, method="recomputed"))],
          {"caught": True, "reason_codes_any": ["material"]}, [spec("C-g34", "data/invoice_a.csv")])
+    t = spec("C-g35", "data/invoice_a.csv")
+    t["inputs"][0]["sha256"] = "0" * 64  # the producer logged a hash of a different file
+    case("G-35", "tampered_input", "code", "The input file no longer matches the hash the producer logged.", "C-g35",
+         [row("C-g35", "Synthetic: invoice A lines sum to 300.00 CAD.", "number", [comp()], 300.0, "CAD")],
+         {"caught": True, "reason_codes_any": ["input_changed"]}, [t])
     # ---- controls (must pass, with judgments)
     case("G-C1", "control", "control", "Clean number: exact match.", "C-gc1",
          [row("C-gc1", "Synthetic: invoice A lines sum to 300.00 CAD.", "number", [comp()], 300.0, "CAD")],
