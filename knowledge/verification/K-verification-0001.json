@@ -1,0 +1,19 @@
+{
+  "id": "K-verification-0001",
+  "type": "fact",
+  "namespace": "verification",
+  "claim": "A study of LLM judges (MT-Bench and Chatbot Arena, 2023) found that strong judges can agree with human preferences more than 80% of the time, and also named three judge biases: favouring an answer because of its position, favouring longer answers, and favouring answers that resemble the judge's own output. It also noted limited reasoning ability in judges.",
+  "source": {
+    "ref": "https://arxiv.org/abs/2306.05685",
+    "locator": "abstract (Zheng et al., 2023)",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-10-07T14:45:00-04:00",
+  "status": "verified",
+  "owner_agent": "02-verifier"
+}

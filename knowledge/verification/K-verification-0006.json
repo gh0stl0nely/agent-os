@@ -1,0 +1,19 @@
+{
+  "id": "K-verification-0006",
+  "type": "fact",
+  "namespace": "verification",
+  "claim": "Anthropic's 'Building effective agents' (published 2024-12-19) describes the evaluator-optimizer pattern as suited to cases with clear evaluation criteria where iteration measurably improves the result, advises starting with the simplest solution, and recommends stopping conditions such as a maximum number of iterations plus checkpoints where a human can be asked for input.",
+  "source": {
+    "ref": "https://www.anthropic.com/engineering/building-effective-agents",
+    "locator": "sections on evaluator-optimizer and on agents",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-04-07T14:45:00-04:00",
+  "status": "verified",
+  "owner_agent": "02-verifier"
+}

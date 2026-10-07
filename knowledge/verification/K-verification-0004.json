@@ -1,0 +1,19 @@
+{
+  "id": "K-verification-0004",
+  "type": "fact",
+  "namespace": "verification",
+  "claim": "Anthropic's documentation on reducing hallucinations recommends explicitly allowing the model to say it does not know, grounding answers in word-for-word quotes extracted from the source for long documents, and requiring a supporting quote for each claim and removing any claim that has none. It states these techniques reduce hallucinations but do not eliminate them, so critical information should still be validated.",
+  "source": {
+    "ref": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+    "locator": "page 'Reduce hallucinations' (no update date shown on the page)",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-04-07T14:45:00-04:00",
+  "status": "verified",
+  "owner_agent": "02-verifier"
+}

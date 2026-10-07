@@ -1,0 +1,19 @@
+{
+  "id": "K-verification-0007",
+  "type": "fact",
+  "namespace": "verification",
+  "claim": "A community skill (obra/superpowers, verification-before-completion) states that a completion claim requires first running the command that proves it, reading the full output, and only then claiming, and it lists hedging words and trusting a sub-agent's success report as warning signs. Used here as a pattern only, nothing copied.",
+  "source": {
+    "ref": "https://raw.githubusercontent.com/obra/superpowers/main/skills/verification-before-completion/SKILL.md",
+    "locator": "file read from main; repository HEAD was 8ca22dba9a94f28898bbce59f2537ff4d87c747d a minute later; no license text in the file",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "C",
+  "confidence": "medium",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-04-07T14:45:00-04:00",
+  "status": "verified",
+  "owner_agent": "02-verifier"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "K-verification-0005",
+  "type": "fact",
+  "namespace": "verification",
+  "claim": "The Python decimal documentation states that a Decimal built from a string holds its digits exactly while a Decimal built from a float carries that float's binary rounding error, that precision and rounding mode are set per context, and that the default rounding mode (round half to even) differs from round half up only on exact ties, for example 2.665 rounds to 2.66 under half-even and 2.67 under half-up at two places.",
+  "source": {
+    "ref": "https://docs.python.org/3/library/decimal.html",
+    "locator": "decimal module overview, rounding modes",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-10-07T14:45:00-04:00",
+  "status": "verified",
+  "owner_agent": "02-verifier"
+}
