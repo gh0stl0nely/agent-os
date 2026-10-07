@@ -85,7 +85,7 @@ Many year-end tax moves in Canada must be completed by December 31. Do not wait 
 
 | Option | How | Notes |
 |---|---|---|
-| A (recommended) | Claude Code on the web: start a new session on this repo, paste the role's kickoff prompt from [KICKOFF-PROMPTS.md](KICKOFF-PROMPTS.md) | `CLAUDE.md` loads automatically, so every session starts with the same context. Cloud sessions keep running if you close the tab |
+| A (recommended) | Claude Code on the web: create the session with `gh0stl0nely/business-assets` selected as its repository, then paste the role's kickoff prompt from [KICKOFF-PROMPTS.md](KICKOFF-PROMPTS.md) | Once the repo is cloned, `CLAUDE.md` loads automatically, so every session starts with the same context. A session created without the repo has no `CLAUDE.md` and no brief; the prompt then makes it attach and clone the repo, which needs your approval. Cloud sessions keep running if you close the tab |
 | B | Claude Code on desktop or terminal in a separate git worktree per role | Same prompts; worktrees keep the parallel branches apart |
 | C | Ask the design session to launch a builder | Uses the same plan allowance. Not the default, because separate human-launched sessions keep each role's context clean |
 
