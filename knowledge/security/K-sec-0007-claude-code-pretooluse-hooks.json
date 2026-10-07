@@ -1,0 +1,19 @@
+{
+  "id": "K-sec-0007",
+  "type": "fact",
+  "namespace": "security",
+  "claim": "A Claude Code PreToolUse command hook receives JSON on stdin with the tool name and, for Bash, the command text at tool_input.command plus the working directory in cwd. It blocks a call either by exiting with code 2 and writing the reason to stderr, or by exiting 0 and printing JSON whose hookSpecificOutput.permissionDecision is deny. Exiting 0 with no output gives no opinion and never approves. Hooks are configured under a hooks key in a settings file (project .claude/settings.json is committable) as event, then matcher group, then handler. The optional if filter on a handler is best-effort, so enforcement logic should inspect the command inside the hook script rather than rely on the filter alone.",
+  "source": {
+    "ref": "https://code.claude.com/docs/en/hooks",
+    "locator": "PreToolUse input, blocking, configuration and if-filter sections (first 100,000 characters read)",
+    "retrieved_at": "2026-10-07T14:45:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:45:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:45:00-04:00",
+  "expires_at": "2027-01-07T14:45:00-05:00",
+  "status": "verified",
+  "owner_agent": "03-guardian"
+}
