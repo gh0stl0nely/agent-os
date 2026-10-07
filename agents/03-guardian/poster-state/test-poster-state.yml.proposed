@@ -1,0 +1,23 @@
+# PROPOSED optional one-off check, NOT installed. It proves, on real GitHub with branch protection already on, that the
+# workflow token can push to a side branch, WITHOUT posting anything or touching poster-state. Add it, run it once from
+# the Actions tab, read the result, then delete it. If it fails, do not enable protection yet (or use the repo ruleset
+# screen to see whether the Actions bot can be added as a bypass actor, which this review could not confirm).
+name: Test side-branch push
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  try:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git checkout -q --orphan poster-state-test
+          git rm -rfq --cached . >/dev/null
+          echo '{"posted": {}}' > probe.json
+          git add probe.json
+          git commit -q -m "probe"
+          git push -f origin poster-state-test
+          echo "Side-branch push worked. Delete branch poster-state-test."
