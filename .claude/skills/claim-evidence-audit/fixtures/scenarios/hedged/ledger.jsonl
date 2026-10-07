@@ -1,0 +1,1 @@
+{"claim_id": "C-fx-hedged", "run_id": "run-fx", "agent": "fixture-producer", "claim": "Average weekday demand is probably 64 units.", "kind": "fact", "evidence": [{"type": "document", "ref": "sources/sales_log.md", "locator": "section:Weekdays", "retrieved_at": "2026-10-07T12:00:00-04:00"}], "status": "pending", "created_at": "2026-10-07T12:00:00-04:00"}

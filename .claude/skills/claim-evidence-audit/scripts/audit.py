@@ -139,6 +139,22 @@ def evaluate_claim(row, rows, ctx):
             f"{cid}: {w['why']}; {w['what_would_resolve']}" for w in blocking_det]
         base["reasoning"].append("At least one check failed, so the claim cannot pass.")
         return base
+    unchecked = [r for r in results if r["result"] == "unverifiable" and r["reason_code"] != "awaiting_judgment"]
+    if unchecked:
+        # Every cited item has to be checkable. A real source next to a missing or unreadable one is not a pass:
+        # the producer cited something the Verifier could not check, so the claim goes back with that item named.
+        for r in unchecked:
+            base["flags"].append({"type": "unverifiable_evidence", "evidence_index": r["evidence_index"],
+                                  "evidence_type": r["evidence_type"], "reason_code": r["reason_code"]})
+        base["result"] = "unverifiable"
+        base["reason_codes"] = sorted({r["reason_code"] for r in unchecked} | {"unchecked_evidence_item"})
+        base["missing_evidence"] = [m for r in unchecked for m in r["missing_evidence"]] or [
+            f"{cid}: evidence[{r['evidence_index']}] could not be checked" for r in unchecked]
+        base["reasoning"].append(
+            f"{len(unchecked)} of {len(results)} cited evidence item(s) could not be checked "
+            f"({', '.join('evidence[%d]: %s' % (r['evidence_index'], r['reason_code']) for r in unchecked)}). "
+            "A claim does not pass while any item it cites is unchecked, whatever the other item(s) show.")
+        return base
     if awaiting:
         base["result"] = "pending"
         base["reason_codes"] = ["awaiting_judgment"]

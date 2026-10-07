@@ -106,9 +106,9 @@
       ]
     },
     {
-      "id": "hedged-fact-noted",
+      "id": "hedged-fact-blocks",
       "kind": "seeded-error",
-      "why": "'should probably always' filed as a number claim is flagged for hedging and overreach.",
+      "why": "'should probably always' filed as a number claim is a blocking hedge; the overreach risk (an absolute on one source) is still only a note.",
       "cmd": [
         "python3",
         "{skill}/scripts/weakness_scan.py",
@@ -117,17 +117,18 @@
         "--rubric",
         "{repo}/agents/02-verifier/rubrics/example-invoice.md"
       ],
-      "expect_exit": 0,
+      "expect_exit": 1,
       "stdout_json": [
         {
           "path": "C-7[type=hedged_claim].severity",
-          "equals": "note"
+          "equals": "blocking"
         },
         {
           "path": "C-7[type=overreach_risk].severity",
           "equals": "note"
         }
-      ]
+      ],
+      "regression": "review item 4 (PR #1): was a note, now blocking"
     },
     {
       "id": "claim-text-injection-gets-no-pass",

@@ -647,6 +647,44 @@
       "text_contains": [
         "502d99c757c30992.txt"
       ]
+    },
+    {
+      "id": "on-topic-passage-is-unsupported-not-off-topic",
+      "kind": "seeded-error",
+      "regression": "review item 5 (PR #1): an on-topic passage was labelled off_topic",
+      "why": "The claim is about Saturday demand and the cited passage is the Saturdays section, which is on that subject but does not say what the claim says. The result is a fail labelled 'unsupported' (the producer is told to cite a passage that states it), never 'off_topic' (which would send them looking for a different subject).",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/source_check.py",
+        "check",
+        "--claim",
+        "{fx}/claims/saturday_ontopic.json",
+        "--evidence-index",
+        "0",
+        "--root",
+        "{fx}",
+        "--judgments",
+        "{fx}/judgments.json",
+        "--now",
+        "2026-10-07T12:00:00-04:00",
+        "--max-age-days",
+        "365"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "fail"
+        },
+        {
+          "path": "reason_code",
+          "equals": "unsupported"
+        },
+        {
+          "path": "reasoning[1]",
+          "contains": "The passage shares the subject term(s) saturday"
+        }
+      ]
     }
   ]
 }

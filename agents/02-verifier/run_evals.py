@@ -93,6 +93,8 @@ def check_assertion(obj, a):
 
 def load_any(path):
     text = Path(path).read_text(encoding="utf-8").strip()
+    if str(path).endswith(".jsonl"):  # always a list, even for a single row
+        return [json.loads(l) for l in text.splitlines() if l.strip()]
     try:
         return json.loads(text)
     except json.JSONDecodeError:

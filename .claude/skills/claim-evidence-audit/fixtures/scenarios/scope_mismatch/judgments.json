@@ -1,0 +1,27 @@
+{
+  "source_support": [
+    {
+      "claim_id": "C-fx-scope",
+      "evidence_index": 0,
+      "reasoning": "The passage gives the same figure the claim gives.",
+      "supporting_quote": "In-store sales: 2,700 CAD (week of Sep 28).",
+      "supports": "yes",
+      "judge": "builder-session (replay, non-independent)"
+    }
+  ],
+  "adversarial": [
+    {
+      "claim_id": "C-fx-scope",
+      "reasoning": "The figure matches, but the log line is for the week of Sep 28 and the claim says the latest week; the log is dated Oct 5, so a later week may exist.",
+      "weaknesses": [
+        {
+          "type": "scope_mismatch",
+          "why": "the claim says 'the latest week' but the evidence is the week of Sep 28",
+          "what_would_resolve": "name the week, or cite the log for the latest week"
+        }
+      ],
+      "result": "weaknesses",
+      "judge": "builder-session (replay, non-independent)"
+    }
+  ]
+}

@@ -8,7 +8,8 @@ Rules (each returns {type, severity, claim_id, why, what_would_resolve, source: 
   double_counting blocking  an aggregate claim (total, sum, combined...) equals the sum of two claims that cite
                             the same evidence location, which may be one figure counted twice
   double_counting note      two claims with the same value and unit cite the same evidence location
-  hedged_claim    note      'should', 'probably', 'roughly'... in a claim presented as fact or number
+  hedged_claim    blocking  'should', 'probably', 'roughly'... in a claim presented as fact or number: a claim that is
+                            not proven is blocked, not worded softly
   overreach_risk  note      absolutes ('always', 'never', 'every') backed by a single evidence item
   single_source   note      high-stakes rubric and only one evidence item
   locator_missing note      document or URL evidence with no locator
@@ -26,8 +27,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "02-verifier" / "lib"))
 import vlib  # noqa: E402
 
-BLOCKING_TYPES = {"unsupported_inference", "stale_data", "unit_error", "double_counting", "cherry_picking", "overreach"}
-JUDGED_TYPES = BLOCKING_TYPES | {"scope_mismatch", "other"}
+# scope_mismatch is blocking: the right number for the wrong period, entity or channel is one of the commonest real errors
+BLOCKING_TYPES = {"unsupported_inference", "stale_data", "unit_error", "double_counting", "cherry_picking", "overreach",
+                  "scope_mismatch"}
+JUDGED_TYPES = BLOCKING_TYPES | {"other"}
 _AGG = re.compile(r"\b(total|sum|combined|overall|altogether|aggregate)\b", re.I)
 _HEDGE = re.compile(r"\b(should|probably|likely|maybe|perhaps|roughly|i think|seems?)\b", re.I)
 _ABS = re.compile(r"\b(always|never|every|all|none|guaranteed)\b", re.I)
@@ -84,8 +87,9 @@ def scan(row, rows, rubric):
                                       "it may be one figure counted twice",
                                       "show that the two figures are distinct (different rows or periods) or remove the duplicate"))
     if kind in ("fact", "number") and _HEDGE.search(text):
-        out.append(_w(cid, "hedged_claim", "note", "the claim is hedged in its wording but filed as a fact or number",
-                      "state the uncertainty in the confidence field, or make the claim a recommendation"))
+        out.append(_w(cid, "hedged_claim", "blocking",
+                      f"the claim is hedged ({_HEDGE.search(text).group(0)!r}) but filed as a {kind}: it is either proven or it is not",
+                      "state only what the evidence proves, without the hedge, or file the claim as a recommendation with the uncertainty in confidence"))
     evid = [e for e in row.get("evidence", []) if isinstance(e, dict)]
     if _ABS.search(text) and len(evid) == 1:
         out.append(_w(cid, "overreach_risk", "note", "an absolute word is backed by a single evidence item",

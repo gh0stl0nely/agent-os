@@ -130,11 +130,27 @@ def locate(root, evidence, now):
     return {"ok": True, "text": text, "as_of": doc_date(p, text), "kb": None, "label": ref, "path": p}
 
 
-def _terms_overlap(claim_text, source_text):
-    ct = vlib.content_terms(claim_text)
-    if not ct:
-        return 0.0
-    return len(ct & vlib.content_terms(source_text)) / len(ct)
+def _stem(w):
+    """Light stemming so "Saturdays", "Saturday's" and "Saturday" are one term (not a linguistic stemmer)."""
+    w = re.sub(r"'s$", "", w)
+    return w[:-1] if len(w) > 4 and w.endswith("s") and not w.endswith("ss") else w
+
+
+def _stems(text):
+    return {_stem(w) for w in re.findall(r"[a-z][a-z0-9']{3,}", (text or "").casefold()) if w not in vlib._STOP}
+
+
+def _topic_overlap(claim_text, passage, locator=None):
+    """Is the cited passage about the claim's subject? Returns (shared terms, fraction of the claim's terms shared).
+
+    The passage can be short (one line of a table), so the heading in the locator ("section:Saturdays") counts as
+    part of what the passage is about. Subject, not support: this only chooses the label of a failure ('unsupported'
+    when the passage is on the claim's subject, 'off_topic' when it is not), and so which remedy the producer is told.
+    """
+    ct = _stems(claim_text)
+    label = locator.split(":", 1)[1] if locator and ":" in locator and locator.split(":", 1)[0] == "section" else ""
+    shared = ct & _stems(f"{label} {passage}")
+    return sorted(shared), (len(shared) / len(ct) if ct else 0.0)
 
 
 def _find_judgment(judgments, claim_id, idx):
@@ -222,12 +238,12 @@ def check_source(root, claim, idx, judgments=None, now=None, max_age_days=None):
     reasoning.append(f"Judge ({j.get('judge', 'unnamed')}): {j['reasoning'].strip()}")
 
     if j["supports"] == "no" or not j.get("supporting_quote"):
-        overlap = _terms_overlap(claim.get("claim", ""), region)
-        if overlap >= 0.5:
-            reasoning.append(f"{overlap:.0%} of the claim's key terms appear in the passage, so it is on the topic, but it does not say this: topic match is not support.")
+        shared, overlap = _topic_overlap(claim.get("claim", ""), region, ev.get("locator"))
+        if len(shared) >= 2 or (shared and overlap >= 0.25):
+            reasoning.append(f"The passage shares the subject term(s) {', '.join(shared)} with the claim ({overlap:.0%} of its key terms), so it is on the topic, but it does not say this: topic match is not support.")
             return vlib.mk_result(reasoning, checks + [{"name": "supports_claim", "outcome": "fail"}], "fail", "unsupported",
                                   [f"{cid}: cite a passage that states this, or weaken the claim to what {ev.get('ref')} says"], flags)
-        reasoning.append(f"Only {overlap:.0%} of the claim's key terms appear in the source: it is about something else.")
+        reasoning.append(f"The cited passage shares {'only ' + ', '.join(shared) if shared else 'no'} key term(s) with the claim ({overlap:.0%}): it is about something else.")
         return vlib.mk_result(reasoning, checks + [{"name": "supports_claim", "outcome": "fail"}], "fail", "off_topic",
                               [f"{cid}: cite a source about this subject"], flags)
 

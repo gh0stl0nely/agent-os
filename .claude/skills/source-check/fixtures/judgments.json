@@ -119,6 +119,14 @@
       "supporting_quote": "accepts orders until 8:00 pm Eastern",
       "supports": "yes",
       "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-sc-saturday",
+      "evidence_index": 0,
+      "reasoning": "The Saturdays section lists three past Saturdays. It says nothing about next Saturday, so it does not state the forecast.",
+      "supporting_quote": null,
+      "supports": "no",
+      "judge": "builder-session (replay, non-independent)"
     }
   ]
 }

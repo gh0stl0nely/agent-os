@@ -1002,6 +1002,265 @@
           "equals": 0
         }
       ]
+    },
+    {
+      "id": "real-plus-fabricated-citation-blocks",
+      "kind": "seeded-error",
+      "regression": "review item 3 (PR #1): one real source and one nonexistent source passed as verified",
+      "why": "A claim cites a real source that supports it and a second file that does not exist. It must not pass: it is blocked, flagged, and the missing item is named. The real source does not rescue it.",
+      "steps": [
+        {
+          "cmd": [
+            "python3",
+            "{skill}/scripts/audit.py",
+            "--envelope",
+            "{fx}/scenarios/mixed_sources/envelope.json",
+            "--ledger",
+            "{fx}/scenarios/mixed_sources/ledger.jsonl",
+            "--root",
+            "{fx}/root",
+            "--rubric",
+            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "--now",
+            "2026-10-07T12:00:00-04:00",
+            "--out",
+            "{tmp}",
+            "--judgments",
+            "{fx}/scenarios/mixed_sources/judgments.json"
+          ],
+          "expect_exit": 10,
+          "files": {
+            "{tmp}/audit-report.json": [
+              {
+                "path": "claims[claim_id=C-fx-mixed].result",
+                "equals": "unverifiable"
+              },
+              {
+                "path": "claims[claim_id=C-fx-mixed].reason_codes",
+                "contains": "source_not_found"
+              },
+              {
+                "path": "claims[claim_id=C-fx-mixed].reason_codes",
+                "contains": "unchecked_evidence_item"
+              },
+              {
+                "path": "claims[claim_id=C-fx-mixed].flags[type=unverifiable_evidence].evidence_index",
+                "equals": 1
+              },
+              {
+                "path": "claims[claim_id=C-fx-mixed].checks[evidence_index=0].result",
+                "not_equals": "fail"
+              },
+              {
+                "path": "claims[claim_id=C-fx-mixed].missing_evidence[0]",
+                "contains": "supplier_terms_confirmation_2026.md"
+              },
+              {
+                "path": "summary.pass",
+                "equals": 0
+              }
+            ],
+            "{tmp}/audit-envelope.json": [
+              {
+                "path": "status",
+                "equals": "needs_revision"
+              }
+            ],
+            "{tmp}/audit-ledger.jsonl": [
+              {
+                "path": "[claim_id=C-fx-mixed].status",
+                "equals": "blocked"
+              },
+              {
+                "path": "[claim_id=C-fx-mixed].blocked_reason",
+                "contains": "supplier_terms_confirmation_2026.md"
+              }
+            ]
+          },
+          "validate": [
+            {
+              "schema": "agent-envelope",
+              "file": "{tmp}/audit-envelope.json"
+            },
+            {
+              "schema": "claim-ledger",
+              "file": "{tmp}/audit-ledger.jsonl"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "real-plus-fabricated-citation-blocks-before-judgment",
+      "kind": "seeded-error",
+      "regression": "review item 3 (PR #1)",
+      "why": "Same claim with no model judgments yet: the unchecked item blocks it at once (no model tokens spent) instead of leaving it pending.",
+      "steps": [
+        {
+          "cmd": [
+            "python3",
+            "{skill}/scripts/audit.py",
+            "--envelope",
+            "{fx}/scenarios/mixed_sources/envelope.json",
+            "--ledger",
+            "{fx}/scenarios/mixed_sources/ledger.jsonl",
+            "--root",
+            "{fx}/root",
+            "--rubric",
+            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "--now",
+            "2026-10-07T12:00:00-04:00",
+            "--out",
+            "{tmp}"
+          ],
+          "expect_exit": 10,
+          "files": {
+            "{tmp}/audit-report.json": [
+              {
+                "path": "claims[claim_id=C-fx-mixed].result",
+                "equals": "unverifiable"
+              },
+              {
+                "path": "claims[claim_id=C-fx-mixed].flags[type=unverifiable_evidence].reason_code",
+                "equals": "source_not_found"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "scope-mismatch-blocks",
+      "kind": "seeded-error",
+      "regression": "review item 4 (PR #1): scope_mismatch never blocked",
+      "why": "The figure matches the cited line, but the claim says 'the latest week' and the line is the week of Sep 28. The reviewer's scope_mismatch finding must block the claim: right number, wrong period.",
+      "steps": [
+        {
+          "cmd": [
+            "python3",
+            "{skill}/scripts/audit.py",
+            "--envelope",
+            "{fx}/scenarios/scope_mismatch/envelope.json",
+            "--ledger",
+            "{fx}/scenarios/scope_mismatch/ledger.jsonl",
+            "--root",
+            "{fx}/root",
+            "--rubric",
+            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "--now",
+            "2026-10-07T12:00:00-04:00",
+            "--out",
+            "{tmp}",
+            "--judgments",
+            "{fx}/scenarios/scope_mismatch/judgments.json"
+          ],
+          "expect_exit": 10,
+          "files": {
+            "{tmp}/audit-report.json": [
+              {
+                "path": "claims[claim_id=C-fx-scope].result",
+                "equals": "fail"
+              },
+              {
+                "path": "claims[claim_id=C-fx-scope].reason_codes",
+                "contains": "scope_mismatch"
+              },
+              {
+                "path": "claims[claim_id=C-fx-scope].weaknesses[type=scope_mismatch].severity",
+                "equals": "blocking"
+              },
+              {
+                "path": "summary.pass",
+                "equals": 0
+              }
+            ],
+            "{tmp}/audit-ledger.jsonl": [
+              {
+                "path": "[claim_id=C-fx-scope].status",
+                "equals": "blocked"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "hedged-claim-blocks",
+      "kind": "seeded-error",
+      "regression": "review item 4 (PR #1): a hedged claim passed with only a note",
+      "why": "'Average weekday demand is probably 64 units' is filed as a fact. The source and the judge agree with the number, yet the hedge means the claim is not proven as stated: it is blocked, not passed with a note.",
+      "steps": [
+        {
+          "cmd": [
+            "python3",
+            "{skill}/scripts/audit.py",
+            "--envelope",
+            "{fx}/scenarios/hedged/envelope.json",
+            "--ledger",
+            "{fx}/scenarios/hedged/ledger.jsonl",
+            "--root",
+            "{fx}/root",
+            "--rubric",
+            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "--now",
+            "2026-10-07T12:00:00-04:00",
+            "--out",
+            "{tmp}",
+            "--judgments",
+            "{fx}/scenarios/hedged/judgments.json"
+          ],
+          "expect_exit": 10,
+          "files": {
+            "{tmp}/audit-report.json": [
+              {
+                "path": "claims[claim_id=C-fx-hedged].result",
+                "equals": "fail"
+              },
+              {
+                "path": "claims[claim_id=C-fx-hedged].reason_codes",
+                "contains": "hedged_claim"
+              },
+              {
+                "path": "summary.pass",
+                "equals": 0
+              }
+            ],
+            "{tmp}/audit-ledger.jsonl": [
+              {
+                "path": "[claim_id=C-fx-hedged].status",
+                "equals": "blocked"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "branch-changes-stay-in-owned-paths",
+      "kind": "normal",
+      "regression": "review item 3 (PR #1): a tracked file of the live poster was deleted",
+      "why": "Compared with main, this branch only adds files, and only inside the Verifier's owned paths (plus its change request). Skipped with a message when there is no main to compare with.",
+      "cmd": [
+        "python3",
+        "{repo}/agents/02-verifier/check_scope.py"
+      ],
+      "text_absent": [
+        "outside the Verifier's lane"
+      ]
+    },
+    {
+      "id": "scope-guard-flags-deleted-shared-file",
+      "kind": "seeded-error",
+      "regression": "review item 3 (PR #1)",
+      "why": "The guard itself is tested on a throwaway git repo: a deleted tracked file, a modified shared file and an added file outside the owned paths are all flagged; an added owned file is not.",
+      "cmd": [
+        "python3",
+        "{repo}/agents/02-verifier/check_scope.py",
+        "--selftest"
+      ],
+      "text_contains": [
+        "selftest ok"
+      ]
     }
   ]
 }

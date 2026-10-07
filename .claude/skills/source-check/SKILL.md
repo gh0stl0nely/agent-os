@@ -26,7 +26,7 @@ Stop "the source is on the same topic" from passing as "the source says so". Mos
 5. **Judgment (model).** Read only the located passage. Write `reasoning` first, then `supporting_quote` (verbatim or null), then `supports`: `yes` only if the passage states what the claim states; `partial` if the claim says more than the passage (an "always" where it says "usually", "all" where it says "unopened"); `no` otherwise. Do not let familiarity or fluency stand in for support.
 6. **Quote is verbatim** in the located region (script), else `quote_not_verbatim` (fail). For a URL the fetched text may be a rewrite, so it is `quote_not_verbatim_url` (unverifiable).
 7. **Numbers** (script): every number in the claim, and the value of a number claim, must be in the quote, else `number_not_in_quote` (fail).
-8. `no` with an on-topic source (at least half of the claim's key terms present) is `unsupported`; with an unrelated source it is `off_topic`. Both fail.
+8. `no` with an on-topic source is `unsupported`; with an unrelated source it is `off_topic`. Both fail; the label only chooses the remedy the producer is told (cite a passage that states it, or cite a source about this subject). On topic means the cited passage, counting the heading in a `section:` locator, shares at least two key terms with the claim, or one that is at least a quarter of its key terms (light stemming, so "Saturdays" matches "Saturday's"). A short passage is not off topic for being short.
 
 ## Evidence rules
 - Pass needs all of: exists, current, locator resolves, quote verbatim, numbers match, judged `yes`. Anything less is a fail or `unverifiable`, never a pass.
