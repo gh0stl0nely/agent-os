@@ -11,6 +11,8 @@ import argparse
 import json
 import re
 import sys
+
+sys.dont_write_bytecode = True  # a vetted or scanned folder must not gain compiled files from our own run
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))

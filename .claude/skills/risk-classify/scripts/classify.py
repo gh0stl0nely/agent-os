@@ -26,6 +26,8 @@ import hashlib
 import json
 import re
 import sys
+
+sys.dont_write_bytecode = True  # a vetted or scanned folder must not gain compiled files from our own run
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
@@ -53,7 +55,7 @@ def load_matrix():
 
 # ---------- text preparation ----------
 
-ZERO_WIDTH = re.compile("[​-‏⁠-⁤﻿‪-‮⁦-⁩\U000e0000-\U000e007f]")
+ZERO_WIDTH = re.compile("[\u200b-\u200f\u2060-\u2064\ufeff\u202a-\u202e\u2066-\u2069\U000e0000-\U000e007f]")
 
 # Phrases that look like actions but are not. Removed before rule matching; the list is part of the output.
 NEUTRAL = [

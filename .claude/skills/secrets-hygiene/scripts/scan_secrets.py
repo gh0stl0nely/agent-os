@@ -22,6 +22,8 @@ import math
 import re
 import subprocess
 import sys
+
+sys.dont_write_bytecode = True  # a vetted or scanned folder must not gain compiled files from our own run
 from pathlib import Path
 
 MAX_BYTES = 2_000_000

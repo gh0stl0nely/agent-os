@@ -21,6 +21,8 @@ import json
 import os
 import re
 import sys
+
+sys.dont_write_bytecode = True  # a vetted or scanned folder must not gain compiled files from our own run
 import unicodedata
 from datetime import date, timedelta
 from pathlib import Path
