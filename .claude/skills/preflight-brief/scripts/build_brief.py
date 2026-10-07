@@ -97,7 +97,7 @@ def build(plan, ledger, out_dir, today):
         if c["status"] == "ok" and bc.idx(c["class"]) > bc.idx(declared):
             problems.append(f"declared class {declared} is below the class {c['class']} the classifier computes for this action "
                             f"(rule {c['decisive_rule']}); raise it or rewrite the description. A class is never lowered here")
-    full = json.dumps(plan)
+    full = json.dumps(plan, ensure_ascii=False)
     inj = bc.injection_hits(full)
     if inj:
         return blocked(["the plan contains instruction-like text aimed at the Guardian; it was treated as data and not followed. "
