@@ -10,7 +10,7 @@ The independent checker (a Gate). Every claim a producer agent makes passes thro
 | `recompute-in-code` | Re-runs the script a number claim cites and compares with the claimed value under the rubric's tolerance |
 | `source-check` | Source exists, is current, locator resolves, quote is verbatim, numbers are present, passage really supports the claim |
 | `adversarial-review` | Weakness scan (code) plus the model's adversarial judgment, from claims, evidence and rubric only; order-swap for comparisons |
-| `golden-set-calibration` | Replays 35 seeded errors and 6 clean controls and reports the catch rate per error type, with drift |
+| `golden-set-calibration` | Replays 39 seeded errors and 6 clean controls and reports the catch rate per error type, with drift |
 
 ## Inputs
 - An envelope (`agent-envelope`) naming claim ids, and their ledger rows (`claim-ledger`).
@@ -44,7 +44,8 @@ R0 (reading sources, `source-check`, `adversarial-review`) and R1 (writing audit
 - **Guardian** vets producer scripts. The Verifier's harness refuses scripts outside the root and scrubs the environment, but it is not a sandbox.
 
 ## Known limits
-- **Model judgments are only as good as the judge.** The only judgments produced in this build were written by the builder who also wrote the golden cases, so every judgment-dependent catch rate is a replay, not an independent measurement. The first independent number comes from the first monthly run by a different session.
+- **Model judgments are only as good as the judge.** Nearly all judgments in this build were written by the builder who also wrote the golden cases, so judgment-dependent catch rates are a replay. The PR #1 reviewer made one independent (same-model, partly informed) pass: 36 of 39 strict after the review fixes, 2 more blocked for other reasons, 1 not measured. The first fully independent number comes from a monthly run by a fresh session.
+- **Strict by design.** A claim is blocked if any cited item cannot be checked (even when another source is real), if a hedge such as "probably" is filed as a fact, or if a reviewer finds a scope mismatch (right number, wrong period or entity). The owner may relax any of these (QUESTIONS 5 and 7).
 - **The golden set is synthetic and was written knowing how the checker works.** A 100% score proves nothing is broken, not that real mistakes are caught. Real past mistakes (question 4) would fix this.
 - **Numbers written as words** ("eight") do not match digits, so such claims fail conservatively.
 - **Fetched web pages are rewritten** by the fetch tool, so a quote not found in a URL snapshot is `unverifiable`, never a fail or a pass.

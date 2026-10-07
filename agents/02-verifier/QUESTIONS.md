@@ -13,3 +13,12 @@ Answer once, in one batch. Each says what I need, why, and what I do meanwhile.
 
 4. **Real data for calibration.** The golden set is synthetic and was written by the builder. The monthly calibration is only independent when a different session judges real, de-identified examples of past producer mistakes. Are you willing to supply a handful (for example, past cases where you caught the AI out) through the private store, never this repo?
    *Meanwhile:* synthetic cases only, results labelled non-independent.
+
+5. **A claim that cites something the Verifier cannot check (from the PR #1 review).** I now block a claim when any cited item cannot be checked (a missing file, an unreadable page), even if another cited source is real, and flag it `unverifiable_evidence` with the item named. The reviewer would block too. Do you agree, or would you rather it be a flag only on a claim that otherwise passes?
+   *Meanwhile:* blocked.
+
+6. **Replace the ambiguous golden control G-C4.** Its case is two claims about the same line, one worded "(restated)", which the source never says; a strict independent judge fairly fails it. Changing a golden case is R2 (it changes the measuring stick), so it needs a Preflight Brief and your yes. Proposal: replace it with two genuinely different quantities that happen to be equal, cited from different lines.
+   *Meanwhile:* the case is unchanged; its README row now says what it really is, and the runner reports it as a false positive under a strict judge.
+
+7. **Scope mismatch and hedged claims now block (from the PR #1 review).** A reviewer-found `scope_mismatch` (right number, wrong period or entity) and a hedge such as "probably" on a claim filed as a fact both fail the claim instead of passing with a note. Say so if you would rather either be a note.
+   *Meanwhile:* blocking.
