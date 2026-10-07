@@ -20,7 +20,7 @@ A checker nobody checks drifts. This replays known errors and says plainly how m
 1. For every case, run the audit twice with a fixed clock: **code only** (no judgments) and **with judgments** (replay or fresh).
 2. A seeded error counts as caught only if the claim did not pass **and** the reason is one the case expects. A claim that is blocked merely because a judgment was not supplied is not a catch.
 3. Controls (clean cases and a rounding-only case) must pass with judgments. A control that fails is a false positive and is counted.
-4. Report per error type: cases, caught by code alone, caught with judgments. Structural types (missing evidence, verified without evidence, assumed status, malformed rows) must be 100% caught by code alone; anything less exits non-zero.
+4. Report per error type: cases, caught by code alone, caught with judgments. Structural types (missing evidence, verified without evidence, assumed status, malformed rows) must be 100% caught by code alone; anything less exits non-zero. So does any other case labelled `code` (code alone is meant to catch it) that code alone misses.
 5. Compare with the previous history file: per-type change and any case whose outcome flipped. Report drift as a measured difference only.
 6. `--save LABEL` writes `golden/history/LABEL.json`.
 
@@ -30,7 +30,7 @@ A checker nobody checks drifts. This replays known errors and says plainly how m
 - Never edit a case to make the rate go up.
 
 ## Outputs
-A table and `golden/history/<label>.json` (per case: type, layer, outcome, reason codes; per type: rates). Exit code 0, or 1 if a structural type is below 100% or a control failed.
+A table and `golden/history/<label>.json` (per case: type, layer, outcome, reason codes; per type: rates). Exit code 0, or 1 if a structural type is below 100%, a code-layer case is missed by code alone, a control failed or a case crashed.
 
 ## Side effects
 Writes `golden/history/` only: **R1**. Changing a case or the expected result is **R2** (shared state others rely on): it needs a Preflight Brief.

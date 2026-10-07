@@ -1,0 +1,76 @@
+{
+  "id": "G-16",
+  "error_type": "unsupported_inference",
+  "layer": "model-judged-replay",
+  "description": "One average cited as proof that demand is stable (the support judge says yes, the adversarial reviewer catches it).",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-g16",
+    "caught": true,
+    "reason_codes_any": [
+      "unsupported_inference"
+    ]
+  },
+  "envelope": {
+    "task_id": "T-g-16",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-g16"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-g16",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "Weekday demand is stable.",
+      "kind": "fact",
+      "evidence": [
+        {
+          "type": "document",
+          "ref": "sources/sales_log.md",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "locator": "section:Weekdays"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "specs": [],
+  "judgments": {
+    "source_support": [
+      {
+        "claim_id": "C-g16",
+        "evidence_index": 0,
+        "reasoning": "The passage reports the weekday average.",
+        "supporting_quote": "Average weekday: 64 units.",
+        "supports": "yes",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ],
+    "adversarial": [
+      {
+        "claim_id": "C-g16",
+        "reasoning": "The evidence does not carry the claim; see the weakness.",
+        "weaknesses": [
+          {
+            "type": "unsupported_inference",
+            "why": "A single average says nothing about how stable demand is.",
+            "what_would_resolve": "cite the daily figures or a measure of spread"
+          }
+        ],
+        "result": "weaknesses",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "id": "G-C2",
+  "error_type": "control",
+  "layer": "control",
+  "description": "Clean document claim.",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-gc2",
+    "caught": false
+  },
+  "envelope": {
+    "task_id": "T-g-c2",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-gc2"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-gc2",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "The supplier's order cutoff is 8:00 pm Eastern.",
+      "kind": "fact",
+      "evidence": [
+        {
+          "type": "document",
+          "ref": "sources/supplier_terms.md",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "locator": "section:Ordering"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "specs": [],
+  "judgments": {
+    "source_support": [
+      {
+        "claim_id": "C-gc2",
+        "evidence_index": 0,
+        "reasoning": "The Ordering section states the cutoff as 8:00 pm Eastern.",
+        "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+        "supports": "yes",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ],
+    "adversarial": [
+      {
+        "claim_id": "C-gc2",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}

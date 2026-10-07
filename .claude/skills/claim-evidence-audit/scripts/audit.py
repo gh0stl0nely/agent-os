@@ -298,7 +298,7 @@ def audit(envelope, rows, root, rubric, judgments=None, specs=None, now=None, re
 
     packet = None
     if status == "awaiting_judgment":
-        packet = build_packet.build_packet(envelope, rows, rubric, root, now, {c["claim_id"] for c in pending}, ctx["code_checks"])
+        packet = build_packet.build_packet(envelope, rows, rubric, root, now, {c["claim_id"] for c in pending}, ctx["code_checks"], ctx["specs"])
         packet["needed"] = {c["claim_id"]: [f"source_support[{x['evidence_index']}]" for x in c["checks"] if x["reason_code"] == "awaiting_judgment"]
                             + ["adversarial"] for c in pending}
     return {"status": status, "phase": phase, "envelope": out_env, "rows": out_rows, "report": report, "packet": packet}

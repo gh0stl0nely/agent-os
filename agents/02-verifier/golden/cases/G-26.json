@@ -1,0 +1,54 @@
+{
+  "id": "G-26",
+  "error_type": "assumed_status",
+  "layer": "code",
+  "description": "Status 'assumed' with no evidence (the example in contracts/).",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-g26",
+    "caught": true,
+    "reason_codes_any": [
+      "ASSUMED_STATUS"
+    ]
+  },
+  "envelope": {
+    "task_id": "T-g-26",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-g26"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-g26",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "Synthetic: demand will be higher next Saturday because it usually is.",
+      "kind": "recommendation",
+      "evidence": [],
+      "status": "assumed",
+      "created_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "specs": [],
+  "judgments": {
+    "source_support": [],
+    "adversarial": [
+      {
+        "claim_id": "C-g26",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}

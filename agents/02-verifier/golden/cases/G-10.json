@@ -1,0 +1,70 @@
+{
+  "id": "G-10",
+  "error_type": "source_not_supporting",
+  "layer": "model-judged-replay",
+  "description": "On-topic source, wrong figure: minimum order 24 vs 12.",
+  "rubric": "example-invoice",
+  "expect": {
+    "claim_id": "C-g10",
+    "caught": true,
+    "reason_codes_any": [
+      "unsupported"
+    ]
+  },
+  "envelope": {
+    "task_id": "T-g-10",
+    "from_agent": "fixture-producer",
+    "to_agent": "02-verifier",
+    "goal": "Synthetic: verify these claims.",
+    "status": "requested",
+    "inputs": [],
+    "constraints": {
+      "revise_loops_left": 2
+    },
+    "claims": [
+      "C-g10"
+    ],
+    "created_at": "2026-10-07T12:00:00-04:00"
+  },
+  "ledger": [
+    {
+      "claim_id": "C-g10",
+      "run_id": "run-golden",
+      "agent": "fixture-producer",
+      "claim": "The supplier's minimum order is 24 boxes.",
+      "kind": "fact",
+      "evidence": [
+        {
+          "type": "document",
+          "ref": "sources/supplier_terms.md",
+          "retrieved_at": "2026-10-07T12:00:00-04:00",
+          "locator": "section:Ordering"
+        }
+      ],
+      "status": "pending",
+      "created_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "specs": [],
+  "judgments": {
+    "source_support": [
+      {
+        "claim_id": "C-g10",
+        "evidence_index": 0,
+        "reasoning": "The section gives a minimum of 12 boxes; nothing says 24.",
+        "supporting_quote": null,
+        "supports": "no",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ],
+    "adversarial": [
+      {
+        "claim_id": "C-g10",
+        "reasoning": "Claim, evidence, unit and scope agree; nothing is counted twice.",
+        "weaknesses": [],
+        "result": "clear",
+        "judge": "builder-session (replay, non-independent)"
+      }
+    ]
+  }
+}
