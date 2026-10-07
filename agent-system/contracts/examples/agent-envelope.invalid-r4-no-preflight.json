@@ -1,0 +1,11 @@
+{
+  "task_id": "T-example-0002",
+  "from_agent": "06-operations-manager",
+  "to_agent": "03-guardian",
+  "goal": "Synthetic example: submit an order with no Preflight Brief. Must be rejected.",
+  "status": "requested",
+  "side_effects": [
+    { "class": "R4", "description": "Submit the order to the supplier" }
+  ],
+  "created_at": "2026-10-07T19:30:00-04:00"
+}

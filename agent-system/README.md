@@ -10,6 +10,12 @@ This folder is the shared blueprint for a team of specialized AI agents, each mi
 | [architecture.md](architecture.md) | How they connect: system map, verification gate, nightly ordering timeline, knowledge lookup, execution layers (all diagrams render on GitHub) |
 | [knowledge-base.md](knowledge-base.md) | Memory, retrieval (RAG), freshness rules, and the learning loop |
 | [reusable-skills.md](reusable-skills.md) | Existing GitHub skill repos worth reusing, with license, trust verdict, and install rules |
+| [OWNER-CONTEXT.md](OWNER-CONTEXT.md) | The sanitized owner interview: goals, pain points, rules, existing assets, open decisions. Loaded by every session through the root `CLAUDE.md` |
+| [BUILD-PLAN.md](BUILD-PLAN.md) | Delegation: waves, dependencies, who owns which paths, what each build needs from the owner, how to launch sessions |
+| [BUILD-PROTOCOL.md](BUILD-PROTOCOL.md) | The exact steps every builder and reviewer session follows |
+| [KICKOFF-PROMPTS.md](KICKOFF-PROMPTS.md) | Copy-paste prompts: one per role, plus resume and review |
+| [contracts/](contracts/README.md) | Shared interfaces between roles: autonomy matrix, preflight brief, skill standard, JSON schemas and a validator |
+| [briefs/](briefs/_TEMPLATE.md) | One work order per role (01 to 13) |
 
 ## The problem this design solves
 

@@ -1,0 +1,19 @@
+{
+  "id": "K-example-0001",
+  "type": "fact",
+  "namespace": "ordering",
+  "claim": "Synthetic example: the Ontario government publishes the list of public holidays on its official website.",
+  "source": {
+    "ref": "https://www.ontario.ca/",
+    "locator": "public holidays page",
+    "retrieved_at": "2026-10-07T12:00:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T12:00:00-04:00",
+  "last_confirmed_at": "2026-10-07T12:00:00-04:00",
+  "expires_at": "2027-01-07T12:00:00-05:00",
+  "status": "verified",
+  "owner_agent": "04-librarian"
+}

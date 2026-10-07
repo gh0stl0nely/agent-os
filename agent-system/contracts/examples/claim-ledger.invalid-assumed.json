@@ -1,0 +1,10 @@
+{
+  "claim_id": "C-example-0003",
+  "run_id": "run-2026-10-07-example",
+  "agent": "06-operations-manager",
+  "claim": "Synthetic example: demand will be higher next Saturday because it usually is. Uses a forbidden 'assumed' status.",
+  "kind": "recommendation",
+  "evidence": [],
+  "status": "assumed",
+  "created_at": "2026-10-07T18:30:00-04:00"
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "knowledge-record.schema.json",
+  "title": "Knowledge record",
+  "description": "One durable, sourced fact, preference, rule or decision. Stored as front matter of a small file under knowledge/<namespace>/. Store paraphrases and pointers, not copied passages.",
+  "type": "object",
+  "required": ["id", "type", "namespace", "claim", "source", "trust_grade", "written_at", "expires_at", "status", "owner_agent"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^K-[A-Za-z0-9._-]+$" },
+    "type": { "enum": ["fact", "preference", "rule", "decision"] },
+    "namespace": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "claim": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "required": ["ref", "retrieved_at"],
+      "additionalProperties": false,
+      "properties": {
+        "ref": { "type": "string", "minLength": 1 },
+        "locator": { "type": "string" },
+        "retrieved_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "trust_grade": { "enum": ["A", "B", "C", "D"], "description": "A primary, B reputable secondary, C community, D unverified" },
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "stated_by": { "enum": ["owner", "inferred", "source"] },
+    "written_at": { "type": "string", "format": "date-time" },
+    "last_confirmed_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "supersedes": { "type": "string", "pattern": "^K-[A-Za-z0-9._-]+$" },
+    "status": { "enum": ["verified", "blocked", "retired"] },
+    "owner_agent": { "type": "string", "minLength": 1 }
+  }
+}

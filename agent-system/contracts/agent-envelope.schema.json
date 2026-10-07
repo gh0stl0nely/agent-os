@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-envelope.schema.json",
+  "title": "Agent envelope",
+  "description": "The standard message one agent hands another: the request going out or the result coming back. Every side effect of class R2 or higher must cite a Preflight Brief.",
+  "type": "object",
+  "required": ["task_id", "from_agent", "to_agent", "goal", "status", "created_at"],
+  "additionalProperties": false,
+  "properties": {
+    "task_id": { "type": "string", "minLength": 1 },
+    "from_agent": { "type": "string", "minLength": 1 },
+    "to_agent": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["requested", "ok", "needs_revision", "blocked", "escalate"] },
+    "inputs": { "type": "array", "items": { "type": "string" }, "description": "Pointers to data, records or documents, never inline secrets" },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deadline": { "type": "string", "format": "date-time" },
+        "token_budget": { "type": "integer", "minimum": 0 },
+        "model_tier": { "enum": ["haiku", "sonnet", "opus"] },
+        "revise_loops_left": { "type": "integer", "minimum": 0, "maximum": 2 }
+      }
+    },
+    "claims": { "type": "array", "items": { "type": "string", "pattern": "^C-[A-Za-z0-9._-]+$" } },
+    "side_effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["class", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "class": { "enum": ["R0", "R1", "R2", "R3", "R4", "R5", "R6"] },
+          "description": { "type": "string", "minLength": 1 },
+          "preflight_id": { "type": "string", "pattern": "^PF-[0-9]{8}-[0-9]+$" },
+          "rollback": { "type": "string" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "class": { "enum": ["R2", "R3", "R4", "R5", "R6"] } }, "required": ["class"] },
+            "then": { "required": ["preflight_id"] }
+          }
+        ]
+      }
+    },
+    "escalations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reason", "missing_evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "reason": { "type": "string", "minLength": 1 },
+          "missing_evidence": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+        }
+      }
+    },
+    "kb_records_used": { "type": "array", "items": { "type": "string", "pattern": "^K-[A-Za-z0-9._-]+$" } },
+    "kb_records_written": { "type": "array", "items": { "type": "string", "pattern": "^K-[A-Za-z0-9._-]+$" } },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

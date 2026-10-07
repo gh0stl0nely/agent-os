@@ -1,0 +1,19 @@
+{
+  "task_id": "T-example-0001",
+  "from_agent": "06-operations-manager",
+  "to_agent": "02-verifier",
+  "goal": "Synthetic example: verify tonight's recommended order before it goes to the owner.",
+  "status": "requested",
+  "inputs": ["ledger://run-2026-10-07-example", "kb://K-example-0001"],
+  "constraints": {
+    "deadline": "2026-10-07T19:10:00-04:00",
+    "model_tier": "sonnet",
+    "revise_loops_left": 2
+  },
+  "claims": ["C-example-0001"],
+  "side_effects": [
+    { "class": "R1", "description": "Write the draft order to the working folder" }
+  ],
+  "kb_records_used": ["K-example-0001"],
+  "created_at": "2026-10-07T19:00:00-04:00"
+}

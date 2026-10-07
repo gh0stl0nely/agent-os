@@ -1,0 +1,15 @@
+{
+  "id": "K-example-0002",
+  "type": "fact",
+  "namespace": "ordering",
+  "claim": "Synthetic example: trust grade is not one of A, B, C, D. Must be rejected.",
+  "source": {
+    "ref": "https://example.com/",
+    "retrieved_at": "2026-10-07T12:00:00-04:00"
+  },
+  "trust_grade": "E",
+  "written_at": "2026-10-07T12:00:00-04:00",
+  "expires_at": "2027-01-07T12:00:00-05:00",
+  "status": "verified",
+  "owner_agent": "04-librarian"
+}

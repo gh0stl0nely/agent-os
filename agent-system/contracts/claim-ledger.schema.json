@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim-ledger.schema.json",
+  "title": "Claim ledger row",
+  "description": "One claim made by an agent, with the evidence behind it and how it was checked. There is deliberately no 'assumed' status: an unevidenced claim is 'blocked'.",
+  "type": "object",
+  "required": ["claim_id", "run_id", "agent", "claim", "kind", "evidence", "status", "created_at"],
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": { "type": "string", "pattern": "^C-[A-Za-z0-9._-]+$" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "agent": { "type": "string", "minLength": 1 },
+    "claim": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["fact", "number", "recommendation", "decision"] },
+    "value": {},
+    "unit": { "type": "string" },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } },
+    "verification": { "$ref": "#/$defs/verification" },
+    "status": { "enum": ["pending", "verified", "blocked", "retired"] },
+    "blocked_reason": { "type": "string", "minLength": 1 },
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "verified" } }, "required": ["status"] },
+      "then": {
+        "required": ["verification"],
+        "properties": {
+          "evidence": { "minItems": 1 },
+          "verification": { "properties": { "result": { "const": "pass" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "blocked" } }, "required": ["status"] },
+      "then": { "required": ["blocked_reason"] }
+    }
+  ],
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": ["type", "ref", "retrieved_at"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["document", "url", "computation", "kb_record", "owner_statement"] },
+        "ref": { "type": "string", "minLength": 1, "description": "Document id, URL, script path, KB record id, or a pointer to the owner's message" },
+        "locator": { "type": "string", "description": "Page, line, cell, section, or timestamp inside the source" },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "script": { "type": "string", "description": "For computation evidence: the script that reproduces the number" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["method", "verifier", "verified_at", "result"],
+      "additionalProperties": false,
+      "properties": {
+        "method": { "enum": ["recomputed", "source-checked", "cross-checked", "owner-confirmed"] },
+        "verifier": { "type": "string", "minLength": 1 },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "result": { "enum": ["pass", "fail", "unverifiable"] },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
