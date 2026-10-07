@@ -1,0 +1,16 @@
+[
+  {
+    "claim_id": "C-fx-total",
+    "script": "scripts/sum_lines.py",
+    "args": [
+      "data/invoice_a.csv"
+    ],
+    "inputs": [
+      {
+        "path": "data/invoice_a.csv",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "timeout_s": 20
+  }
+]

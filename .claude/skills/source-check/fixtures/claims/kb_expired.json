@@ -1,0 +1,16 @@
+{
+  "claim_id": "C-sc-kbold",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "The supplier's order cutoff is 8:00 pm Eastern.",
+  "kind": "fact",
+  "evidence": [
+    {
+      "type": "kb_record",
+      "ref": "K-fixture-0002",
+      "retrieved_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

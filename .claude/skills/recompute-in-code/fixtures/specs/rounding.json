@@ -1,0 +1,14 @@
+{
+  "claim_id": "C-rc-round",
+  "script": "scripts/sum_lines.py",
+  "args": [
+    "data/tie_case.csv"
+  ],
+  "inputs": [
+    {
+      "path": "data/tie_case.csv",
+      "sha256": "a9714b5e260b1ce4f1b8b7a9fa196ae898a44ebb0f04e1782a9bb510663f9161"
+    }
+  ],
+  "timeout_s": 20
+}

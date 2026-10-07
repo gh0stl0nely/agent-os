@@ -1,0 +1,17 @@
+{
+  "claim_id": "C-sc-partial",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "Returns are accepted for all items within 14 days.",
+  "kind": "fact",
+  "evidence": [
+    {
+      "type": "document",
+      "ref": "sources/returns_policy.md",
+      "locator": "section:Returns",
+      "retrieved_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

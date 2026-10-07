@@ -1,0 +1,20 @@
+{
+  "claim_id": "C-rc-crash",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "Synthetic: crashing script.",
+  "kind": "number",
+  "value": 1.0,
+  "unit": "CAD",
+  "evidence": [
+    {
+      "type": "computation",
+      "ref": "scripts/crashes.py",
+      "locator": "data",
+      "retrieved_at": "2026-10-07T12:00:00-04:00",
+      "script": "scripts/crashes.py"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

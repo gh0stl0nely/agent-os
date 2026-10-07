@@ -1,0 +1,16 @@
+{
+  "claim_id": "C-sc-url",
+  "run_id": "run-fixture",
+  "agent": "fixture-producer",
+  "claim": "The supplier stops taking orders in the evening.",
+  "kind": "fact",
+  "evidence": [
+    {
+      "type": "url",
+      "ref": "https://supplier.example/terms",
+      "retrieved_at": "2026-10-07T12:00:00-04:00"
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-10-07T12:00:00-04:00"
+}

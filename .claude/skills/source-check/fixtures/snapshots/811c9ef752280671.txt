@@ -1,0 +1,5 @@
+Source-URL: https://supplier.example/terms
+Retrieved: 2026-10-07
+As of: 2026-09-20
+
+The supplier accepts orders until eight in the evening Eastern time.
