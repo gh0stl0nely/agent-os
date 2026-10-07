@@ -2,11 +2,14 @@ name: Daily Threads post
 
 on:
   schedule:
-    # 11:00 Toronto is 15:00 UTC in summer (EDT) and 16:00 UTC in winter (EST).
-    # Both are scheduled; the script only posts when it is 11am in Toronto,
-    # and never posts twice on the same day.
-    - cron: "0 15 * * *"
-    - cron: "0 16 * * *"
+    # Target: 11:00 Toronto (15:00 UTC in summer EDT, 16:00 UTC in winter EST).
+    # GitHub starts scheduled runs late, so the first run starts at 10:35 and
+    # the script waits until 11:00. Later runs are backups. The script only
+    # posts between 11:00 and 14:59 Toronto and never twice on the same day.
+    # Both UTC offsets are scheduled so this works across the clock change.
+    - cron: "35 14 * * *"
+    - cron: "35 15 * * *"
+    - cron: "35 16 * * *"
   workflow_dispatch:
     inputs:
       mode:

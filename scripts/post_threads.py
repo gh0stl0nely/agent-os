@@ -91,6 +91,15 @@ def main():
     now = datetime.now(ZoneInfo(cfg["timezone"]))
     today = args.date or now.strftime("%Y-%m-%d")
 
+    # GitHub starts scheduled runs late, so the workflow starts early and waits for the target time.
+    if not args.force and not args.dry_run and not args.date:
+        h = cfg["post_hour_local"]
+        if now.hour == h - 1 and now.minute >= 30 and not cfg.get("paused"):
+            wait = (60 - now.minute) * 60 - now.second
+            print(f"Early start ({now:%H:%M}). Waiting {wait // 60} min until {h}:00 Toronto.")
+            time.sleep(wait)
+            now = datetime.now(ZoneInfo(cfg["timezone"]))
+
     if cfg.get("paused") and not args.dry_run:
         print("Posting is paused (config.json). Nothing done.")
         return
