@@ -19,4 +19,5 @@
 4. Domain roles supply their rubrics in the shape in `rubrics/_SHAPE.md`.
 
 ## Blocked
-Nothing was blocked. No action in this build was stopped by a permission prompt or the auto-mode classifier, so nothing is listed here. (Not done by choice, not by a block: `pip install rfc3339-validator` was not run because that would change the environment other roles rely on; the gap is in the change request instead.)
+Nothing was blocked by a permission prompt or the auto-mode classifier. No action in this build was stopped by a permission prompt or the auto-mode classifier, so nothing is listed here beyond the note below. (Not done by choice, not by a block: `pip install rfc3339-validator` was not run because that would change the environment other roles rely on; the gap is in the change request instead.)
+- Environment note, not a permission block: `gh pr create` failed with HTTP 403 because GitHub GraphQL is not available from these sessions; the PR (#1) was opened once through the REST API instead, as the error message directs. Nothing was retried or worked around beyond that.
