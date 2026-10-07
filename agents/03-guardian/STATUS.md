@@ -1,20 +1,21 @@
 # Status: 03 Guardian
 
-- **State:** in progress (planning and research done; building skills)
+- **State:** built; self-check done; pull request open for review (builder stops here, does not merge)
 - **Branch:** `build/03-guardian`
-- **Last updated:** 2026-10-07 14:50 America/Toronto
+- **Last updated:** 2026-10-07 America/Toronto
 
 ## Done
-- Read the protocol, the brief, all contracts, roster rows, architecture, knowledge base and reusable-skills.
-- Created the branch, `STATUS.md` and `PLAN.md`.
-- Research saved as seven validated records in `knowledge/security/` (OWASP LLM Top 10, OWASP Agentic Skills Top 10, GitHub secret scanning, push protection, branch protection and rulesets for a personal public repo, Claude Code hooks).
+- PLAN.md, 8 validated knowledge records in `knowledge/security/`.
+- Five skills with scripts, fixtures and evals: `risk-classify`, `secrets-hygiene`, `preflight-brief`, `rollback-plan`, `skill-vetting`.
+- Proposed hooks (`hooks/`) with policy, settings example and 219 tests.
+- Owner setup checklist, with the tested poster-state flow (`poster-state/`) that keeps the daily state save working under a protected `main`.
+- `skill-inventory.md`, `CARD.md`, `QUESTIONS.md`, `EVAL-REPORT.md`, `eval-log.txt`, one change request (`agent-system/change-requests/03-guardian-preflight-na-convention.md`).
+- All 605 checks pass (`python3 agents/03-guardian/run_evals.py`).
 
-## Next steps
-1. Build the five skills in this order: `risk-classify`, `secrets-hygiene`, `preflight-brief`, `rollback-plan`, `skill-vetting`.
-2. Build the hooks proposals under `agents/03-guardian/hooks/` with tests.
-3. Write the owner setup checklist (including a tested way to keep the daily poster's state commit working) and the skill inventory.
-4. Run all evals, write `EVAL-REPORT.md`, `CARD.md`, `QUESTIONS.md`.
-5. Self-check against the acceptance criteria, then open the pull request to `main` and stop.
+## Next steps (for others)
+1. Review session: re-run the evals, try a command shape the hook parser may misread, read the lines flagged in `skill-inventory.md`.
+2. Owner: answer `QUESTIONS.md`, then follow `OWNER-SETUP-CHECKLIST.md` in its order (poster change before protecting `main`).
+3. Owner decision: install the hooks (R2, Preflight Brief).
 
 ## Blockers
-- None now. Push access was denied once and then granted after the owner confirmed the repo. The working clone is `/home/claude/business-assets`.
+- None. (Push access was denied once and then granted after the owner confirmed the repo.)
