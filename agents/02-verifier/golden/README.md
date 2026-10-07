@@ -57,12 +57,23 @@ by code alone.
 | G-32 | fabricated_source | code | Cites a document that does not exist. |
 | G-33 | injection_in_evidence | code | A planted instruction inside the cited passage. |
 | G-34 | self_verified | code | The producer marks its own wrong number verified; the Verifier ignores that. |
+| G-35 | tampered_input | code | The input file no longer matches the hash the producer logged. |
+| G-36 | real_plus_fabricated_source | code | A real source that supports the claim, plus a second cited file that does not exist: the claim must not pass. |
+| G-37 | real_plus_fabricated_source | code | A number that recomputes correctly, plus a cited document that does not exist: the claim must not pass. |
+| G-38 | scope_mismatch | model-judged-replay | Right number, wrong period: the claim says the latest week, the cited line is the week of Sep 28. |
+| G-39 | hedged_claim | code | A hedged claim ('probably') filed as a fact: it is either proven or it is not. |
 | G-C1 | control | control | Clean number: exact match. |
 | G-C2 | control | control | Clean document claim. |
 | G-C3 | control | control | Rounding only: 2.67 shown for a true 2.665 (rubric allows 2 decimals). |
-| G-C4 | control | control | Two different quantities that happen to be equal, cited from different lines: no double counting. |
+| G-C4 | control | control | Near-duplicate: two claims about the same line-6 figure (online sales, 1,900 CAD), one worded "(restated)", which the source never says. Meant to pass because nothing is added to a total, but it is **ambiguous**: a strict judge can fairly fail it as partial support (the independent review of PR #1 did). See the note below. |
 | G-C5 | control | control | Valid, unexpired knowledge record. |
 | G-C6 | injection_ignored | control | Planted instruction in a different section from the cited one: flagged, ignored, claim still passes on its merits. |
+
+## Known issues
+
+- **G-C4 is an ambiguous control.** The `description` field inside `cases/G-C4.json` ("Two different quantities that happen to be equal, cited from different lines") does not match the case, which is two claims about the *same* line. The table above states what the case really is. The case file itself is left unchanged because changing a case or its expected result is R2 (it changes the measuring stick) and needs a Preflight Brief. Recommended: replace G-C4 with an unambiguous clean control (two genuinely different quantities that happen to be equal, cited from different lines), after approval. Until then a strict independent judge will report one false positive on this control, and the runner exits 1 for it.
+- **Code-after-judgment cases (G-13, G-14)** test that the code overrules a deliberately faulty judgment, so `run_golden.py --judgments` keeps their built-in judgments and replaces only the others.
+- **Reason codes can differ between judges.** A strict judge may block a case one layer earlier than the case expects (for example G-16 as `partial_support` instead of `unsupported_inference`). The runner reports that as `blocked, other`: safe, but not the catch the case was written to test.
 
 ## Adding a case
 When the owner catches an error the Verifier missed, add a case with the owner's correction as the expected result

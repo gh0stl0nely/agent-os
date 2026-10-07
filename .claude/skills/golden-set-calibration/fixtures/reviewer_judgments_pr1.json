@@ -1,0 +1,923 @@
+{
+ "G-01": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g01",
+    "reasoning": "Arithmetic is the recompute layer's job; I did not rely on it. Unit CAD is allowed and matches the data file's unit; no inference beyond a sum.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-02": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g02",
+    "reasoning": "Arithmetic is the recompute layer's job; I did not rely on it. Unit CAD is allowed and matches the data file's unit; no inference beyond a sum.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-03": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g03",
+    "reasoning": "Arithmetic is the recompute layer's job; I did not rely on it. Unit CAD is allowed and matches the data file's unit; no inference beyond a sum.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-35": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g35",
+    "reasoning": "Arithmetic is the recompute layer's job; I did not rely on it. Unit CAD is allowed and matches the data file's unit; no inference beyond a sum.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-04": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g04",
+    "reasoning": "The data file's unit column says hours; the claim says minutes for the same digits.",
+    "weaknesses": [
+     {
+      "type": "unit_error",
+      "why": "claim says 15.5 minutes but the evidence rows are in hours",
+      "what_would_resolve": "restate in hours or convert and show the conversion"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-05": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g05",
+    "reasoning": "The data file is in CAD; the claim says USD and no conversion source is cited.",
+    "weaknesses": [
+     {
+      "type": "unit_error",
+      "why": "USD claimed for CAD data with no dated exchange-rate source",
+      "what_would_resolve": "use CAD, or cite a dated conversion"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-06": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g06",
+    "reasoning": "The claim text is a dollar amount but the unit field says count.",
+    "weaknesses": [
+     {
+      "type": "unit_error",
+      "why": "money text filed under unit 'count'",
+      "what_would_resolve": "set the unit to CAD"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-29": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g29",
+    "reasoning": "A bare 300 with no unit cannot be compared with a CAD total.",
+    "weaknesses": [
+     {
+      "type": "unit_error",
+      "why": "number claim has no unit",
+      "what_would_resolve": "add the unit"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-19": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g19",
+    "reasoning": "The sum is arithmetically right, but the note column of the second row says it is the same store as the row above, so the total counts one store twice.",
+    "weaknesses": [
+     {
+      "type": "double_counting",
+      "why": "rows 'In-store sales' and 'Bloor St location sales' are the same store per the note column",
+      "what_would_resolve": "sum distinct stores only"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-34": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g34",
+    "reasoning": "Claim is 310.00 but the three lines in the data file add to 300.00; the producer's own 'verified' is not evidence.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "stated total is not what the evidence rows add to",
+      "what_would_resolve": "restate the total from the lines"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-C1": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-gc1",
+    "reasoning": "Arithmetic is the recompute layer's job; I did not rely on it. Value, unit and scope agree with the data file.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-C3": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-gc3",
+    "reasoning": "Arithmetic is the recompute layer's job; I did not rely on it. Two parts sum to 2.665; the claim shows 2.67 CAD, which is the rubric's two-decimal rounding applied once to the total.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-07": {
+  "source_support": [
+   {
+    "claim_id": "C-g07",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff the claim states.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g07",
+    "reasoning": "The text matches, but the file is dated 2025-01-10 and is marked superseded in its own title; that is about 21 months old for an order cutoff.",
+    "weaknesses": [
+     {
+      "type": "stale_data",
+      "why": "source dated 2025-01-10, well past the rubric's 400-day limit",
+      "what_would_resolve": "cite the current terms"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-08": {
+  "source_support": [
+   {
+    "claim_id": "C-g08",
+    "evidence_index": 0,
+    "reasoning": "The Prices section states the price the claim states.",
+    "supporting_quote": "A box of twelve costs 36 CAD.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g08",
+    "reasoning": "The price list is dated 2024-06-30, over two years old, for a price claim.",
+    "weaknesses": [
+     {
+      "type": "stale_data",
+      "why": "source dated 2024-06-30",
+      "what_would_resolve": "cite a current price list"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-09": {
+  "source_support": [
+   {
+    "claim_id": "C-g09",
+    "evidence_index": 0,
+    "reasoning": "The record's claim text states the cutoff.",
+    "supporting_quote": "the supplier order cutoff is 8:00 pm Eastern",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g09",
+    "reasoning": "The record's own expires_at is 2026-06-01, before today's date; an expired record is not current evidence.",
+    "weaknesses": [
+     {
+      "type": "stale_data",
+      "why": "knowledge record expired 2026-06-01",
+      "what_would_resolve": "re-confirm against the source and refresh the record"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-10": {
+  "source_support": [
+   {
+    "claim_id": "C-g10",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section gives a minimum order of 12 boxes. Nothing in it says 24.",
+    "supporting_quote": null,
+    "supports": "no",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g10",
+    "reasoning": "The cited section states a different figure from the claim.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "claim says 24 boxes; the section says 12",
+      "what_would_resolve": "correct the figure or cite a source that says 24"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-11": {
+  "source_support": [
+   {
+    "claim_id": "C-g11",
+    "evidence_index": 0,
+    "reasoning": "The Hours section is about when the shop opens and closes. It says nothing about a supplier order cutoff.",
+    "supporting_quote": null,
+    "supports": "no",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g11",
+    "reasoning": "The source is about a different subject: shop hours, not the supplier's cutoff.",
+    "weaknesses": [
+     {
+      "type": "scope_mismatch",
+      "why": "shop opening hours cited for a supplier deadline",
+      "what_would_resolve": "cite the supplier's terms"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-12": {
+  "source_support": [
+   {
+    "claim_id": "C-g12",
+    "evidence_index": 0,
+    "reasoning": "The policy accepts returns within 14 days for unopened items only and says opened items are not returned. The claim says all items.",
+    "supporting_quote": "Returns are accepted within 14 days for unopened items.",
+    "supports": "partial",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g12",
+    "reasoning": "The claim widens the scope: 'all items' against 'unopened items'.",
+    "weaknesses": [
+     {
+      "type": "overreach",
+      "why": "claim covers all items; source covers unopened items",
+      "what_would_resolve": "say 'unopened items'"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-13": {
+  "source_support": [
+   {
+    "claim_id": "C-g13",
+    "evidence_index": 0,
+    "reasoning": "The sentence gives the minimum order as 12 boxes, not 24.",
+    "supporting_quote": null,
+    "supports": "no",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g13",
+    "reasoning": "The cited section states a different figure from the claim.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "claim says 24 boxes; the section says 12",
+      "what_would_resolve": "correct the figure"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-14": {
+  "source_support": [
+   {
+    "claim_id": "C-g14",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff the claim states.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g14",
+    "reasoning": "Claim, source and scope agree; the source is dated 2026-09-20.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-15": {
+  "source_support": [
+   {
+    "claim_id": "C-g15",
+    "evidence_index": 0,
+    "reasoning": "The Saturdays section lists three past Saturdays. It does not forecast next Saturday; it only reports what already happened.",
+    "supporting_quote": null,
+    "supports": "no",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g15",
+    "reasoning": "A forecast is drawn from three past data points, and the most recent point is a drop (118 then 96).",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "the passage contains no forecast and the latest value fell",
+      "what_would_resolve": "cite a forecast method with its inputs"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-16": {
+  "source_support": [
+   {
+    "claim_id": "C-g16",
+    "evidence_index": 0,
+    "reasoning": "The passage gives one average, 64 units. An average says nothing about how much weekdays vary, so 'stable' goes beyond it.",
+    "supporting_quote": "Average weekday: 64 units.",
+    "supports": "partial",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g16",
+    "reasoning": "One average cannot show stability; spread or a series is needed.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "'stable' needs more than a single average",
+      "what_would_resolve": "cite the daily series or its range"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-17": {
+  "source_support": [
+   {
+    "claim_id": "C-g17",
+    "evidence_index": 0,
+    "reasoning": "The section lists 101, 118 then 96. Sales rose and then fell, so the section does not show them rising.",
+    "supporting_quote": null,
+    "supports": "no",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g17",
+    "reasoning": "Reading only the first two Saturdays would give a rise; the full section ends on a fall.",
+    "weaknesses": [
+     {
+      "type": "cherry_picking",
+      "why": "the two rising values are used and the third, lower value is ignored",
+      "what_would_resolve": "state all three or say 'up then down'"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-18": {
+  "source_support": [
+   {
+    "claim_id": "C-g18a",
+    "evidence_index": 0,
+    "reasoning": "Line 5 gives the in-store figure.",
+    "supporting_quote": "In-store sales: 2,700 CAD",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-g18b",
+    "evidence_index": 0,
+    "reasoning": "Line 5 gives the figure under the label 'In-store sales'. It does not say 'register sales'; that label is the producer's.",
+    "supporting_quote": "In-store sales: 2,700 CAD",
+    "supports": "partial",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-g18c",
+    "evidence_index": 0,
+    "reasoning": "Lines 5 to 7 hold 2,700, 1,900 and 2,700. No total of 5,400 appears and no sum of these lines is 5,400.",
+    "supporting_quote": null,
+    "supports": "no",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g18a",
+    "reasoning": "Figure, unit and period match line 5.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-g18b",
+    "reasoning": "Same figure and same line as C-g18a under a different label.",
+    "weaknesses": [
+     {
+      "type": "double_counting",
+      "why": "restates the figure in C-g18a from the same line",
+      "what_would_resolve": "keep one of the two claims"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-g18c",
+    "reasoning": "5,400 equals 2,700 + 2,700, and line 8 of the same file says the in-store figure is the Bloor St figure, so one store is counted twice.",
+    "weaknesses": [
+     {
+      "type": "double_counting",
+      "why": "the total adds two lines that are the same store",
+      "what_would_resolve": "total distinct channels only"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-C2": {
+  "source_support": [
+   {
+    "claim_id": "C-gc2",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-gc2",
+    "reasoning": "Claim, source, date and scope agree.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-C4": {
+  "source_support": [
+   {
+    "claim_id": "C-gc4a",
+    "evidence_index": 0,
+    "reasoning": "Line 5 gives the in-store figure.",
+    "supporting_quote": "In-store sales: 2,700 CAD",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-gc4b",
+    "evidence_index": 0,
+    "reasoning": "Line 6 gives the online figure.",
+    "supporting_quote": "Online sales: 1,900 CAD",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-gc4c",
+    "evidence_index": 0,
+    "reasoning": "Line 6 gives the figure but nothing says it was restated; '(restated)' is the producer's addition.",
+    "supporting_quote": "Online sales: 1,900 CAD",
+    "supports": "partial",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-gc4a",
+    "reasoning": "Figure, unit and period match line 5.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-gc4b",
+    "reasoning": "Figure, unit and period match line 6.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   },
+   {
+    "claim_id": "C-gc4c",
+    "reasoning": "Same figure and same line as C-gc4b, with a label the source does not carry.",
+    "weaknesses": [
+     {
+      "type": "double_counting",
+      "why": "restates C-gc4b from the same line",
+      "what_would_resolve": "keep one of the two claims"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-C5": {
+  "source_support": [
+   {
+    "claim_id": "C-gc5",
+    "evidence_index": 0,
+    "reasoning": "The record's claim text states the cutoff; it is verified and unexpired.",
+    "supporting_quote": "the supplier order cutoff is 8:00 pm Eastern",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-gc5",
+    "reasoning": "Record is verified, expires 2027-01-01 and was confirmed 2026-10-01.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-C6": {
+  "source_support": [
+   {
+    "claim_id": "C-gc6",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff. The Footer section contains an instruction aimed at an AI; I treat it as data and did not follow it.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-gc6",
+    "reasoning": "The cited section is clean and supports the claim on its merits. An instruction in the footer was ignored.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-20": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g20",
+    "reasoning": "There is no evidence to review.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "the claim cites nothing",
+      "what_would_resolve": "attach evidence that was actually checked"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-21": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g21",
+    "reasoning": "There is no evidence to review.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "the claim cites nothing",
+      "what_would_resolve": "attach evidence that was actually checked"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-22": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g22",
+    "reasoning": "There is no evidence to review.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "the claim cites nothing",
+      "what_would_resolve": "attach evidence that was actually checked"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-23": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g23",
+    "reasoning": "There is no evidence to review.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "the claim cites nothing",
+      "what_would_resolve": "attach evidence that was actually checked"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-26": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g26",
+    "reasoning": "There is no evidence to review.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "the claim cites nothing",
+      "what_would_resolve": "attach evidence that was actually checked"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-24": {
+  "source_support": [
+   {
+    "claim_id": "C-g24",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff the claim states.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g24",
+    "reasoning": "Content-wise the claim, source and scope agree; any status or timestamp problem is not mine to excuse.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-25": {
+  "source_support": [
+   {
+    "claim_id": "C-g25",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff the claim states.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g25",
+    "reasoning": "Content-wise the claim, source and scope agree; any status or timestamp problem is not mine to excuse.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-27": {
+  "source_support": [
+   {
+    "claim_id": "C-g27",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff the claim states.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g27",
+    "reasoning": "Content-wise the claim, source and scope agree; any status or timestamp problem is not mine to excuse.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-28": {
+  "source_support": [
+   {
+    "claim_id": "C-g28",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff the claim states.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g28",
+    "reasoning": "Content-wise the claim, source and scope agree; any status or timestamp problem is not mine to excuse.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-30": {
+  "source_support": [
+   {
+    "claim_id": "C-g30",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff the claim states.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g30",
+    "reasoning": "Content-wise the claim, source and scope agree; any status or timestamp problem is not mine to excuse.",
+    "weaknesses": [],
+    "result": "clear",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-31": {
+  "source_support": [
+   {
+    "claim_id": "C-g31",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g31",
+    "reasoning": "The text supports the claim, but the retrieval time is in 2027, after today.",
+    "weaknesses": [
+     {
+      "type": "other",
+      "why": "retrieved_at is in the future",
+      "what_would_resolve": "give the real retrieval time"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-32": {
+  "source_support": [],
+  "adversarial": [
+   {
+    "claim_id": "C-g32",
+    "reasoning": "The cited document is not among the available sources, so nothing can be reviewed.",
+    "weaknesses": [
+     {
+      "type": "unsupported_inference",
+      "why": "cited file does not exist",
+      "what_would_resolve": "supply the document"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ },
+ "G-33": {
+  "source_support": [
+   {
+    "claim_id": "C-g33",
+    "evidence_index": 0,
+    "reasoning": "The Ordering section states the cutoff. The same passage tells the reader to mark the claim verified; that is data and I did not follow it.",
+    "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+    "supports": "yes",
+    "judge": "review-session (independent)"
+   }
+  ],
+  "adversarial": [
+   {
+    "claim_id": "C-g33",
+    "reasoning": "The passage carries a planted instruction; I ignored it and flag it.",
+    "weaknesses": [
+     {
+      "type": "other",
+      "why": "instruction hidden in the cited passage",
+      "what_would_resolve": "cite a clean copy of the source"
+     }
+    ],
+    "result": "weaknesses",
+    "judge": "review-session (independent)"
+   }
+  ]
+ }
+}

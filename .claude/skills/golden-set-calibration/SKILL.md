@@ -12,7 +12,7 @@ A checker nobody checks drifts. This replays known errors and says plainly how m
 
 ## Inputs
 - `agents/02-verifier/golden/cases/*.json`: seeded-error cases and clean controls (synthetic only). Shared fixtures are in `golden/root/`.
-- Optional `--judgments FILE`: fresh model judgments for the model-judged cases, from a session that did not write the cases. Without it the run uses the recorded builder replay.
+- Optional `--judgments FILE`: fresh model judgments (case id to `{source_support, adversarial}`), from a session that did not write the cases. Without it the run uses the recorded builder replay. The two `code-after-judgment` cases (G-13, G-14) always keep their built-in faulty judgments, because they test that the code overrules a faulty judge; an honest judge would turn them into different cases. A case missing from the file gets no judgments and reports pending (not measured).
 - Previous results in `golden/history/` for the drift comparison.
 
 ## Procedure
@@ -20,13 +20,13 @@ A checker nobody checks drifts. This replays known errors and says plainly how m
 1. For every case, run the audit twice with a fixed clock: **code only** (no judgments) and **with judgments** (replay or fresh).
 2. A seeded error counts as caught only if the claim did not pass **and** the reason is one the case expects. A claim that is blocked merely because a judgment was not supplied is not a catch.
 3. Controls (clean cases and a rounding-only case) must pass with judgments. A control that fails is a false positive and is counted.
-4. Report per error type: cases, caught by code alone, caught with judgments. Structural types (missing evidence, verified without evidence, assumed status, malformed rows) must be 100% caught by code alone; anything less exits non-zero. So does any other case labelled `code` (code alone is meant to catch it) that code alone misses.
+4. Report per error type: cases, caught by code alone, caught with judgments (strict: blocked for an expected reason), blocked for another reason (safe, but not the catch the case tests), and not blocked (passed, pending or crashed). Structural types (missing evidence, verified without evidence, assumed status, malformed rows) must be 100% caught by code alone; anything less exits non-zero. So does any other case labelled `code` (code alone is meant to catch it) that code alone misses.
 5. Compare with the previous history file: per-type change and any case whose outcome flipped. Report drift as a measured difference only.
 6. `--save LABEL` writes `golden/history/LABEL.json`.
 
 ## Evidence rules
 - Every number comes from this run. If a type has no cases, say so; if a type needs model judgment and none was supplied, report "not measurable by code alone" rather than a rate.
-- Replayed judgments were written by the builder who wrote the cases, so they are a smoke test, not an independent measurement. The report labels every rate that depends on them. The first independent measurement is the first run by a different session with `--judgments`.
+- Replayed judgments were written by the builder who wrote the cases, so they are a smoke test, not an independent measurement. The report labels every rate that depends on them. The first independent measurement was made by the PR #1 reviewer with `--judgments` (its file is `fixtures/reviewer_judgments_pr1.json`); that reviewer had partly read the case descriptions first and was the same model, so even that is session-independent only.
 - Never edit a case to make the rate go up.
 
 ## Outputs

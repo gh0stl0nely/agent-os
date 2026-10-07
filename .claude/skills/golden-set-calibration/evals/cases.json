@@ -10,7 +10,7 @@
         "{skill}/scripts/run_golden.py"
       ],
       "text_contains": [
-        "Seeded errors: 35",
+        "Seeded errors: 39",
         "Controls: 6. Passed clean: 6. False positives: 0",
         "builder replay (non-independent)",
         "not measurable by code alone"
@@ -108,7 +108,7 @@
       ],
       "text_contains": [
         "fresh judgments from",
-        "Caught with judgments (all layers): 30/35",
+        "Caught with judgments (all layers, strict): 33/39",
         "not caught with judgments: G-17 (cherry_picking)"
       ]
     },
@@ -143,6 +143,156 @@
       "expect_exit": 1,
       "text_contains": [
         "never saved"
+      ]
+    },
+    {
+      "id": "fresh-judgments-keep-faulty-builtin-for-g13-g14",
+      "kind": "seeded-error",
+      "regression": "review item 2 (PR #1): --judgments replaced the faulty judgments in G-13 and G-14",
+      "why": "An independent judge's file is supplied (the reviewer's own judgments for PR #1). G-13 and G-14 test that the code overrules a deliberately faulty judgment, so they keep their built-in judgments and are still caught (number not in the quote; invented quote). The run says it kept them.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/run_golden.py",
+        "--judgments",
+        "{fx}/reviewer_judgments_pr1.json",
+        "--json"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "cases[id=G-13].with_judgments.outcome",
+          "equals": "caught"
+        },
+        {
+          "path": "cases[id=G-13].with_judgments.reason_codes",
+          "contains": "number_not_in_quote"
+        },
+        {
+          "path": "cases[id=G-13].judgments_used",
+          "equals": "built-in"
+        },
+        {
+          "path": "cases[id=G-14].with_judgments.outcome",
+          "equals": "caught"
+        },
+        {
+          "path": "cases[id=G-14].with_judgments.reason_codes",
+          "contains": "quote_not_verbatim"
+        },
+        {
+          "path": "cases[id=G-14].judgments_used",
+          "equals": "built-in"
+        },
+        {
+          "path": "cases[id=G-10].judgments_used",
+          "equals": "fresh"
+        }
+      ]
+    },
+    {
+      "id": "fresh-judgments-report-says-which-were-kept",
+      "kind": "normal",
+      "regression": "review item 2 (PR #1)",
+      "why": "The text report names the cases whose built-in judgments were kept, and labels the strict figure so a reader can tell 'blocked for another reason' from a pass.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/run_golden.py",
+        "--judgments",
+        "{fx}/reviewer_judgments_pr1.json"
+      ],
+      "expect_exit": 1,
+      "text_contains": [
+        "Built-in faulty judgments kept for the code-after-judgment cases",
+        "G-13, G-14",
+        "blocked, other",
+        "strict"
+      ]
+    },
+    {
+      "id": "blocked-for-another-reason-is-its-own-outcome",
+      "kind": "seeded-error",
+      "regression": "review item 2 (PR #1): 'wrong reason' was not told apart from a pass",
+      "why": "With a stricter judge, G-16 is blocked as partial_support rather than the unsupported_inference the case expects. It is reported as 'blocked_other_reason': not a pass, not a catch of the expected kind.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/run_golden.py",
+        "--judgments",
+        "{fx}/reviewer_judgments_pr1.json",
+        "--only",
+        "G-16",
+        "--json"
+      ],
+      "stdout_json": [
+        {
+          "path": "cases[id=G-16].with_judgments.outcome",
+          "equals": "blocked_other_reason"
+        },
+        {
+          "path": "types.unsupported_inference.blocked_other_reason",
+          "equals": 1
+        },
+        {
+          "path": "types.unsupported_inference.passed_or_pending",
+          "equals": 0
+        }
+      ]
+    },
+    {
+      "id": "mixed-real-and-fabricated-citation-golden",
+      "kind": "seeded-error",
+      "regression": "review item 3 (PR #1)",
+      "why": "G-36 and G-37 (a real source or a correct recomputation next to a nonexistent document) are caught by code alone: neither passes.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/run_golden.py",
+        "--only",
+        "G-36,G-37",
+        "--json"
+      ],
+      "stdout_json": [
+        {
+          "path": "cases[id=G-36].code_only.outcome",
+          "equals": "caught"
+        },
+        {
+          "path": "cases[id=G-37].code_only.outcome",
+          "equals": "caught"
+        },
+        {
+          "path": "cases[id=G-36].with_judgments.result",
+          "equals": "unverifiable"
+        },
+        {
+          "path": "cases[id=G-37].with_judgments.result",
+          "equals": "unverifiable"
+        }
+      ]
+    },
+    {
+      "id": "scope-and-hedge-golden",
+      "kind": "seeded-error",
+      "regression": "review item 4 (PR #1)",
+      "why": "G-38 (right number, wrong period) is caught once a judgment says scope_mismatch; G-39 (a hedged claim filed as a fact) is caught by code alone.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/run_golden.py",
+        "--only",
+        "G-38,G-39",
+        "--json"
+      ],
+      "stdout_json": [
+        {
+          "path": "cases[id=G-38].with_judgments.outcome",
+          "equals": "caught"
+        },
+        {
+          "path": "cases[id=G-38].code_only.outcome",
+          "not_equals": "caught"
+        },
+        {
+          "path": "cases[id=G-39].code_only.outcome",
+          "equals": "caught"
+        }
       ]
     }
   ]

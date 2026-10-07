@@ -277,6 +277,30 @@ def build_cases():
     case("G-35", "tampered_input", "code", "The input file no longer matches the hash the producer logged.", "C-g35",
          [row("C-g35", "Synthetic: invoice A lines sum to 300.00 CAD.", "number", [comp()], 300.0, "CAD")],
          {"caught": True, "reason_codes_any": ["input_changed"]}, [t])
+    case("G-36", "real_plus_fabricated_source", "code",
+         "A real source that supports the claim, plus a second cited file that does not exist: the claim must not pass.", "C-g36",
+         [row("C-g36", CUT, "fact", [doc("sources/supplier_terms.md", "section:Ordering"),
+                                     doc("sources/supplier_terms_confirmation_2026.md", "section:Ordering")])],
+         {"caught": True, "reason_codes_any": ["source_not_found", "unchecked_evidence_item"]},
+         source_support=[ss("C-g36", "The Ordering section states the cutoff.", OQ, "yes")])
+    case("G-37", "real_plus_fabricated_source", "code",
+         "A number that recomputes correctly, plus a cited document that does not exist: the claim must not pass.", "C-g37",
+         [row("C-g37", "Synthetic: invoice A lines sum to 300.00 CAD.", "number",
+              [comp(), doc("sources/invoice_a_scan_2026.md", "line:1")], 300.0, "CAD")],
+         {"caught": True, "reason_codes_any": ["source_not_found", "unchecked_evidence_item"]}, [spec("C-g37", "data/invoice_a.csv")])
+    case("G-38", "scope_mismatch", "model-judged-replay",
+         "Right number, wrong period: the claim says the latest week, the cited line is the week of Sep 28.", "C-g38",
+         [row("C-g38", "In-store sales for the latest week were 2,700 CAD.", "number", [doc("sources/sales_log.md", "line:5")], 2700.0, "CAD")],
+         {"caught": True, "reason_codes_any": ["scope_mismatch"]},
+         source_support=[ss("C-g38", "The line gives the same figure.", "In-store sales: 2,700 CAD (week of Sep 28).", "yes")],
+         adversarial=[adv("C-g38", [weak("scope_mismatch", "the claim says 'the latest week' but the evidence is the week of Sep 28",
+                                         "name the week, or cite the log for the latest week")],
+                          "The figure matches, but the period in the claim and in the evidence differ.")])
+    case("G-39", "hedged_claim", "code",
+         "A hedged claim ('probably') filed as a fact: it is either proven or it is not.", "C-g39",
+         [row("C-g39", "Average weekday demand is probably 64 units.", "fact", [doc("sources/sales_log.md", "section:Weekdays")])],
+         {"caught": True, "reason_codes_any": ["hedged_claim"]},
+         source_support=[ss("C-g39", "The passage gives the average.", "Average weekday: 64 units.", "yes")])
     # ---- controls (must pass, with judgments)
     case("G-C1", "control", "control", "Clean number: exact match.", "C-gc1",
          [row("C-gc1", "Synthetic: invoice A lines sum to 300.00 CAD.", "number", [comp()], 300.0, "CAD")],

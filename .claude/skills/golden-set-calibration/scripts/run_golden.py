@@ -62,7 +62,10 @@ def run_once(case, root, rubric, judgments):
 
 
 def judge_outcome(case, out):
-    """caught / missed / wrong_reason / passed_clean / false_positive for one run."""
+    """caught / blocked_other_reason / missed / pending / passed_clean / false_positive for one run.
+
+    caught = not passed AND an expected reason code is on the claim. blocked_other_reason = not passed, but only for
+    reasons the case did not expect (a safe outcome, but not the catch the case was written to test)."""
     exp = case["expect"]
     if case["error_type"] in CONTROL_TYPES:
         ok = out["result"] == "pass" and (not exp.get("flag_present") or exp["flag_present"] in out["flags"])
@@ -71,7 +74,7 @@ def judge_outcome(case, out):
         return "missed"
     if out["result"] == "pending":
         return "pending"
-    return "caught" if set(out["reason_codes"]) & set(exp["reason_codes_any"]) else "wrong_reason"
+    return "caught" if set(out["reason_codes"]) & set(exp["reason_codes_any"]) else "blocked_other_reason"
 
 
 def run_case(case, judgments_override):
@@ -80,8 +83,13 @@ def run_case(case, judgments_override):
     rec = {"id": case["id"], "error_type": case["error_type"], "layer": case["layer"]}
     try:
         code = run_once(case, root, rubric, None)
-        # fresh judgments replace the replay entirely; a case missing from the file gets none (so it reports pending)
-        jd = judgments_override.get(case["id"]) if judgments_override is not None else case.get("judgments")
+        # Fresh judgments replace the recorded replay, with one exception: a code-after-judgment case exists to test that
+        # the code overrules a deliberately faulty judgment, so it keeps its built-in judgment. An honest judge would turn it
+        # into some other case (an honest "supports: yes" on a true claim correctly passes). A case missing from the fresh
+        # file gets no judgments, so it reports pending.
+        built_in = judgments_override is None or case["layer"] == "code-after-judgment"
+        jd = case.get("judgments") if built_in else judgments_override.get(case["id"])
+        rec["judgments_used"] = "built-in" if built_in else "fresh"
         withj = run_once(case, root, rubric, jd)
     except Exception as e:  # a crash is a result, not a reason to stop measuring
         rec.update({"code_only": {"outcome": "error", "error": f"{type(e).__name__}: {e}"},
@@ -98,14 +106,20 @@ def summarise(records):
         t = types.setdefault(r["error_type"], {"cases": 0, "layers": {}, "ids": []})
         t["cases"] += 1
         t["ids"].append(r["id"])
-        L = t["layers"].setdefault(r["layer"], {"cases": 0, "caught_code_only": 0, "caught_with_judgments": 0})
+        L = t["layers"].setdefault(r["layer"], {"cases": 0, "caught_code_only": 0, "caught_with_judgments": 0,
+                                                "blocked_other_reason": 0, "passed_or_pending": 0})
         L["cases"] += 1
         good = ("caught", "passed_clean")
+        wo = r["with_judgments"]["outcome"]
+        L["blocked_other_reason"] += wo == "blocked_other_reason"
+        L["passed_or_pending"] += wo in ("missed", "pending", "false_positive", "error")
         L["caught_code_only"] += r["code_only"]["outcome"] in good
         L["caught_with_judgments"] += r["with_judgments"]["outcome"] in good
     for t in types.values():
         t["caught_code_only"] = sum(L["caught_code_only"] for L in t["layers"].values())
         t["caught_with_judgments"] = sum(L["caught_with_judgments"] for L in t["layers"].values())
+        t["blocked_other_reason"] = sum(L["blocked_other_reason"] for L in t["layers"].values())
+        t["passed_or_pending"] = sum(L["passed_or_pending"] for L in t["layers"].values())
         t["needs_model_layer"] = any(l in JUDGED_LAYERS for l in t["layers"])
     return types
 
@@ -118,7 +132,7 @@ def report(records, types, label_judge, partial=False, replay=True):
     lines = []
     lines.append(f"Golden set run. Clock fixed at {FIXED_NOW}. Judgments: {label_judge}.")
     lines.append("")
-    lines.append(f"{'error type':27}{'cases':>6}  {'code alone':>14}  {'with judgments':>16}  note")
+    lines.append(f"{'error type':27}{'cases':>6}  {'code alone':>14}  {'with judgments':>16}  {'blocked, other':>14}  {'not blocked':>11}  note")
     for name in sorted(types, key=lambda k: (k in CONTROL_TYPES, k)):
         t = types[name]
         ctl = name in CONTROL_TYPES
@@ -135,7 +149,9 @@ def report(records, types, label_judge, partial=False, replay=True):
         else:
             code_txt = fmt_rate(t["caught_code_only"], n)
             note = ""
-        lines.append(f"{name:27}{n:>6}  {code_txt:>14}  {fmt_rate(t['caught_with_judgments'], n):>16}  {note}")
+        other = "" if ctl else f"{t['blocked_other_reason']}"
+        notb = "" if ctl else f"{t['passed_or_pending']}"
+        lines.append(f"{name:27}{n:>6}  {code_txt:>14}  {fmt_rate(t['caught_with_judgments'], n):>16}  {other:>14}  {notb:>11}  {note}")
     lines.append("")
     problems = []
     for name in STRUCTURAL:
@@ -168,9 +184,17 @@ def report(records, types, label_judge, partial=False, replay=True):
     ctl = [r for r in records if r["error_type"] in CONTROL_TYPES]
     code_layer = [r for r in seeded if r["layer"] in ("code",)]
     lines.append("")
+    kept = [r["id"] for r in records if r.get("judgments_used") == "built-in" and not replay]
+    if kept:
+        lines.append("Built-in faulty judgments kept for the code-after-judgment cases (they test the code overruling a faulty judge, "
+                     f"so a fresh judge does not replace them): {', '.join(kept)}.")
+    lines.append("'with judgments' is strict: the claim was blocked AND for a reason the case expects. 'blocked, other' = blocked for "
+                 "some other reason (safe, but not the catch the case tests). 'not blocked' = passed, still pending, or crashed.")
     lines.append(f"Seeded errors: {len(seeded)}. Caught by code alone in the 'code' layer: "
                  f"{fmt_rate(sum(r['code_only']['outcome'] == 'caught' for r in code_layer), len(code_layer))}. "
-                 f"Caught with judgments (all layers): {fmt_rate(sum(r['with_judgments']['outcome'] == 'caught' for r in seeded), len(seeded))}.")
+                 f"Caught with judgments (all layers, strict): {fmt_rate(sum(r['with_judgments']['outcome'] == 'caught' for r in seeded), len(seeded))}; "
+                 f"blocked for another reason: {sum(r['with_judgments']['outcome'] == 'blocked_other_reason' for r in seeded)}; "
+                 f"not blocked: {sum(r['with_judgments']['outcome'] in ('missed', 'pending', 'error') for r in seeded)}.")
     lines.append(f"Controls: {len(ctl)}. Passed clean: {sum(r['with_judgments']['outcome'] == 'passed_clean' for r in ctl)}. "
                  f"False positives: {sum(r['with_judgments']['outcome'] == 'false_positive' for r in ctl)}.")
     return lines, problems
