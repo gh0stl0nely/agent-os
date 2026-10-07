@@ -31,7 +31,13 @@ These were written by the Guardian session in this pull request, so there is no 
 | rollback-plan | `agents/03-guardian` (this repo) | `c2024ef799001287564b16b38a35ce7c4e9da032c2dd545546055912777feba8` | 5 | injection |
 | skill-vetting | `agents/03-guardian` (this repo) | `86e4f738650328e7344f9fbab5f3975a5827c2982bfa512978819dbca763a387` | 12 | exec, exfil, obfuscation, persistence, secrets, follow-remote, hidden-intent, injection, scope, selfupdate |
 
-**Why the vetting script flags our own skills.** They are security tools: their rule tables, fixtures and tests contain the very patterns the script looks for (destructive commands, injection phrases, credential file names, zero-width characters), written on purpose to prove the checks work. The script correctly reports them as findings and gives a `reject` verdict. That is a property of the scanner reading attack strings, not evidence of a bad skill, and it is the reason first-party skills get a review-session read instead of a scan verdict. The flagged files are the `evals/`, `fixtures/` and rule tables, not the instruction files (`SKILL.md`, `reference.md`) apart from the quoted examples in them. A reviewer should confirm that by reading the flagged lines.
+**Why the vetting script flags our own skills.** They are security tools: their rule tables, fixtures and tests contain the very patterns the script looks for (destructive commands, injection phrases, credential file names, zero-width characters), written on purpose to prove the checks work. The script correctly reports them as findings and gives a `reject` verdict. That is a property of the scanner reading attack strings, not evidence of a bad skill, and it is the reason first-party skills get a review-session read instead of a scan verdict. Files with a failed check, from the run on 2026-10-07 (the number is how many failed evidence lines):
+- risk-classify: `fixtures/actions.json` (5), `evals/cases.json` (7), `evals/run_evals.py` (1), `scripts/classify.py` (1, the rule table).
+- secrets-hygiene: `scripts/scan_secrets.py` (5, the pattern table), `evals/run_evals.py` (5), `SKILL.md` (2) and `reference.md` (1), where the text names credential files and secret-like words to explain the job.
+- preflight-brief: `evals/run_evals.py` (3, injected sentences used as test input).
+- rollback-plan: `fixtures/rollbacks.json` (1), `evals/run_evals.py` (2).
+- skill-vetting: `scripts/vet_skill.py` (34, the rule table), `evals/run_evals.py` (15), `reference.md` (4) and `SKILL.md` (1), plus the deliberately malicious fixtures (22).
+A reviewer should open these lines and confirm each is a pattern or a test input, not behaviour.
 
 ## 3. Fixtures and the load path
 Test skills live under `.claude/skills/skill-vetting/fixtures/` with a `.fixture` suffix on every file so Claude Code cannot load them as real skills. Never remove the suffix inside the repo; the evals do it in a temp folder.
