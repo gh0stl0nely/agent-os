@@ -1,0 +1,1 @@
+{"claim_id": "C-9", "run_id": "run-fixture", "agent": "fixture-producer", "claim": "Synthetic: online sales were 1,900 CAD in the week of Sep 28.", "kind": "number", "value": 1900, "unit": "CAD", "evidence": [{"type": "document", "ref": "sources/sales_log.md", "retrieved_at": "2026-10-07T12:00:00-04:00"}], "status": "pending", "created_at": "2026-10-07T12:00:00-04:00"}

@@ -6,7 +6,7 @@ builder replay, or fresh ones from --judgments). A seeded error counts as caught
 one of the case's expected reason codes is on it. A claim that is merely blocked for lack of a judgment is not a catch.
 
 Usage:
-  run_golden.py [--cases DIR] [--judgments FILE] [--save LABEL] [--compare latest|LABEL] [--json]
+  run_golden.py [--cases DIR] [--only IDS] [--judgments FILE] [--save LABEL] [--compare latest|LABEL] [--json]
                 [--simulate-broken recompute|structure]
 Exit code: 0 ok; 1 if a structural type is below 100% caught by code alone, any code-layer case is missed by code alone,
 a control failed, or a case errored.
@@ -113,7 +113,7 @@ def fmt_rate(n, d):
     return f"{n}/{d} ({100 * n // d if d else 0}%)"
 
 
-def report(records, types, label_judge):
+def report(records, types, label_judge, partial=False):
     lines = []
     lines.append(f"Golden set run. Clock fixed at {FIXED_NOW}. Judgments: {label_judge}.")
     lines.append("")
@@ -142,7 +142,7 @@ def report(records, types, label_judge):
             missed = [r["id"] for r in records if r["error_type"] == name and r["code_only"]["outcome"] != "caught"]
             problems.append(f"structural type {name} below 100% by code alone; not caught: {', '.join(missed)}")
     for name in STRUCTURAL:
-        if name not in types:
+        if name not in types and not partial:
             problems.append(f"structural type {name} has no cases")
     for r in records:
         if r["layer"] == "code" and r["error_type"] not in CONTROL_TYPES and r["code_only"]["outcome"] != "caught" \
@@ -209,6 +209,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cases", default=str(GOLDEN / "cases"))
     ap.add_argument("--judgments", help="JSON file: case id -> {source_support: [...], adversarial: [...]} from a fresh session")
+    ap.add_argument("--only", metavar="IDS", help="comma-separated case ids to run (for spot checks; never save a partial run)")
     ap.add_argument("--save", metavar="LABEL")
     ap.add_argument("--compare", metavar="latest|LABEL")
     ap.add_argument("--json", action="store_true", help="print the full result as JSON")
@@ -217,6 +218,8 @@ def main():
     a = ap.parse_args()
     if a.simulate_broken and a.save:
         sys.exit("--simulate-broken results are never saved")
+    if a.only and a.save:
+        sys.exit("a partial run (--only) is never saved")
 
     prev, prev_name = (load_history(a.compare) if a.compare else (None, None))
     if a.compare and prev is None:
@@ -230,12 +233,15 @@ def main():
 
     override = vlib.read_json(a.judgments) if a.judgments else None
     cases = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(Path(a.cases).glob("*.json"))]
+    if a.only:
+        want = set(a.only.split(","))
+        cases = [c for c in cases if c["id"] in want]
     if not cases:
         sys.exit(f"no cases found in {a.cases}")
     records = [run_case(c, override) for c in cases]
     types = summarise(records)
     label = "fresh judgments from " + a.judgments if override is not None else "recorded builder replay (non-independent)"
-    lines, problems = report(records, types, label)
+    lines, problems = report(records, types, label, partial=bool(a.only))
     if a.simulate_broken:
         lines.insert(0, f"*** SIMULATED BREAKAGE: {a.simulate_broken} checker disabled on purpose; this is a test of the runner ***")
     if a.json:

@@ -1,0 +1,245 @@
+{
+  "skill": "adversarial-review",
+  "cases": [
+    {
+      "id": "clean-claim-no-weakness",
+      "kind": "normal",
+      "why": "A well-formed claim in an allowed unit with a locator raises nothing.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/weakness_scan.py",
+        "--ledger",
+        "{fx}/clean.jsonl",
+        "--rubric",
+        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "C-1",
+          "len": 0
+        }
+      ]
+    },
+    {
+      "id": "missing-locator-noted",
+      "kind": "missing-data",
+      "why": "Document evidence without a locator is noted, so the reviewer knows the passage was not pinpointed.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/weakness_scan.py",
+        "--ledger",
+        "{fx}/no_locator.jsonl",
+        "--rubric",
+        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "C-9[type=locator_missing].severity",
+          "equals": "note"
+        }
+      ]
+    },
+    {
+      "id": "unit-not-allowed-blocks",
+      "kind": "seeded-error",
+      "why": "'hours' is not an allowed unit for this rubric: a blocking weakness.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/weakness_scan.py",
+        "--ledger",
+        "{fx}/unit_error.jsonl",
+        "--rubric",
+        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "C-2[type=unit_error].severity",
+          "equals": "blocking"
+        }
+      ]
+    },
+    {
+      "id": "percent-with-currency-unit-blocks",
+      "kind": "seeded-error",
+      "why": "'12%' in the text with a currency unit on the value is a unit error.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/weakness_scan.py",
+        "--ledger",
+        "{fx}/unit_error.jsonl",
+        "--rubric",
+        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "C-3[type=unit_error].severity",
+          "equals": "blocking"
+        }
+      ]
+    },
+    {
+      "id": "same-figure-counted-twice-blocks",
+      "kind": "seeded-error",
+      "why": "The total (5,400) is exactly two equal figures from one evidence location: possibly one figure counted twice.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/weakness_scan.py",
+        "--ledger",
+        "{fx}/double_count.jsonl",
+        "--rubric",
+        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "C-6[type=double_counting].severity",
+          "equals": "blocking"
+        },
+        {
+          "path": "C-4[type=double_counting].severity",
+          "equals": "note"
+        }
+      ]
+    },
+    {
+      "id": "hedged-fact-noted",
+      "kind": "seeded-error",
+      "why": "'should probably always' filed as a number claim is flagged for hedging and overreach.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/weakness_scan.py",
+        "--ledger",
+        "{fx}/hedged.jsonl",
+        "--rubric",
+        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "C-7[type=hedged_claim].severity",
+          "equals": "note"
+        },
+        {
+          "path": "C-7[type=overreach_risk].severity",
+          "equals": "note"
+        }
+      ]
+    },
+    {
+      "id": "claim-text-injection-gets-no-pass",
+      "kind": "adversarial",
+      "why": "The claim text tells the reviewer to report no weaknesses. It is data: the unit error is still found.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/weakness_scan.py",
+        "--ledger",
+        "{fx}/injected.jsonl",
+        "--rubric",
+        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "C-8[type=unit_error].severity",
+          "equals": "blocking"
+        }
+      ]
+    },
+    {
+      "id": "order-swap-consistent",
+      "kind": "normal",
+      "why": "The same option wins in both orders: a decided preference.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/order_swap.py",
+        "--ab",
+        "{fx}/swap_consistent_ab.json",
+        "--ba",
+        "{fx}/swap_consistent_ba.json"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "decided"
+        },
+        {
+          "path": "winner",
+          "equals": "src-new"
+        }
+      ]
+    },
+    {
+      "id": "order-swap-tie",
+      "kind": "normal",
+      "why": "Both orders say equal: decided as a tie, no winner invented.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/order_swap.py",
+        "--ab",
+        "{fx}/swap_tie_ab.json",
+        "--ba",
+        "{fx}/swap_tie_ba.json"
+      ],
+      "expect_exit": 0,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "decided"
+        },
+        {
+          "path": "winner",
+          "equals": null
+        }
+      ]
+    },
+    {
+      "id": "order-swap-position-bias",
+      "kind": "seeded-error",
+      "why": "The judge picked position 1 in both orders. That is position bias, so the preference does not count.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/order_swap.py",
+        "--ab",
+        "{fx}/swap_biased_ab.json",
+        "--ba",
+        "{fx}/swap_biased_ba.json"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "result",
+          "equals": "inconclusive"
+        },
+        {
+          "path": "note",
+          "equals": "position_bias_suspected"
+        }
+      ]
+    },
+    {
+      "id": "order-swap-result-before-reasoning",
+      "kind": "missing-data",
+      "why": "A judgment that lists its result before its reasoning is rejected as malformed.",
+      "cmd": [
+        "python3",
+        "{skill}/scripts/order_swap.py",
+        "--ab",
+        "{fx}/swap_badorder_ab.json",
+        "--ba",
+        "{fx}/swap_consistent_ba.json"
+      ],
+      "expect_exit": 1,
+      "stdout_json": [
+        {
+          "path": "note",
+          "equals": "malformed_judgment"
+        }
+      ]
+    }
+  ]
+}

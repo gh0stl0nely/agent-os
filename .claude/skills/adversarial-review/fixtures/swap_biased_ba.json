@@ -1,0 +1,8 @@
+{
+  "order": [
+    "src-old",
+    "src-new"
+  ],
+  "reasoning": "First option reads better.",
+  "preferred_position": 1
+}

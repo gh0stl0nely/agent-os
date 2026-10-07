@@ -1,0 +1,28 @@
+{
+  "source_support": [
+    {
+      "claim_id": "C-fx-cutoff",
+      "evidence_index": 0,
+      "supports": "yes",
+      "supporting_quote": "Order cutoff is 8:00 pm Eastern.",
+      "reasoning": "The Ordering section states the cutoff as 8:00 pm Eastern.",
+      "judge": "builder-session (replay, non-independent)"
+    }
+  ],
+  "adversarial": [
+    {
+      "claim_id": "C-fx-total",
+      "result": "clear",
+      "weaknesses": [],
+      "reasoning": "Claim, evidence and units agree; nothing double counted; scope matches.",
+      "judge": "builder-session (replay, non-independent)"
+    },
+    {
+      "claim_id": "C-fx-cutoff",
+      "result": "clear",
+      "weaknesses": [],
+      "reasoning": "Claim, evidence and units agree; nothing double counted; scope matches.",
+      "judge": "builder-session (replay, non-independent)"
+    }
+  ]
+}
