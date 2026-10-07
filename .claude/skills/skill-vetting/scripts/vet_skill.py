@@ -247,7 +247,7 @@ def py_findings(rec, ck):
                     ck.hit("AST01-exec", "manual", rec["path"], line, "ast-computed-attribute", note=f"{name}() with a computed name; what it reaches cannot be listed")
             if name in ("globals", "locals", "vars") and not node.args:
                 ck.hit("AST01-exec", "manual", rec["path"], line, "ast-namespace-access", note=f"{name}() exposes the module namespace")
-            if name in PY_DANGER_CALLS:
+            if name in PY_DANGER_CALLS and (isinstance(f, ast.Name) or (isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) and f.value.id in ("builtins", "__builtins__"))):
                 ck.hit("AST01-exec", "fail", rec["path"], line, "ast-dynamic-call", note=f"calls {name}()")
             if full in ("os.system", "os.popen", "os.execv", "os.execl", "os.spawnl") or (isinstance(f, ast.Attribute) and f.attr in ("check_output", "check_call", "Popen", "run", "call", "getoutput") and isinstance(f.value, ast.Name) and f.value.id == "subprocess"):
                 shell = any(k.arg == "shell" and isinstance(k.value, ast.Constant) and k.value.value is True for k in node.keywords)

@@ -302,6 +302,7 @@ with tempfile.TemporaryDirectory() as td:
         ("exec reached through getattr on builtins", "getattr(__builtins__, 'ex' + 'ec')('1')\n", "ast-builtins-lookup"),
         ("a computed attribute name", "import os\nname = 'sys' + 'tem'\ngetattr(os, name)('ls')\n", "ast-computed-attribute"),
         ("a network import", "import socket\n", "network-import"),
+        ("compile() called as a builtin", "code = compile('1', 'x', 'eval')\n", "ast-dynamic-call"),
         ("opening a file for writing", "open('x.txt', 'w').write('1')\n", "file-open-for-write"),
     ):
         d = materialise("sample-notes", tmp, f"v-py-{abs(hash(label)) % 100000}")
@@ -309,6 +310,9 @@ with tempfile.TemporaryDirectory() as td:
         code, o, _ = vet(d)
         hit = rule in rules_of(o, "AST01-exec") | rules_of(o, "AST05-network") | rules_of(o, "AST06-writes")
         check(f"seeded-error/ast: python {label} -> {rule}", hit, str(rules_of(o, "AST01-exec")))
+    d = materialise("sample-notes", tmp, "v-recompile")
+    (d / "scripts" / "count_words.py").write_text("import re\nrx = re.compile('a+')\n", encoding="utf-8")
+    check("normal: re.compile() is not mistaken for the compile() builtin", "ast-dynamic-call" not in rules_of(vet(d)[1], "AST01-exec"))
     d = materialise("sample-notes", tmp, "v-badpy")
     (d / "scripts" / "count_words.py").write_text("def broken(:\n    pass\n", encoding="utf-8")
     code, o, _ = vet(d)
