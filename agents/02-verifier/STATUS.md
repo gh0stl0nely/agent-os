@@ -1,22 +1,22 @@
 # Status: 02 Verifier
 
-- **State:** in progress (planning done, building not started)
+- **State:** built; pull request open for review (not merged)
 - **Branch:** `build/02-verifier`
-- **Last updated:** 2026-10-07 (Wed) afternoon, Toronto time
+- **Last updated:** 2026-10-07 (Wed), Toronto time
 
 ## Done
-- Repo attached with push access and cloned.
-- Read BUILD-PROTOCOL, brief 02, README, roster rows, architecture, knowledge-base, all contracts, reusable-skills.
-- Reviewed reusable work (obra/superpowers pattern, anthropics/skills skill-creator, contracts/validate.py). Decisions and commit SHAs are in PLAN.md.
-- Research done; records written to `knowledge/verification/` (see PLAN.md).
-- PLAN.md and QUESTIONS.md written.
+- Five skills with scripts, fixtures and evals: `claim-evidence-audit`, `recompute-in-code`, `source-check`, `adversarial-review`, `golden-set-calibration`.
+- Rubric shape, a generic rubric, a synthetic example rubric, and `rubric_lint.py`.
+- Golden set: 35 seeded errors across 15 types plus 6 clean controls, a runner with history and drift comparison, and a baseline.
+- Eval runner: 70 eval cases, all passing (`python3 agents/02-verifier/run_evals.py`).
+- Seven research records in `knowledge/verification/`; all validate against the contract.
+- `PLAN.md`, `QUESTIONS.md`, `CARD.md`, `EVAL-REPORT.md`, and the contract change request at `agent-system/change-requests/02-verifier-contract-gaps.md`.
 
 ## Next steps
-1. Build the shared library and `claim-evidence-audit`.
-2. Build `recompute-in-code`, `source-check`, `adversarial-review`, `golden-set-calibration`.
-3. Rubrics (shape, generic, one example) and `rubric_lint.py`.
-4. Golden set (at least 20 cases) and eval runner; run everything and write EVAL-REPORT.md with real results.
-5. CARD.md, self-check against the nine acceptance criteria, grep for secrets, open the PR.
+1. Reviewer session re-runs the evals and compares with `EVAL-REPORT.md`.
+2. Owner answers `QUESTIONS.md` in one batch.
+3. First monthly calibration by a session that did not write the cases (`run_golden.py --judgments FILE`); that gives the first independent number for the judgment-dependent error types.
+4. Domain roles supply their rubrics in the shape in `rubrics/_SHAPE.md`.
 
 ## Blocked
-Nothing so far. Actions that needed a permission decision: none have been blocked or denied in this session.
+Nothing was blocked. No action in this build was stopped by a permission prompt or the auto-mode classifier, so nothing is listed here. (Not done by choice, not by a block: `pip install rfc3339-validator` was not run because that would change the environment other roles rely on; the gap is in the change request instead.)

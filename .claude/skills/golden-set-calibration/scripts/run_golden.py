@@ -34,6 +34,7 @@ RUBRICS = REPO / "agents" / "02-verifier" / "rubrics"
 FIXED_NOW = "2026-10-07T12:00:00-04:00"
 STRUCTURAL = ["missing_evidence", "verified_without_evidence", "assumed_status", "malformed_row"]
 CONTROL_TYPES = ("control", "injection_ignored")
+JUDGED_LAYERS = ("model-judged-replay", "code-after-judgment")  # a judgment must exist before the code can act on it
 PREFIX = "@sha256:"
 
 
@@ -105,7 +106,7 @@ def summarise(records):
     for t in types.values():
         t["caught_code_only"] = sum(L["caught_code_only"] for L in t["layers"].values())
         t["caught_with_judgments"] = sum(L["caught_with_judgments"] for L in t["layers"].values())
-        t["needs_model_layer"] = any(l in ("model-judged-replay",) for l in t["layers"])
+        t["needs_model_layer"] = any(l in JUDGED_LAYERS for l in t["layers"])
     return types
 
 
@@ -123,9 +124,9 @@ def report(records, types, label_judge, partial=False, replay=True):
         ctl = name in CONTROL_TYPES
         n = t["cases"]
         if t["needs_model_layer"]:
-            model_n = sum(L["cases"] for l, L in t["layers"].items() if l == "model-judged-replay")
+            model_n = sum(L["cases"] for l, L in t["layers"].items() if l in JUDGED_LAYERS)
             code_n = n - model_n
-            code_c = sum(L["caught_code_only"] for l, L in t["layers"].items() if l != "model-judged-replay")
+            code_c = sum(L["caught_code_only"] for l, L in t["layers"].items() if l not in JUDGED_LAYERS)
             code_txt = f"{fmt_rate(code_c, code_n)}" if code_n else "n/a"
             note = f"{model_n} case(s) not measurable by code alone ({'fresh judgments' if label_judge.startswith('fresh') else 'builder replay, non-independent'})"
         elif ctl:
