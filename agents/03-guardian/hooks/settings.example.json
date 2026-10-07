@@ -5,13 +5,31 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/agents/03-guardian/hooks/guard_bash.py\"", "timeout": 30 }
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/agents/03-guardian/hooks/guard_bash.py\"",
+            "timeout": 30
+          }
         ]
       },
       {
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
-          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/agents/03-guardian/hooks/guard_write.py\"", "timeout": 30 }
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/agents/03-guardian/hooks/guard_write.py\"",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/agents/03-guardian/hooks/guard_bash.py\"",
+            "timeout": 30
+          }
         ]
       }
     ]

@@ -28,13 +28,14 @@ def check(name, ok, detail=""):
     print(f"{'PASS' if ok else 'FAIL'}  {name}" + (f"  -- {detail}" if detail and not ok else ""))
 
 
-def hook(script, payload, raw=None):
-    p = subprocess.run([sys.executable, str(script)], input=raw if raw is not None else json.dumps(payload), capture_output=True, text=True)
+def hook(script, payload, raw=None, env=None):
+    p = subprocess.run([sys.executable, str(script)], input=raw if raw is not None else json.dumps(payload), capture_output=True, text=True,
+                       env={**os.environ, **env} if env else None)
     return p.returncode, p.stderr, p.stdout
 
 
-def bash(cmd, cwd):
-    return hook(BASH, {"tool_name": "Bash", "cwd": str(cwd), "tool_input": {"command": cmd}})
+def bash(cmd, cwd, env=None):
+    return hook(BASH, {"tool_name": "Bash", "cwd": str(cwd), "tool_input": {"command": cmd}}, env=env)
 
 
 def git(cwd, *a):
@@ -95,6 +96,52 @@ DENY = [
     (":(){ :|:& };:", "fork-bomb"), ('echo "unclosed', "unparseable"),
 ]
 
+# Round 2: every bypass the review found, and the neighbouring spellings. Each was ALLOWED by the first version.
+DENY += [
+    # shell wrappers with option clusters
+    ("bash -lc 'git push --force'", "force-push"), ('bash -ec "rm -rf ~"', "delete"), ("sh -ec 'git push -f'", "force-push"), ("zsh -lc 'git reset --hard'", "reset-hard"),
+    ("bash --login -c 'rm -rf ~'", "delete"), ("bash -o pipefail -c 'git push --force'", "force-push"), ("bash -eo pipefail -c 'git push --force'", "force-push"),
+    ("bash -xc 'git push -f'", "force-push"), ("dash -c 'rm -rf ~'", "delete"), ("bash -c 'bash -lc \"git push -f\"'", "force-push"), ("env bash -lc 'git push -f'", "force-push"),
+    ("timeout 5 bash -lc 'git push -f'", "force-push"), ("bash -c 'echo $(git push -f)'", "force-push"), ("bash -c", "unparseable"), ("bash -lc", "unparseable"),
+    ("busybox sh -c 'rm -rf ~'", "delete"), ("busybox rm -rf ~", "delete"), ("/bin/busybox rm -rf agent-system", "recursive-delete"), ("busybox sh -lc 'git push -f'", "force-push"),
+    # wrappers and their options
+    ("env -u FOO rm -rf ~", "delete"), ("env -S 'rm -rf ~'", "delete"), ("env -i bash -lc 'git push -f'", "force-push"), ("timeout -s KILL 5 rm -rf ~", "delete"),
+    ("timeout --signal=KILL 5 rm -rf ~", "delete"), ("nice -n 5 rm -rf ~", "delete"), ("nice -5 rm -rf ~", "delete"), ("command rm -rf ~", "delete"), ("exec rm -rf ~", "delete"),
+    ("nohup rm -rf ~ &", "delete"), ("stdbuf -oL rm -rf ~", "delete"), ("xargs -I {} rm -rf {}", "recursive-delete"), ("xargs -n1 -P4 rm -rf", "recursive-delete"),
+    ("flock /tmp/l rm -rf ~", "unrecognised-wrapper"), ("watch rm -rf ~", "unrecognised-wrapper"), ("strace -f rm -rf ~", "unrecognised-wrapper"), ("script -c 'rm -rf ~' /dev/null", "unrecognised-wrapper"),
+    ("nice --weird rm -rf ~", "unparseable"), ("timeout rm -rf ~", "unparseable"),
+    # programs built at run time
+    ("$CMD -rf ~", "unparseable"), ("$'\\x72m' -rf ~", "unparseable"), ('"$(echo rm)" -rf ~', "unparseable"), ("FOO=1 $CMD x", "unparseable"),
+    # shell keywords in front of a command
+    ("if true; then rm -rf ~; fi", "delete"), ("{ git push --force; }", "force-push"), ("while true; do git reset --hard; done", "reset-hard"), ("! rm -rf ~", "delete"),
+    ("for f in a; do rm -rf agent-system; done", "recursive-delete"), ("true && { git push -f; }", "force-push"),
+    # script text fed on standard input is invisible to a text parser: refused
+    ("bash <<'EOF'\nrm -rf ~\nEOF", "shell-from-stdin"), ("sh <<< 'git push -f'", "shell-from-stdin"), ("echo 'git push -f' | sh", "shell-from-stdin"),
+    ("echo 'git push -f' | bash -s", "shell-from-stdin"), ("cat <<EOF | sh\nrm -rf ~\nEOF", "shell-from-stdin"), ("python3 - <<'EOF'\nimport os; os.system('x')\nEOF", "shell-from-stdin"),
+    ("echo 'print(1)' | python3", "shell-from-stdin"), ("source /dev/stdin <<< 'rm -rf ~'", "shell-from-stdin"), ("bash < script.sh", "shell-from-stdin"),
+    ("git -c alias.p='push --force' p", "git-config"), ("git -c core.hooksPath=/tmp/h commit -m x", "git-config"), ("git config alias.x '!rm -rf ~'", "git-config"),
+    # find -exec runs arbitrary commands
+    ("find . -exec sh -c 'git push --force' \\;", "force-push"), ("find . -exec git reset --hard \\;", "reset-hard"), ("find . -execdir rm -rf {} +", "recursive-delete"),
+    # inline code in an interpreter
+    ("python3 -c \"import os; os.system('rm -rf ~')\"", "inline-code"), ("node -e \"require('child_process').execSync('git push -f')\"", "inline-code"),
+    ("perl -e 'system(\"rm -rf ~\")'", "inline-code"), ("python3 -c \"import shutil; shutil.rmtree('/home/x')\"", "inline-code"),
+    # gh: --repo before the subcommand, and API methods spelled every way
+    ("gh -R o/r pr merge 5", "merge-pr"), ("gh --repo o/r pr merge 5", "merge-pr"), ("gh --repo=o/r pr merge 5", "merge-pr"), ("gh pr merge 5 -R o/r", "merge-pr"),
+    ("gh pr -R o/r merge 5", "merge-pr"), ("gh -R o/r workflow run daily-post.yml", "gh-privileged"), ("gh --repo o/r repo delete --yes", "gh-privileged"),
+    ("gh alias set m 'pr merge'", "gh-privileged"), ("gh extension install x/y", "gh-privileged"), ("gh --weird pr merge 5", "unparseable"),
+    ("gh api -XPUT repos/o/r/pulls/5/merge", "gh-api-write"), ("gh api --method=PUT repos/o/r/pulls/5/merge", "gh-api-write"), ("gh api --method PUT repos/o/r/pulls/5/merge", "gh-api-write"),
+    ("gh api -X put repos/o/r/pulls/5/merge", "gh-api-write"), ("gh api repos/o/r/pulls/5/merge -X PUT", "gh-api-write"), ("gh -R o/r api -X PUT repos/o/r/pulls/5/merge", "gh-api-write"),
+    ("gh api -X POST repos/o/r/actions/workflows/daily-post.yml/dispatches", "gh-api-write"), ("gh api repos/o/r/actions/workflows/daily-post.yml/dispatches -f ref=main", "gh-api-write"),
+    ("gh api -X POST repos/o/r/issues/2/comments -f body=x -f labels=y", "gh-api-write"), ("gh api -X POST repos/o/r/issues/2/labels -f 'labels[]=x'", "gh-api-write"),
+    ("gh api -X DELETE repos/o/r/git/refs/heads/x", "gh-api-write"), ("gh api -X POST repos/o/r/issues/2/comments --input payload.json", "gh-api-write"),
+    ('gh api -X "$M" repos/o/r', "gh-api-write"), ("gh api graphql -f query=x", "gh-api-write"), ("gh api -X POST repos/o/r/pulls/5/comments -f body=x", "gh-api-write"),
+    ("gh api -X PATCH repos/o/r/pulls/5 -f state=closed", "gh-api-write"),
+    # git: HEAD on main, a checkout earlier in the same command, patterns and variables as push targets
+    ("git checkout main && git push origin HEAD", "push-to-main"), ("git switch main; git push", "push-to-main"), ("git checkout main && git merge build/x", "merge-into-main"),
+    ("git checkout -B main && git push", "push-to-main"), ("git checkout - && git push", "push-to-main"), ("git push --all", "push-all"), ("git push origin $BRANCH", "push-target-dynamic"),
+    ('git push origin "$(git branch --show-current)"', "push-target-dynamic"), ("git push origin 'refs/heads/*:refs/heads/*'", "push-target-dynamic"), ("git push origin HEAD:refs/heads/master", "push-to-main"),
+]
+
 ALLOW = [
     "ls -la", "pwd", "git status", "git log --oneline -5", "git diff", "git diff --staged", "git branch", "git checkout -b build/new", "git checkout build/test", "git switch -c build/x",
     "git restore --staged README.md", "git branch -d build/merged", "git merge main", "git fetch origin", "git push -u origin build/test", "git push origin build/test", "git push origin build/test --tags",
@@ -108,6 +155,18 @@ ALLOW = [
     "echo $HOME", "printf '%s\\n' \"$PATH\"", "env FOO=1 python3 x.py", "cd /tmp && ls", "diff a.txt b.txt", "chmod +x scripts/x.sh",
     "git commit -m \"$(cat <<'EOF'\nfix: the heredoc says rm -rf ~ and git push -f in prose only\n\nCo-Authored-By: X <x@example.invalid>\nEOF\n)\"",
     "ls | wc -l", "git log | head", "true && false || echo done", "echo a; echo b", "python3 a.py 2>&1 | tail -3", "ls 2>/dev/null",
+]
+
+ALLOW += [
+    "bash -lc 'ls -la'", 'bash -c "git status"', "sh -ec 'echo hi'", "zsh -c 'pwd'", "env -u FOO python3 x.py", "timeout 5 pytest -q", "nice -n 5 pytest -q", "busybox ls",
+    "python3 a.py < input.txt", "python3 a.py | tail -3", "bash script.sh", "echo a | grep a", "python3 - --help", "git -c color.ui=always log",
+    "nohup python3 a.py", "xargs -n1 echo", "if [ -f README.md ]; then echo hi; fi", "{ echo a; echo b; }", "for f in a b; do echo $f; done", "find . -exec grep -l x {} \\;",
+    "gh -R o/r pr view 1", "gh --repo o/r pr list", "gh api -XGET repos/o/r", "gh api --method=GET repos/o/r", "gh api -X GET search/issues -f q=x", "gh api repos/o/r/pulls --paginate -q '.[].number'",
+    "gh pr comment 2 --body x", "gh pr create --title t --body b --base main --head build/test",
+    # the narrow writes a build session needs: comment on its own PR, open a PR, edit a comment (each with only its own fields)
+    "gh api -X POST repos/o/r/issues/2/comments -f body=text", "gh api repos/o/r/issues/2/comments -f body=text", "gh api repos/o/r/pulls -f title=t -f head=build/x -f base=main -f body=b",
+    "gh api -X PATCH repos/o/r/issues/comments/123 -f body=x",
+    "git push origin HEAD", "git push -u origin HEAD", "git push origin HEAD:build/test", "git checkout build/test && git push origin HEAD", "git checkout -b build/x2 && git push -u origin HEAD",
 ]
 
 with tempfile.TemporaryDirectory() as td:
@@ -126,7 +185,8 @@ with tempfile.TemporaryDirectory() as td:
 
     # ---- on main, a bare push and a merge are blocked
     on_main = make_repo(tmp, "onmain", branch=None)
-    for cmd, rule in (("git push", "push-to-main"), ("git push origin", "push-to-main"), ("git merge feature", "merge-into-main"), ("git rebase origin/main", "rebase-main")):
+    for cmd, rule in (("git push", "push-to-main"), ("git push origin", "push-to-main"), ("git merge feature", "merge-into-main"), ("git rebase origin/main", "rebase-main"),
+                      ("git push origin HEAD", "push-to-main"), ("git push -u origin HEAD", "push-to-main"), ("git push origin @", "push-to-main"), ("git push origin HEAD:refs/heads/main", "push-to-main")):
         code, err, _ = bash(cmd, on_main)
         check(f"deny[{rule}] while on main: {cmd!r}", code == 2 and rule in err, err[:90])
     code, err, _ = bash("git push -u origin build/test", on_main)
@@ -278,6 +338,51 @@ with tempfile.TemporaryDirectory() as td:
     before = sorted(p.name for p in HERE.iterdir())
     bash("git commit -m x", repo)
     check("normal: the hook folder is unchanged by a run (no bytecode, no logs)", before == sorted(p.name for p in HERE.iterdir()))
+
+    # ---- round 2: things that are not a single command line
+    c, e, o = bash("git checkout main && git push origin HEAD", on_main)
+    check("round2: main already checked out, 'git checkout main && git push origin HEAD' is blocked", c == 2 and "push-to-main" in e)
+    c, e, o = bash("git checkout -b build/z && git push origin HEAD", on_main)
+    check("round2: moving OFF main in the same command makes a HEAD push fine (the hook follows the branch)", c == 0, e[:120])
+    c, e, o = bash("git push origin HEAD:build/test", on_main)
+    check("round2: from main, pushing HEAD to a named build branch is allowed", c == 0, e[:120])
+    c, e, o = bash("git checkout README.md && git push", on_main)
+    check("round2: 'git checkout <file>' does not pretend to leave main (a bare push is still blocked)", c == 2 and "push-to-main" in e)
+
+    # ---- the owner can unlock a path for one session; the agent cannot
+    wf = ".github/workflows/daily-post.yml"
+    UNLOCK = {"GUARDIAN_UNLOCK": ".github/workflows/"}
+    c, e, o = bash(f"echo x > {wf}", repo)
+    check("unlock: without the owner's setting a workflow edit by shell is blocked", c == 2 and "protected-path" in e)
+    c, e, o = bash(f"echo x > {wf}", repo, env=UNLOCK)
+    check("unlock: with GUARDIAN_UNLOCK=.github/workflows/ set by the owner at launch, the same edit is not blocked", c == 0, e[:120])
+    c, e, o = hook(WRITE, {"tool_name": "Write", "cwd": str(repo), "tool_input": {"file_path": str(repo / wf), "content": "name: x\n"}}, env=UNLOCK)
+    check("unlock: and the Write tool may edit the workflow too", c == 0, e[:120])
+    c, e, o = bash("echo x > agent-system/contracts/a.md", repo, env=UNLOCK)
+    check("unlock: unlocking one path does not unlock another (contracts stay blocked)", c == 2 and "protected-path" in e)
+    for p_ in (".claude/settings.json", ".git/", ".claude/hooks/", "agents/03-guardian/hooks/"):
+        c, e, o = bash(f"echo x > {p_ if not p_.endswith('/') else p_ + 'x'}", repo, env={"GUARDIAN_UNLOCK": p_})
+        check(f"unlock: {p_} can never be unlocked, not even by the owner's setting", c == 2 and "protected-path" in e)
+    c, e, o = bash(f"GUARDIAN_UNLOCK=.github/workflows/ python3 -c 'print(1)' && echo x > {wf}", repo)
+    check("unlock: setting the variable inside the agent's own command does nothing (the hook has its own environment)", c == 2 and "protected-path" in e)
+
+    # ---- a hook that crashes must block (exit 2), never exit 1 (Claude Code ignores exit 1)
+    c, e, o = hook(BASH, {"tool_name": "Bash", "cwd": 7, "tool_input": {"command": "ls"}})
+    check("fail-closed: an unexpected error inside the bash hook exits 2, not 1", c == 2 and "hook-error" in e, f"exit={c} {e[:100]}")
+    c, e, o = hook(WRITE, {"tool_name": "Write", "cwd": 7, "tool_input": {"file_path": "a.txt", "content": "x"}})
+    check("fail-closed: an unexpected error inside the write hook exits 2, not 1", c == 2 and "hook-error" in e, f"exit={c} {e[:100]}")
+
+    # ---- connector tools that would bypass the shell rules
+    for name, want in (("mcp__github__merge_pull_request", 2), ("mcp__github__delete_branch", 2), ("mcp__github__create_workflow_dispatch", 2), ("mcp__Gmail__delete_draft", 2),
+                       ("mcp__github__get_pull_request", 0), ("mcp__Notion__notion-search", 0), ("mcp__github__add_issue_comment", 0)):
+        c, e, o = hook(BASH, {"tool_name": name, "cwd": str(repo), "tool_input": {}})
+        check(f"mcp: {name} -> {'blocked' if want == 2 else 'no objection'}", c == want and (want == 0 or "mcp-privileged" in e), f"exit={c} {e[:80]}")
+    cfg0 = json.loads((HERE / "settings.example.json").read_text(encoding="utf-8"))
+    check("config: the example settings also route connector (mcp__) tools through the bash hook", any(m.get("matcher", "").startswith("mcp__") for m in cfg0["hooks"]["PreToolUse"]))
+
+    # ---- the docs say what the hooks are
+    readme = (HERE / "README.md").read_text(encoding="utf-8")
+    check("docs: the README states the hooks are a guardrail and not a security boundary", "guardrail, not a security boundary" in readme.lower())
 
     # ---- settings example is valid JSON and points at both hooks
     cfg = json.loads((HERE / "settings.example.json").read_text(encoding="utf-8"))
