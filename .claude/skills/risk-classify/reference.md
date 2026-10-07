@@ -5,7 +5,8 @@
 | Choice | Reason |
 |---|---|
 | Highest matching class wins | The matrix says to use the higher class when unsure. Overlaps are normal: "cancel tonight's order with the supplier" matches cancel (R3) and contacting a supplier (R4); R4 stands. |
-| No rule matched is R2 with `needs_review`, never R0 or R1 | A phrase the script does not know must not be read as harmless. |
+| No rule matched is R2 with `needs_review`, never R0 or R1; a dangerous word anywhere in an unrecognised action raises it to R3, R4 or R6; `needs_review` needs the owner's explicit yes | A phrase the script does not know must not be read as harmless, and the matrix says to use the higher class when unsure. |
+| Fillers before a verb ("Quietly delete", "Go ahead and send") do not hide it | Found by the builder while fixing review finding 6: an adverb used to round R3 and R4 down to R2. A perturbation eval now checks 62 actions x 16 decorations. |
 | Verbs count only when used as actions | "Read the email from the supplier" is R0; "email the supplier" is R4. The script looks for the verb at the start of a clause or after "will", "to", "then" and similar. |
 | R1 needs a new file or draft inside an owned path, and no sign of shared state | The brief says editing an existing record is R2. Edits default to R2 even inside a role's own folder; this rounds up. A person may judge that a role's own scratch edit is R1, but only the owner lowers a class. |
 | Pushing a branch or opening a pull request is R4 | It reaches a public repository. A builder session's kickoff prompt is the owner's explicit yes for that session's own branch and pull request; the class does not change, the brief cites the kickoff. |
@@ -15,6 +16,7 @@
 
 ## Known limits
 - Keyword rules cannot understand negation: "do not delete the file" is classified R3. That rounds up, which is the safe direction.
+- Review round 2 added the verbs dispatch, trigger, re-run, bump, ask, tell, ping, grant, export and the words team, group chat, higher tier, automatic payments. The 14 of 17 review stand-ins in `fixtures/review-heldout.json` were written after the misses were known, so they prove the fix and guard against regression; they are not independent evidence. The reviewer's own wordings are the real test.
 - The rules are English only and cover the verbs seen in this system's plans. New verbs fall to R2 with `needs_review`; add them to `RULES` and to `fixtures/actions.json` together.
 - A description that hides the real action behind vague words ("do the usual cleanup") is R2 at best. The model must ask what changes.
 

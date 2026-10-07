@@ -14,7 +14,9 @@ Options:
 
 Policy (see SKILL.md):
   * The class is the HIGHEST class of any rule that matches (the matrix says: when unsure, use the higher class).
-  * No rule matched -> R2 and needs_review (it is never rounded down to R0 or R1).
+  * No rule matched -> R2 and needs_review (it is never rounded down to R0 or R1); a dangerous word anywhere in such
+    an action (delete, send, publish, pay, merge ...) raises it to R3, R4 or R6.
+  * needs_review and flagged descriptions need the owner's explicit yes.
   * Instruction-like text inside the description is treated as data: it is flagged, never obeyed,
     and a flagged description is at least R2.
   * A secret-like value inside the description makes the action at least R5 and is never echoed.
@@ -101,7 +103,11 @@ def V(verbs):
     """A verb used as an action: at the start of a clause, or after an auxiliary like 'will' or 'to'.
     This keeps 'read the email from the supplier' from matching the verb 'email'."""
     return (r"(?:^|[;:.\n,(]|\b(?:and|then|will|should|must|to|can|may|please|also|now|just|first|next|plans?|going)\b)\s*"
-            r"(?:the (?:agent|assistant|system|skill|role)\s+)?(?:(?:will|should|must|can)\s+)?(?P<kw>" + verbs + r")\b")
+            r"(?:the (?:agent|assistant|system|skill|role)\s+)?(?:(?:will|should|must|can)\s+)?"
+            # fillers between the clause start and the verb ("Quietly delete", "Go ahead and send", "Just quickly remove")
+            r"(?:(?:go ahead and|proceed to|feel free to|be sure to|make sure to|try to)\s+)?"
+            r"(?:(?:[a-z]+ly|just|also|now|then|please|first|next|again|still|simply|immediately|finally|kindly)\s+){0,3}"
+            r"(?P<kw>" + verbs + r")\b")
 
 
 SECRET_NOUN = (r"\b(?P<kw>api[ _-]?keys?|api[ _-]?secrets?|(?:access|auth|refresh|bearer|session|personal access)[ _-]?tokens?|"
@@ -113,7 +119,9 @@ SECRET_VERB = (r"\b(?P<kw2>create|generate|store|save|put|paste|type|enter|rotat
                r"log in|sign in)\b")
 
 RECIPIENT = (r"(?P<kw2>supplier|vendor|customer|client|accountant|staff|employee|worker|partner|landlord|bank|cra|lender|"
-             r"team member|order|subscription|booking|reservation|appointment)s?")
+             r"team member|team|crew|everyone|everybody|colleague|co-?worker|group chat|channel|mailing list|subscriber|follower|audience|"
+             r"family|friend|contact|lawyer|insurer|insurance|school|daycare|doctor|"
+             r"order|subscription|booking|reservation|appointment)s?")
 
 # (id, class, [regexes that must ALL match], why)
 RULES = [
@@ -127,8 +135,12 @@ RULES = [
      "Spending money beyond the plan."),
     ("paid-thing", "R6", [r"\bpaid\b(?: [\w-]+){0,2} (?P<kw>tool|api|plan|feed|data|tier|service|model|subscription)\b"],
      "A paid tool, API or data source costs money beyond the plan."),
-    ("plan-upgrade", "R6", [r"\b(?P<kw>upgrade)\b.{0,30}\b(?P<kw2>plan|tier|subscription|account|seat|licen[cs]e)\b"],
-     "Upgrading a plan or subscription changes what is billed."),
+    ("plan-upgrade", "R6", [r"\b(?P<kw>upgrade|bump|raise|boost|increase|step up|move up|level up|jump|switch up)\b.{0,40}\b(?P<kw2>plan|tier|subscription|account|seat|licen[cs]e|quota|credits?|allowance)\b"],
+     "Upgrading or bumping a plan or subscription changes what is billed."),
+    ("higher-tier", "R6", [r"\b(?P<kw>higher|premium|pro|max|enterprise|paid|bigger|next|upper|team|business) (?P<kw2>tier|plan)\b"],
+     "A higher or paid tier costs more than the current plan."),
+    ("auto-payment", "R6", [r"\b(?P<kw>turn on|enable|set up|schedule|authori[sz]e|approve|activate|start)\b.{0,40}\b(?P<kw2>auto-?pay|automatic payments?|recurring payments?|direct debit|pre-?authori[sz]ed|standing order)\b"],
+     "Setting up automatic or recurring payments commits money."),
     ("beyond-allowance", "R6", [r"\b(?P<kw>beyond|over|exceed(?:s|ing)?)\b.{0,15}\b(?P<kw2>plan|allowance)\b"],
      "Going past the plan allowance is spend."),
     # R4 external
@@ -136,9 +148,26 @@ RULES = [
     ("social-post", "R4", [r"\b(?P<kw>post(?:s|ing)?)\b.{0,60}\b(?:to|on)\b.{0,20}\b(?P<kw2>threads|instagram|facebook|linkedin|twitter|tiktok|bluesky|mastodon|social media|the (?:public )?(?:feed|account|page|channel))\b",
                           r"\b(?P<kw>public(?:ly)?)\b.{0,15}\b(?P<kw2>post)\b"],
      "A public post reaches other people."),
-    ("send-comm", "R4", [V(r"send|email|e-mail|message|text|dm|notify|reply|respond|forward|call|phone|ping|contact|invite|tell"),
+    ("send-comm", "R4", [V(r"send|email|e-mail|message|text|dm|notify|reply|respond|forward|call|phone|ping|contact|invite|tell|ask|announce|remind|alert|inform|warn|advise|"
+                           r"write to|reach out to|get in touch with|follow up with|chase|whatsapp|slack|ring|shoot|drop"),
                          r"\b" + RECIPIENT],
-     "Messaging a supplier, accountant, staff member, customer or other outside party reaches another person."),
+     "Messaging a supplier, accountant, staff member, team, customer or other outside party reaches another person."),
+    ("contact-verb", "R4", [V(r"message|text|dm|email|e-mail|whatsapp|slack|ping|notify|tell|inform|remind|announce|alert|warn")],
+     "A verb that means contacting someone reaches another person, even when the person is named rather than described."),
+    ("send-message-noun", "R4", [V(r"send|deliver|forward|fire off|shoot|drop|leave|push"),
+                                 r"\b(?P<kw2>messages?|e-?mails?|texts?|dms?|notes?|notifications?|alerts?|reminders?|announcements?|replies|reply|memos?|letters?|invoices?|quotes?|estimates?)\b"],
+     "Sending a message, note or notice delivers something to another person."),
+    ("trigger-live-run", "R4", [V(r"dispatch|trigger|kick off|fire|fire off|launch|force|re-?run|rerun|run|start|execute|invoke|run now"),
+                                r"\b(?P<kw2>daily[- ]post|poster(?![-\w])|post mode|publish(?:ing)? (?:job|workflow)|workflow dispatch|workflow_dispatch|(?:github )?workflow|cron job|scheduled (?:job|run|task)|pipeline)\b"],
+     "Starting a workflow, scheduled job or pipeline runs real code that can post, send or change things outside the system (the daily-post workflow publishes to Threads)."),
+    ("gh-workflow-run", "R4", [r"(?P<kw>\bgh workflow run\b|\bworkflow_dispatch\b|\bworkflows?/[\w.-]+/dispatches\b)"],
+     "Dispatching a workflow runs it on GitHub."),
+    ("goes-out", "R4", [r"\b(?P<kw>goes? out|go(?:ing)? live|going out|send(?:s|ing)? out|push(?:es|ed|ing)? out|ship(?:s|ped|ping)? out)\b",
+                        r"\b(?P<kw2>post|posts|message|email|order|update|newsletter|announcement|content|photo|video|story|reel|thread)\b"],
+     "Something that 'goes out' or 'goes live' reaches other people."),
+    ("share-access", "R4", [V(r"grant|give|share|invite|allow|add|provide|extend"),
+                            r"\b(?P<kw2>access|permissions?|editor|viewer|admin rights|collaborators?|guest)\b"],
+     "Giving a person access or permissions reaches another person and changes who can see or edit the data."),
     ("submit", "R4", [V(r"submit|place|file|lodge"), r"\b(?P<kw2>order|form|report|filing|return|application|claim|request)s?\b"],
      "Submitting an order, form or filing leaves the system."),
     ("share-external", "R4", [V(r"share|upload|send|post"), r"\b(?P<kw2>publicly|externally|outside|public)\b"],
@@ -167,7 +196,7 @@ RULES = [
     ("add-to-shared", "R2", [V(r"add|append|insert"), r"\b(?:to|in|into)\b.{0,30}\b(?P<kw2>config|settings|workflow|roster|registry|contracts?|readme|claude\.md|ledger|rules?|prompts?|memory|schema)\b"],
      "Adding to a shared file or setting changes shared state."),
     # R1 reversible internal write (only with an owned-path hint and no shared-state hint)
-    ("create-owned", "R1", [V(r"create|write|draft|add|generate|compose|prepare|save|commit|record|log"),
+    ("create-owned", "R1", [V(r"create|write|draft|add|generate|compose|prepare|save|commit|record|log|export|dump|produce|build|make"),
                             r"(?P<kw2>agents/|\.claude/skills/|knowledge/|owned path|my owned|working (?:folder|directory)|scratch|local (?:branch|clone|copy)|build branch|drafts?/|fixtures?)"],
      "Creating a new file or draft inside the role's own paths is reversible."),
     ("run-tests", "R1", [V(r"run|execute"), r"\b(?P<kw2>tests?|evals?|validator|linter|dry[- ]run)\b"],
@@ -179,6 +208,14 @@ RULES = [
 RULES = [(rid, cls, [re.compile(p, re.I | re.M) for p in pats], why) for rid, cls, pats, why in RULES]
 SHARED_STATE_HINT = re.compile(r"\b(?:existing|shared|live|production|someone else'?s|other roles?'?s?|another role'?s?|config(?:uration)?|settings?|prompt|"
                                r"brain rule|workflow|contracts?|roster|registry|readme|claude\.md|schema|hook|permissions?|ledger)\b", re.I)
+# When NO rule recognised the action, the classifier is unsure, and the matrix says to use the higher class when unsure.
+# These words are searched anywhere in the text (not only as a verb at the start of a clause). They can only RAISE a
+# class that would otherwise be the unsure R2; they never apply to an action a rule did recognise.
+SAFETY_NET = [
+    ("R6", re.compile(r"\b(?P<kw>buy|purchase|pay|paying|subscribe|upgrade|bump|top[- ]?up|prepay|renew)\b", re.I)),
+    ("R4", re.compile(r"\b(?P<kw>send|email|publish|post|dispatch|trigger|submit|message|notify|text|forward|invite|announce|reply|tell|ask|order|share|upload|call)\b", re.I)),
+    ("R3", re.compile(r"\b(?P<kw>delete|remove|erase|wipe|purge|destroy|cancel|overwrite|drop|truncate|discard|merge|reset|revoke|terminate)\b", re.I)),
+]
 INSTRUCTIONS_ONLY = re.compile(r"\b(?:write|draft|document|prepare)\b.{0,40}\b(?:instructions?|steps?|guide|checklist)\b.{0,80}\bowner\b", re.I)
 
 
@@ -249,6 +286,13 @@ def classify(text):
         flags["needs_review"] = True
         matched.append({"rule": "no-rule-matched", "class": "R2", "keywords": [],
                         "why": "No rule recognised the action, so it is rounded up to R2 and a person must read it."})
+        for net_cls, net_rx in SAFETY_NET:  # unsure: use the higher class if a dangerous word appears anywhere
+            m = net_rx.search(scrubbed)
+            if m and CLASSES.index(net_cls) > idx:
+                idx = CLASSES.index(net_cls)
+                matched.append({"rule": "unsure-dangerous-word", "class": net_cls, "keywords": [m.group("kw")[:30]],
+                                "why": f"No rule recognised the action but the word '{m.group('kw')}' appears in it; unsure, so the higher class {net_cls} is used until a person reads it."})
+                break
     if injection or hidden:
         if idx < CLASSES.index("R2"):
             idx, rounded_up = CLASSES.index("R2"), True
@@ -269,7 +313,9 @@ def classify(text):
     requires = {
         "preflight_brief": idx >= 2,
         "rollback_plan": idx >= 2,
-        "owner_explicit_yes": cls in ("R3", "R4"),
+        # an action the classifier was unsure about or that carried instruction-like text needs the owner's explicit yes
+        # whatever its class: "unsure" must never be cheaper than "sure"
+        "owner_explicit_yes": cls in ("R3", "R4") or bool(flags["needs_review"] or injection or hidden),
         "human_only": cls == "R5",
         "cost_flag_by_chief_of_staff": cls == "R6",
         "default_if_no_answer": "nothing happens" if idx >= 2 else "not applicable",
