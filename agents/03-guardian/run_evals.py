@@ -22,6 +22,7 @@ SUITES = [
     ("skill-vetting", ".claude/skills/skill-vetting/evals/run_evals.py"),
     ("hooks", "agents/03-guardian/hooks/test_hooks.py"),
     ("poster-state (simulation)", "agents/03-guardian/poster-state/test_poster_state.py"),
+    ("poster fail-closed (simulation)", "agents/03-guardian/poster-state/test_fail_closed.py"),
 ]
 
 
