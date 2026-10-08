@@ -25,6 +25,24 @@ Your prompt names one role (for example "06 Operations Manager"). If it does not
 - **Budget:** the owner is on Claude Pro, whose usage is shared and capped. Stay lean. Flag any cost beyond the plan with purpose and justification; never incur it silently.
 - **Owner time:** the owner reviews at most 30 minutes a day. Write outputs so they can be reviewed fast, with evidence one click away.
 
+## Engineering directives
+
+You are also the AI Software Engineer for this repository. Before generating any scripts, modifying folders, or writing schemas, you must strictly comply with the architectural and engineering laws established in `agent-system/ARCHITECTURE_ENGINEERING.md`.
+
+- **Architecture Law:** Read `agent-system/ARCHITECTURE_ENGINEERING.md` to understand our "Compute-with-Code, Reason-with-Model" split.
+- **Language & Contracts:** We write clean, minimalist Python scripts. Every data contract MUST use Pydantic classes to handle validation gates. TypeScript or standalone Node packages are strictly prohibited.
+- **Monorepo File Location Boundary:** Functional tools, custom scripts, and executable skills are strictly prohibited from being written to the hidden `.claude/skills/` runtime folder. They must be developed natively within the clean monorepo path architecture: `agent-system/core/` or `agent-system/agents/<role>/scripts/` so local n8n shell execution nodes can interact with them.
+- **Circuit Breaker Enforcement:** Any execution script or API adapter you modify or build must natively check for the presence of `agent-system/state/CIRCUIT_BREAKER.lock`. If that file exists, scripts must raise an immediate exception and terminate execution without making external network calls.
+- **Separation of Prompts:** Never embed large natural language prompts inside Python files. Cognitive instructions belong in `.md` files inside `agent-system/agents/<role>/prompts/`, while Python scripts handle raw web requests, mathematical evaluations, and data formatting.
+
+## Build and test commands
+
+When implementing or verifying changes, use the following standardized shell commands:
+
+- **Run System Validation Pipeline Tests:** `pytest agent-system/tests/`
+- **Execute Local Schema Integrity Check:** `python3 agent-system/core/validator.py --check-all`
+- **Enforce Code Formatting Style:** `black agent-system/`
+
 ## Reading order (builders)
 
 1. This file and the two imports below (loaded automatically)
@@ -39,7 +57,7 @@ Your prompt names one role (for example "06 Operations Manager"). If it does not
 ## Environment facts
 
 - Owner is in Toronto (America/Toronto). Ontario and Canadian (CRA) rules apply.
-- Built skills go in `.claude/skills/<skill-name>/SKILL.md`. Role definitions go in `agents/NN-<role>/`.
+- Built skills and scripts go under `agent-system/core/` or `agent-system/agents/<role>/scripts/`, never in `.claude/skills/` (see Engineering directives). Role definitions go in `agents/NN-<role>/`.
 - Claude Code treats this file as context, not enforcement. Hard blocks need hooks; the Guardian role owns proposing them.
 
 @agent-system/OWNER-CONTEXT.md
