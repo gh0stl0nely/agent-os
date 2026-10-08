@@ -14,5 +14,7 @@
   "safe_delete_roots": ["/tmp/", "/var/tmp/"],
   "safe_delete_note": "Recursive deletes are allowed only below these folders (and never the folder itself).",
   "block_external_writes": true,
-  "block_external_writes_note": "curl or wget with a non-GET method or an upload body is an external-facing action (R4) and needs a Preflight Brief first."
+  "block_external_writes_note": "curl or wget with a non-GET method or an upload body is an external-facing action (R4) and needs a Preflight Brief first.",
+  "publish_roots": ["/tmp/", "/var/tmp/"],
+  "publish_roots_note": "gh may post a file's text (--body-file, -F body=@file, --input) only if it is inside the repository or one of these folders, is not a credential or protected file, and the secret scanner finds nothing in it."
 }

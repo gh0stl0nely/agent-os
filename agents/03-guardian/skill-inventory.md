@@ -25,14 +25,14 @@ These were written by the Guardian session in this pull request, so there is no 
 
 | skill | source | content sha256 | files | vetting script flags (expected, see note) |
 |---|---|---|---|---|
-| risk-classify | `agents/03-guardian` (this repo) | `a53f6cf1548dde8716c77e15d156187529d32bd244d46b504b41615daeeb2919` | 7 | exec, persistence, secrets, hidden-intent, injection |
+| risk-classify | `agents/03-guardian` (this repo) | `b9beb6972388de16d77d4ddc01d6a2660fab402d5c6351170d3ce355100181c4` | 9 | exec, exfil, persistence, secrets, hidden-intent, injection |
 | secrets-hygiene | `agents/03-guardian` (this repo) | `0cb2eb66d00835854dd1d169d4debeb1d44e22cb2e3396fcb97f9c7b73f8f30a` | 4 | exfil, secrets, hidden-intent, injection |
 | preflight-brief | `agents/03-guardian` (this repo) | `567b0c432e0270d8d00679f8e5a2fbe10bc2dc7fb03dafb36fa521bbc771e173` | 8 | injection |
 | rollback-plan | `agents/03-guardian` (this repo) | `c2024ef799001287564b16b38a35ce7c4e9da032c2dd545546055912777feba8` | 5 | injection |
 | skill-vetting | `agents/03-guardian` (this repo) | `86e4f738650328e7344f9fbab5f3975a5827c2982bfa512978819dbca763a387` | 12 | exec, exfil, obfuscation, persistence, secrets, follow-remote, hidden-intent, injection, scope, selfupdate |
 
 **Why the vetting script flags our own skills.** They are security tools: their rule tables, fixtures and tests contain the very patterns the script looks for (destructive commands, injection phrases, credential file names, zero-width characters), written on purpose to prove the checks work. The script correctly reports them as findings and gives a `reject` verdict. That is a property of the scanner reading attack strings, not evidence of a bad skill, and it is the reason first-party skills get a review-session read instead of a scan verdict. Files with a failed check, from the run on 2026-10-07 (the number is how many failed evidence lines):
-- risk-classify: `fixtures/actions.json` (5), `fixtures/review-heldout.json` (3, added in review round 2), `evals/cases.json` (7), `evals/run_evals.py` (3), `scripts/classify.py` (1, the rule table). Hash and counts regenerated 2026-10-07 after review round 2; the other four skills were not changed and their hashes still match.
+- risk-classify: `fixtures/actions.json` (5), `fixtures/review-heldout.json` (3), `fixtures/review-round2.json` (6, the reviewer's 61 wordings, added in round 3), `fixtures/builder-own-round3.json` (2, my own wordings), `evals/cases.json` (7), `evals/run_evals.py` (5), `scripts/classify.py` (4, the rule table; its `exfil` flag is the credential file names `.netrc`, `.npmrc`, `.pypirc` that the classifier looks for to class a request R5). Hash and counts regenerated 2026-10-08 after review round 3 (9 files, was 7); the other four skills were not changed and their hashes still match.
 - secrets-hygiene: `scripts/scan_secrets.py` (5, the pattern table), `evals/run_evals.py` (5), `SKILL.md` (2) and `reference.md` (1), where the text names credential files and secret-like words to explain the job.
 - preflight-brief: `evals/run_evals.py` (3, injected sentences used as test input).
 - rollback-plan: `fixtures/rollbacks.json` (1), `evals/run_evals.py` (2).

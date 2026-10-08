@@ -19,6 +19,8 @@ Commands (used by the shell wrappers; the poster imports the module):
   release DATE REASON      give up a claim (the poster does this itself only before the publish call; the owner may do it
                      by hand after checking Threads)
   export PATH        write the branch's history in the old format, for a rollback (refuses while a claim is unconfirmed)
+  status [DATE]      read-only: list what the branch records (posted / claimed / released); with DATE exit 0 = posted,
+                     11 = claimed and unconfirmed, 3 = nothing recorded for that day
 """
 import json
 import os
@@ -34,6 +36,20 @@ REMOTE = os.environ.get("STATE_REMOTE", "origin")
 NAME = os.environ.get("GIT_AUTHOR_NAME", "github-actions")
 EMAIL = os.environ.get("GIT_AUTHOR_EMAIL", "github-actions@users.noreply.github.com")
 RANK = {"released": 0, "claimed": 1, "posted": 2}
+
+
+def rebuild_help():
+    """What the owner must do when the state branch is missing, rewound or re-created. The ORDER is the safety:
+    a branch that was deleted and re-created from main has forgotten every post made since its history was last saved,
+    so if today's post is already live the next run (a backup cron, a manual run) would post it a second time."""
+    return (f"Do NOT simply re-create '{BRANCH}' from main and carry on: a re-created or rewound branch has forgotten the posts made since its history "
+            f"was last saved, and if today's post is already live the next run posts it a second time. Do this in order. "
+            f"(1) PAUSE the poster first with its own switch: set \"paused\": true in bloor-assets/config.json by pull request, merge it, and wait until no poster run is in progress. "
+            f"(2) Create '{BRANCH}' from main (or put it back). "
+            f"(3) For every day that has already posted (look at Threads; today at the very least), re-create its claim: "
+            f"python3 scripts/poster_gate.py complete DATE ID LINK. Check with: python3 scripts/poster_gate.py status DATE (exit 0 means recorded). "
+            f"(4) Only then set \"paused\": false by pull request. "
+            f"Runbook: agents/03-guardian/OWNER-SETUP-CHECKLIST.md, section 'poster-state was deleted, rewound or re-created'. At first-time setup the checklist's step 3.1 applies instead.")
 
 
 class Blocked(Exception):
@@ -105,13 +121,13 @@ def dump(state):
 def fetch_tip():
     r = git("ls-remote", "--exit-code", "--heads", REMOTE, BRANCH, check=False)
     if r.returncode == 2:
-        raise GateError(f"branch '{BRANCH}' does not exist on {REMOTE}. Create it once from main before this workflow runs")
+        raise GateError(f"branch '{BRANCH}' does not exist on {REMOTE}, so the post history is unknown and nothing was posted. " + rebuild_help())
     if r.returncode != 0:
         raise GateError(f"cannot reach {REMOTE} to read '{BRANCH}': {r.stderr.strip()[-120:]}")
     git("fetch", "--no-tags", "--depth=1", REMOTE, BRANCH)
     p = git("show", f"FETCH_HEAD:{FILE}", check=False)
     if p.returncode != 0:
-        raise GateError(f"{FILE} is missing on '{BRANCH}'")
+        raise GateError(f"{FILE} is missing on '{BRANCH}'. " + rebuild_help())
     try:
         return normalise(json.loads(p.stdout))
     except (ValueError, GateError):
@@ -247,6 +263,27 @@ def restore():
     print(f"Post history restored from {REMOTE}/{BRANCH}.")
 
 
+def status(date=None):
+    """Read-only. Shows what the branch records so the owner can compare it with Threads. Exit codes with a DATE:
+    0 posted, 11 claimed and unconfirmed, 3 nothing recorded (a released claim counts as nothing recorded)."""
+    tip = fetch_tip()
+    days = sorted(set(tip["posted"]) | set(tip["claims"]))
+    def state_of(d):
+        if d in confirmed_dates(tip):
+            return "posted"
+        c = tip["claims"].get(d, {})
+        return c.get("status", "none")
+    if date is None:
+        shown = days[-14:]
+        print(f"{len(tip['posted'])} posted day(s) recorded on {REMOTE}/{BRANCH}; last {len(shown)} day(s) with any record:")
+        for d in shown:
+            print(f"  {d}  {state_of(d)}")
+        return 0
+    st = state_of(date)
+    print(f"{date}: {st}")
+    return 0 if st == "posted" else (11 if st == "claimed" else 3)
+
+
 def save():
     for attempt in (1, 2):
         try:
@@ -287,7 +324,12 @@ def main(argv):
         elif cmd == "claim":
             print(claim(argv[2], argv[3] if len(argv) > 3 else "local"))
         elif cmd == "complete":
-            complete(argv[2], {"id": argv[3], "permalink": argv[4], "at": now()})
+            if len(argv) < 5:
+                print("usage: poster_gate.py complete DATE ID LINK   (ID and LINK are on the live post in Threads; write 'unknown' if you cannot find the ID)", file=sys.stderr)
+                sys.exit(2)
+            complete(argv[2], {"id": argv[3], "permalink": argv[4], "at": now(), "recorded_by": "owner, by hand"})
+        elif cmd == "status":
+            sys.exit(status(argv[2] if len(argv) > 2 else None))
         elif cmd == "export":
             export(argv[2])
         elif cmd == "release":

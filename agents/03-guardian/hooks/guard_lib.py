@@ -7,8 +7,10 @@ program does. Real limits belong in GitHub (branch protection, push protection) 
 Where the parser does not understand a form it fails closed (blocks) rather than guessing it is harmless.
 """
 import fnmatch
+import glob
 import json
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -414,11 +416,124 @@ def is_protected(path, root, policy):
     return False
 
 
-RISKY_NAME = re.compile(r"(?i)(?:^|/)(?:\.env(?:\.(?!example$|sample$|template$|dist$)[^/]+)?|id_(?:rsa|dsa|ecdsa|ed25519)|\.netrc|\.pypirc|\.npmrc|\.git-credentials|credentials(?:\.json)?|service-account[^/]*\.json|[^/]+\.(?:pem|key|p12|pfx|ppk|keystore|jks))$|(?:^|/)\.(?:ssh|aws|gnupg|kube|docker)/|(?:^|/)\.config/gh/")
+RISKY_NAME = re.compile(r"(?i)(?:^|/)(?:\.env(?:\.(?!example$|sample$|template$|dist$)[^/]+)?|id_(?:rsa|dsa|ecdsa|ed25519)|\.netrc|\.pypirc|\.npmrc|\.git-credentials|credentials(?:\.json)?|service-account[^/]*\.json|[^/]+\.(?:pem|key|p12|pfx|ppk|keystore|jks))$|(?:^|/)\.(?:ssh|aws|gnupg|kube|docker)/|(?:^|/)\.config/gh/|^/proc/[^/]+/environ$|(?:^|/)\.(?:bash|zsh|python)_history$")
 
 
 def risky_name(path):
     return bool(RISKY_NAME.search(path.replace(os.sep, "/")))
+
+
+EXAMPLE_SUFFIXES = (".example", ".sample", ".template", ".dist")
+# Git settings that can send a push somewhere else, or run a program, when written in a file git reads outside the repo.
+GIT_CONFIG_FILE = re.compile(r"(?:^|/)\.gitconfig$|(?:^|/)\.config/git/|^/etc/gitconfig$")
+
+
+def git_config_file(path):
+    return bool(GIT_CONFIG_FILE.search(path.replace(os.sep, "/")))
+
+
+def brace_expand(tok, limit=64):
+    """Expand {a,b} the way a shell does (innermost first), so `{main,main}` or `.e{n,x}v` can be examined. A sequence
+    like {1..3} is returned unexpanded; callers treat any `{` left over as 'dynamic'. Raises ParseError past `limit`."""
+    out, todo = [], [tok]
+    while todo:
+        t = todo.pop()
+        m = re.search(r"\{([^{}]*,[^{}]*)\}", t)
+        if not m:
+            out.append(t)
+            continue
+        for alt in m.group(1).split(","):
+            todo.append(t[:m.start()] + alt + t[m.end():])
+        if len(out) + len(todo) > limit:
+            raise ParseError("a brace expression expands to too many words")
+    return out
+
+
+def credential_in_arg(tok, cwd):
+    """The name of a credential-bearing file that this argument refers to, or None. Looks at the word itself, the part after
+    `=` (--file=.env, if=.env), after `@` (curl -d @.env), after `:` (git show HEAD:.env), every {a,b} expansion, every file a
+    glob matches in `cwd` (reading the folder, never running anything), and where an existing symlink really points."""
+    cands = set()
+    try:
+        words = brace_expand(tok)
+    except ParseError:
+        words = [tok]
+    for w in words:
+        cands.add(w)
+        for part in re.split(r"[=:]", w)[1:]:
+            cands.add(part)
+        for c in list(cands):
+            cands.add(c.lstrip("@"))
+    for c in list(cands):
+        if c and any(ch in c for ch in "*?["):
+            base = os.path.expanduser(c)
+            try:
+                for hit in sorted(glob.glob(os.path.join(cwd, base) if not os.path.isabs(base) else base))[:200]:
+                    cands.add(hit)
+            except OSError:
+                pass
+    for c in list(cands):
+        if c and not c.startswith("-") and "$" not in c:
+            q = os.path.join(cwd, os.path.expanduser(c))
+            if os.path.islink(q):
+                cands.add(os.path.realpath(q))
+    for c in sorted(cands):
+        if c and risky_name(c) and not c.endswith(EXAMPLE_SUFFIXES):
+            return c.lstrip("@")
+    return None
+
+
+PATCH_PATH_LINES = (
+    re.compile(r"^(?:---|\+\+\+) (.+?)(?:\t.*)?$"),
+    re.compile(r"^\*\*\* (?!\d)(.+?)(?:\t.*)?$"),
+    re.compile(r"^(?:rename|copy) (?:from|to) (.+)$"),
+    re.compile(r"^Index: (.+)$"),
+    re.compile(r"^diff --git (.+)$"),
+)
+
+
+def patch_paths(text):
+    """Every file name a patch (unified, context, git, or a mailbox of them) says it changes, as written. Names are returned in
+    full; callers try every suffix, because the strip level (-p) decides which prefix is dropped."""
+    out = []
+    for line in text.splitlines():
+        for rx in PATCH_PATH_LINES:
+            m = rx.match(line)
+            if not m:
+                continue
+            chunk = m.group(1).strip()
+            if chunk == "/dev/null":
+                break
+            if not line.startswith("diff --git"):
+                out.append(chunk.strip('"'))  # the whole name, which may contain spaces
+            out += [x.strip('"') for x in chunk.split() if x.strip('"') != "/dev/null"]
+            break
+    seen, uniq = set(), []
+    for c in out:
+        if c not in seen:
+            seen.add(c); uniq.append(c)
+    return uniq
+
+
+def patch_target_hits(names, base, root, policy, max_strip=8):
+    """(protected path, credential file) found among the names a patch touches, checking every strip level so that
+    `-p0`, `-p1` and `-p3` all lead to the same answer. A path with `..` is resolved first. Returns (kind, path) or None."""
+    for n in names:
+        n = n.strip('"').replace("\\", "/")
+        parts = [x for x in n.split("/") if x not in ("", ".")]
+        if n.startswith("/"):
+            levels = [n] + ["/".join(parts[i:]) for i in range(1, min(len(parts), max_strip))]
+        else:
+            levels = ["/".join(parts[i:]) for i in range(0, min(len(parts), max_strip))]
+        for lv in levels:
+            if not lv:
+                continue
+            full = posixpath.normpath(lv if lv.startswith("/") else posixpath.join(base, lv))
+            if is_protected(full, root, policy):
+                return "protected", os.path.relpath(full, root)
+            if (risky_name(full) and not full.endswith(EXAMPLE_SUFFIXES)) or git_config_file(full):
+                return "credential", full
+    return None
 
 
 # ---------------------------------------------------------------- scanning

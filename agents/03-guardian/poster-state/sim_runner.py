@@ -9,6 +9,7 @@ The fake replaces urllib.request.urlopen, so the script's own call(), fail() and
   publish-timeout   the publish request TIMES OUT but the post IS live (the worst case: the client cannot know)
   publish-400       the publish request is rejected with HTTP 400 (nothing is published)
   permalink-500     the post is live, then reading its permalink fails with HTTP 500
+  slow-container    creating the container takes 60 seconds (lets a test kill or cancel the run after the claim)
 """
 import io
 import json
@@ -50,6 +51,10 @@ def fake_urlopen(req, timeout=None):
     if path == "me" or path.startswith("me?"):
         out = {"id": "1", "username": "sim"}
     elif path == "me/threads":
+        if FAULT == "slow-container":
+            import time
+            open(WORLD + ".started", "w").write("1")
+            time.sleep(60)
         if FAULT == "container-error":
             raise http_error(url, 500)
         w["containers"] += 1

@@ -40,6 +40,8 @@ def main():
     p = g.resolve(path, cwd) if path else None
     if p and g.is_protected(p, root, pol):
         g.deny("protected-path", f"{os.path.relpath(p, root)} is a protected path.", "Propose the change in agent-system/change-requests/ or ask the owner.")
+    if p and g.git_config_file(p):
+        g.deny("git-config", f"{os.path.basename(p)} is a git settings file; a remote or alias defined there can send commits elsewhere or run a program (R2/R4).", "Ask the owner.")
     if path and g.risky_name(path) and not path.endswith((".example", ".sample", ".template")):
         g.deny("credential-file", f"'{os.path.basename(path)}' is a file that normally holds a secret. Credentials are the owner's to place (R5); write instructions instead.")
     body = "\n".join(texts(ti))

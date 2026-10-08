@@ -1,9 +1,9 @@
 # Change request: make the Threads poster fail closed (claim before posting)
 
-- **From:** 03 Guardian builder session (round 2, answering the review of PR #2)
+- **From:** 03 Guardian builder session (round 3, answering the round-2 review of PR #2; round 2 added the claim design, round 3 adds the F4 recovery runbook below)
 - **Touches (not edited by this PR):** `scripts/post_threads.py`, `.github/workflows/daily-post.yml`. Both are live. Changing them is an **R2** action: it needs a Preflight Brief and the owner's yes, and a maintenance session makes the change, not the Guardian.
 - **Priority:** high. **Do not protect `main` until the owner has approved this change and the real-GitHub test (step 6 below) has passed.**
-- **Where the working code is:** `agents/03-guardian/poster-state/` (`poster_gate.py`, `post_threads.gate.patch`, the two wrappers, `proposed-workflow-steps.yml`). Tests: `test_fail_closed.py` (55 checks) and `test_poster_state.py` (20 checks). Both run offline.
+- **Where the working code is:** `agents/03-guardian/poster-state/` (`poster_gate.py`, `post_threads.gate.patch`, the two wrappers, `proposed-workflow-steps.yml`). Tests: `test_fail_closed.py` (80 checks) and `test_poster_state.py` (20 checks). Both run offline.
 
 ## 1. The problem, in the reviewer's terms
 
@@ -14,6 +14,7 @@
 | F1 | The post goes live, then saving the record fails (branch protection, a network blip, a push conflict) | The next cron checks out a history without today and **posts again** | `test_fail_closed.py` S0 (old flow, 2 posts live) |
 | F2 | Migration with a stale branch: `poster-state` is cut from `main`, then the old workflow saves one more post to `main` before the cutover | The new workflow restores the older branch copy and forgets that post | S10 |
 | F3 | Rollback: the new design has run for days (records only on `poster-state`), the owner reverts the workflow, and the old workflow reads `main`'s old `state.json` | The old script posts a day that is already live | S11 (naive rollback, 3 posts live) |
+| F4 | **`poster-state` is deleted, rewound or re-created from `main` on a day that already posted** (found by the round-2 review, cases 3e and 3f) | The new branch has no claim for today, so the next run (a backup cron, a manual run) posts again. The round-2 restore error ("Create it once from main") and the checklist both told the owner to do exactly this | S15 (re-created from main: 2 live), S17a (rewound: 3 live) |
 
 The earlier proposal (restore from a branch, save to a branch) fixes protection but not F1: a failed save after a live post is still invisible to the next run. The root cause is that the poster records the post **after** it happens, and the record is a best-effort extra step. The fix is to record the **intent** first.
 
@@ -50,6 +51,12 @@ The save step stays, and runs with `if: always()`: when the post is live but ste
 | Two runs at the same instant | Exactly one claim wins, the other exits 11 | S9 |
 | F2: branch is behind `main` | Restore **and** claim both refuse; `save` from a `main` checkout fixes it | S10 |
 | F3: rollback | Naive rollback double-posts; export-then-PR rollback does not | S11 |
+| F4: branch deleted after a post | Restore stops the run (exit 1); the message now gives the ordered runbook: pause, put the branch back, `complete` each posted day, `status`, unpause. The old line "Create it once from main" is gone | S14 |
+| F4: re-created from main, runbook skipped | **Second post goes out.** Kept as a negative control so the hazard stays visible | S15 |
+| F4: runbook followed (deleted) | Paused: backup cron posts nothing; `status` shows the day missing (exit 3); `complete` records it; `status` exit 0; after unpausing the cron says "Already posted"; next day posts | S16 |
+| F4: branch rewound, runbook skipped / followed | Skipped: second post (3 live). Followed: no extra post (2 live) | S17a, S17b |
+| F4: branch exists but lost its state file | Same ordered instructions | S17c |
+| A run killed (SIGKILL) or cancelled (SIGTERM) after the claim | The claim stays (no cleanup code runs); the next run exits 11; a missed post, never a double; the owner checks Threads and `release`s or `complete`s | S19 |
 
 Known limit, stated plainly: after a publish **HTTP 400** the claim is kept even though nothing is live, because the client cannot tell a rejected publish from a lost response in general. The cost is one blocked day that the owner clears by hand. I chose that over guessing.
 
@@ -62,7 +69,7 @@ Known limit, stated plainly: after a publish **HTTP 400** the claim is kept even
 ## 4. Migration, in this order (each step is checkable)
 
 1. Owner approves the Preflight Brief for this change. **`main` is still unprotected.**
-2. Create `poster-state` from the current `main` in the GitHub web UI (no force; nothing is overwritten).
+2. **Check Threads: no post is live today that `main` does not know about.** Then create `poster-state` from the current `main` in the GitHub web UI (no force; nothing is overwritten). This is safe only because the gate has never run; after the first run, creating the branch from `main` is never enough on its own (section 5b).
 3. Merge the change (patch, scripts, workflow) by pull request. If the old workflow saved a post to `main` between steps 2 and 3, the first new run **refuses** (F2) instead of guessing. Fix: from a checkout of `main` run `python3 scripts/poster_gate.py save`, which merges `main`'s posts into the branch without losing any.
 4. Run the workflow by hand in mode `dry_run`. Note: **this does not exercise any push** (it returns before the claim and before the save). It proves only that restore reads the branch.
 5. Wait for one real scheduled post. Confirm: Threads shows one post; `poster-state` has a "Claim" and a "Record" commit; `claims[today]` is `posted`.
@@ -80,9 +87,24 @@ The old workflow reads `main`'s `state.json`, which the new design never updates
 
 S11 shows the naive rollback posting day 2 a second time and this sequence not doing so.
 
+## 5b. Recovery when `poster-state` is deleted, rewound or re-created (F4)
+
+The gate remembers a day only on the `poster-state` branch, and it never asks Threads whether a day has posted. A branch that is deleted and created again from `main`, force-pushed back, or restored from an older backup therefore forgets every post since its last good commit. If one of those days is today, the next run posts it again. No code change to the live files is needed to make this safe, but the **order of the owner's steps** is the whole control:
+
+1. **Pause** the poster with its existing switch, first: `"paused": true` in `bloor-assets/config.json`, by pull request (the poster prints "Posting is paused" and returns before the gate). Wait until the Actions tab shows no poster run in progress.
+2. **Put the branch back** (create from `main` if deleted; nothing to do if only rewound).
+3. **Re-create the claim for every day that already posted** (Threads is the source of truth; today at the least): `python3 scripts/poster_gate.py complete DATE ID LINK`, then `python3 scripts/poster_gate.py status DATE` must print `posted` and exit 0 (exit 3 = nothing recorded, 11 = claimed and unconfirmed). `status` with no date lists what the branch records.
+4. **Unpause**, last, by pull request.
+
+What changed in round 3 to support this: `restore` (and the claim step, which calls the same fetch) now fails with this ordered text instead of "Create it once from main"; `poster_gate.py status` is new and read-only; `complete` with missing arguments prints a usage line instead of a traceback; the checklist has a section by the same name. All of it is in files the Guardian owns; **no live file was edited**.
+
+A stronger option, **not done** and the owner's choice: have the poster make one read-only Threads call (list today's posts) before claiming and refuse if one exists. That closes F1 to F4 at the root, because Threads becomes the source of truth, at the cost of one more API read and a larger patch to the live script (the reviewer proposed it). It is left out of this round because round 3 forbids editing `scripts/` and because it needs the owner to decide that the token may be used for a read in the gate (it already is, by the poster, in the same run).
+
+**Killed or cancelled runs.** The failure table above covers Python exceptions. A run that is killed (SIGKILL, a runner crash) or cancelled (SIGTERM, "Cancel workflow" in the Actions tab) after it claimed the day runs no `finally` block, so its claim stays. S19 kills and cancels a real run mid-way. The next run exits 11 (a missed post, never a double). After cancelling a poster run, expect to look at Threads and run `release` (nothing live) or `complete` (live).
+
 ## 6. What this does not claim
 
 - It was tested against a local bare repository and a fake Threads. GitHub's own behaviour (does the Actions token push a side branch while `main` is protected?) is unconfirmed until step 6 of the migration passes.
 - It does not stop a human from pressing "post" in `workflow_dispatch` mode `post`: that mode passes `--force`, which skips the time window but not the claim, so it is also protected from duplicates.
-- Threads itself is the final source of truth for "is it live". The gate cannot see Threads; it relies on the owner's check in the blocked case.
+- Threads itself is the final source of truth for "is it live". The gate cannot see Threads; it relies on the owner's check in the blocked case and in section 5b. A branch deleted, rewound or re-created and then **left unpaused** can still double-post; the runbook's order, not the code, prevents that.
 - `poster-state` is public like the repo. It holds only dates, post ids and permalinks of already public posts.
