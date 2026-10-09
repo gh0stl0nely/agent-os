@@ -1,0 +1,36 @@
+# PROPOSED one-off check, NOT installed. Run it ONLY AFTER main is protected and the new poster files are in place
+# (checklist step 6). It proves on real GitHub, with protection ON, that the workflow token can claim, record and
+# re-read a post on a side branch. It posts nothing and never touches `poster-state` (it uses `poster-state-test`).
+#
+# Why it exists: a dry run of the poster (mode dry_run) exits before the claim and the save, so it does NOT exercise
+# any push. Only this check does. Whether the Actions token is allowed to push a side branch while main is protected
+# is not something this review could confirm from GitHub's pages (K-sec-0005, K-sec-0006); this answers it.
+#
+# Add it, run it once from the Actions tab, read the result, then delete the workflow file and the branch
+# `poster-state-test` by hand. If it fails, turn main protection off (checklist rollback) and tell Chief of Staff.
+name: Test side-branch gate
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  try:
+    runs-on: ubuntu-latest
+    env:
+      STATE_BRANCH: poster-state-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create the throwaway branch (no force)
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git checkout -q -b "$STATE_BRANCH"
+          git push -q origin "HEAD:refs/heads/$STATE_BRANCH"
+          git checkout -q -
+      - name: Claim, record, and re-read a fake day
+        run: |
+          set -e
+          python3 -B scripts/poster_gate.py restore
+          test "$(python3 -B scripts/poster_gate.py claim 2099-01-01 probe)" = claimed
+          python3 -B scripts/poster_gate.py complete 2099-01-01 probe-id https://example.invalid/probe
+          test "$(python3 -B scripts/poster_gate.py claim 2099-01-01 probe2)" = already-posted
+          echo "Gate works on real GitHub with protection on. Delete branch $STATE_BRANCH and this workflow."

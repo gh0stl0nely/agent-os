@@ -1,0 +1,19 @@
+{
+  "id": "K-sec-0001",
+  "type": "fact",
+  "namespace": "security",
+  "claim": "The OWASP Top 10 for LLM Applications 2025 edition lists ten risks: prompt injection, sensitive information disclosure, supply chain, data and model poisoning, improper output handling, excessive agency, system prompt leakage, vector and embedding weaknesses, misinformation, and unbounded consumption (LLM01 to LLM10). The Guardian uses prompt injection (LLM01), sensitive information disclosure (LLM02), supply chain (LLM03), improper output handling (LLM05), excessive agency (LLM06) and unbounded consumption (LLM10) as reasoning checks for planned actions.",
+  "source": {
+    "ref": "https://genai.owasp.org/llm-top-10/",
+    "locator": "LLM Top 10 for 2025 section, entries LLM01:2025 to LLM10:2025",
+    "retrieved_at": "2026-10-07T14:40:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "high",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:40:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:40:00-04:00",
+  "expires_at": "2027-04-07T14:40:00-04:00",
+  "status": "verified",
+  "owner_agent": "03-guardian"
+}

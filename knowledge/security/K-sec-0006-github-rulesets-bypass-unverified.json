@@ -1,0 +1,19 @@
+{
+  "id": "K-sec-0006",
+  "type": "fact",
+  "namespace": "security",
+  "claim": "Repository rulesets are available on public repositories on GitHub Free. Their bypass list can hold repository admins, users with the maintain or write role, teams, GitHub Apps and Dependabot. GitHub's ruleset pages do not say whether the Actions GITHUB_TOKEN or the github-actions bot can be added to the bypass list, and do not say which bypass actor types a personal-account repository can use. Treat bot bypass on a personal repository as unverified until the owner sees it in the settings screen. Path-based push rulesets are listed only for Team-plan private and internal repositories, so they are not available to a public personal repository.",
+  "source": {
+    "ref": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets",
+    "locator": "plan availability; bypass list; push rulesets; also the creating-rulesets-for-a-repository page",
+    "retrieved_at": "2026-10-07T14:44:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "low",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:44:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:44:00-04:00",
+  "expires_at": "2026-12-07T14:44:00-05:00",
+  "status": "verified",
+  "owner_agent": "03-guardian"
+}

@@ -1,0 +1,631 @@
+"""Shared code for the Guardian's PreToolUse hooks. Standard library only; nothing here runs the command it reads.
+
+THESE HOOKS ARE A GUARDRAIL, NOT A SECURITY BOUNDARY. They stop a mistaken or manipulated agent from walking into a
+well-known mistake, with a clear message. They do not stop a determined program: a command can be built from a script
+written earlier, a program the parser has never heard of, or an encoding. They parse text; they cannot see what a
+program does. Real limits belong in GitHub (branch protection, push protection) and in what credentials a session holds.
+Where the parser does not understand a form it fails closed (blocks) rather than guessing it is harmless.
+"""
+import fnmatch
+import glob
+import json
+import os
+import posixpath
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+REPO_FROM_HOOK = HERE.parents[2]
+SCANNER = REPO_FROM_HOOK / ".claude/skills/secrets-hygiene/scripts/scan_secrets.py"
+POLICY_PATH = HERE / "policy.json"
+
+
+class ParseError(Exception):
+    pass
+
+
+def load_policy():
+    try:
+        return json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        raise RuntimeError(f"policy.json could not be read ({e.__class__.__name__})")
+
+
+# ---------------------------------------------------------------- shell parsing (no execution)
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1[^\n]*\n(.*?)\n[ \t]*\2[ \t]*(?=\n|$)", re.S)
+
+
+def strip_heredocs(cmd):
+    """Remove here-document bodies (they are data, usually a commit message) but keep the line that opens them."""
+    out, pos = [], 0
+    for m in HEREDOC.finditer(cmd):
+        line_end = cmd.find("\n", m.start())
+        out.append(cmd[pos:line_end if line_end != -1 else m.start()])
+        out.append(" ")
+        pos = m.end()
+    out.append(cmd[pos:])
+    return "".join(out)
+
+
+class Seg:
+    def __init__(self, tokens, redirects, piped):
+        self.tokens, self.redirects, self.piped = tokens, redirects, piped
+
+
+def _match_paren(s, i):
+    """s[i] == '(' just after '$' or '<' ; return index of the matching ')' or raise."""
+    depth, j, q = 0, i, None
+    while j < len(s):
+        c = s[j]
+        if q:
+            if c == q:
+                q = None
+            elif c == "\\" and q == '"':
+                j += 1
+        elif c in "'\"":
+            q = c
+        elif c == "\\":
+            j += 1
+        elif c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return j
+        j += 1
+    raise ParseError("unclosed $( ... )")
+
+
+def parse(cmd, depth=0):
+    """Split a command line into segments of tokens, with redirect targets and nested command strings.
+    Returns (segments, nested) where nested are strings found in $( ), backticks and <( ), to parse the same way."""
+    if depth > 6:
+        raise ParseError("command nests too deeply")
+    s = strip_heredocs(cmd)
+    segs, nested = [], []
+    tokens, redirects, buf, has_buf = [], [], [], False
+    piped_next, expect_redirect = False, None
+
+    def end_token():
+        nonlocal buf, has_buf, expect_redirect
+        if has_buf:
+            t = "".join(buf)
+            if expect_redirect:
+                redirects.append((expect_redirect, t))
+                expect_redirect = None
+            else:
+                tokens.append(t)
+        buf, has_buf = [], False
+
+    def end_seg(pipe=False):
+        nonlocal tokens, redirects, piped_next
+        end_token()
+        if tokens or redirects:
+            segs.append(Seg(tokens, redirects, piped_next))
+        tokens, redirects, piped_next = [], [], pipe
+
+    i, n, q = 0, len(s), None
+    while i < n:
+        c = s[i]
+        if q == "'":
+            if c == "'":
+                q = None
+            else:
+                buf.append(c)
+            i += 1
+            continue
+        if c == "\\" and i + 1 < n:
+            if s[i + 1] == "\n":
+                i += 2
+                continue
+            buf.append(s[i + 1]); has_buf = True
+            i += 2
+            continue
+        if q == '"':
+            if c == '"':
+                q = None
+                i += 1
+                continue
+            if c == "$" and i + 1 < n and s[i + 1] == "(":
+                j = _match_paren(s, i + 1)
+                nested.append(s[i + 2:j]); buf.append("$(...)"); i = j + 1; continue
+            if c == "`":
+                j = s.find("`", i + 1)
+                if j < 0:
+                    raise ParseError("unclosed backtick")
+                nested.append(s[i + 1:j]); buf.append("`...`"); i = j + 1; continue
+            buf.append(c); i += 1
+            continue
+        # unquoted
+        if c in "'\"":
+            q = c; has_buf = True; i += 1
+            continue
+        if c == "$" and i + 1 < n and s[i + 1] == "(":
+            j = _match_paren(s, i + 1)
+            nested.append(s[i + 2:j]); buf.append("$(...)"); has_buf = True; i = j + 1; continue
+        if c in "<>" and i + 1 < n and s[i + 1] == "(":
+            j = _match_paren(s, i + 1)
+            nested.append(s[i + 2:j]); buf.append("<(...)"); has_buf = True; i = j + 1; continue
+        if c == "`":
+            j = s.find("`", i + 1)
+            if j < 0:
+                raise ParseError("unclosed backtick")
+            nested.append(s[i + 1:j]); buf.append("`...`"); has_buf = True; i = j + 1; continue
+        if c == "#" and not has_buf:
+            while i < n and s[i] != "\n":
+                i += 1
+            continue
+        if c in " \t":
+            end_token(); i += 1; continue
+        if c == "\n" or c == ";":
+            end_seg(); i += 1; continue
+        if c == "&":
+            if i + 1 < n and s[i + 1] == ">":  # &> file
+                end_token(); expect_redirect = ">"; i += 2; continue
+            end_seg(); i += 2 if (i + 1 < n and s[i + 1] == "&") else 1; continue
+        if c == "|":
+            if i + 1 < n and s[i + 1] == "|":  # '||' joins commands; it is not a pipe
+                end_seg(); i += 2
+            else:
+                end_seg(pipe=True); i += 1
+            continue
+        if c in "()":
+            end_seg(); i += 1; continue
+        if c in "<>":
+            # file-descriptor prefix like 2> or 2>&1
+            if has_buf and "".join(buf).isdigit():
+                buf, has_buf = [], False
+            else:
+                end_token()
+            op = c
+            i += 1
+            if i < n and s[i] == c:
+                op += c; i += 1
+            if i < n and s[i] == "&":  # 2>&1 : not a file
+                i += 1
+                while i < n and (s[i].isdigit() or s[i] == "-"):
+                    i += 1
+                continue
+            if op.startswith("<"):
+                expect_redirect = "<"
+            else:
+                expect_redirect = ">"
+            continue
+        buf.append(c); has_buf = True; i += 1
+    if q:
+        raise ParseError("unclosed quote")
+    end_seg()
+    return segs, nested
+
+
+SHELL_NAMES = {"sh", "bash", "zsh", "dash", "ksh", "ash", "mksh", "csh", "tcsh", "fish"}
+ASSIGN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=.*")
+RESERVED = {"if", "then", "elif", "else", "while", "until", "do", "!", "{", "}", "(", ")"}
+
+# For each wrapper, its options and how many arguments each takes. An option not listed here is not guessed at: the
+# command is refused as unparseable, so a new spelling cannot slip through as "just an option".
+WRAPPER_OPTS = {
+    "command": {"-p": 0, "-v": 0, "-V": 0},
+    "builtin": {},
+    "exec": {"-a": 1, "-c": 0, "-l": 0},
+    "nohup": {},
+    "time": {"-p": 0, "-v": 0, "-a": 0, "-f": 1, "-o": 1, "--portability": 0, "--verbose": 0, "--append": 0, "--format": 1, "--output": 1},
+    "nice": {"-n": 1, "--adjustment": 1},
+    "ionice": {"-c": 1, "-n": 1, "-p": 1, "-P": 1, "-u": 1, "-t": 0},
+    "stdbuf": {"-i": 1, "-o": 1, "-e": 1},
+    "timeout": {"-s": 1, "-k": 1, "-v": 0, "--signal": 1, "--kill-after": 1, "--preserve-status": 0, "--foreground": 0, "--verbose": 0},
+    "setsid": {"-c": 0, "-f": 0, "-w": 0, "--ctty": 0, "--fork": 0, "--wait": 0},
+    "env": {"-i": 0, "-0": 0, "-v": 0, "-u": 1, "-C": 1, "-S": "split", "--ignore-environment": 0, "--null": 0, "--unset": 1, "--chdir": 1, "--split-string": "split"},
+    "xargs": {"-0": 0, "-r": 0, "-t": 0, "-p": 0, "-x": 0, "-o": 0, "-I": 1, "-i": 0, "-n": 1, "-P": 1, "-d": 1, "-E": 1, "-e": 0, "-L": 1, "-l": 0, "-s": 1, "-a": 1,
+              "--null": 0, "--no-run-if-empty": 0, "--verbose": 0, "--max-args": 1, "--max-procs": 1, "--delimiter": 1, "--arg-file": 1, "--replace": 0},
+    "busybox": {},
+}
+# Programs that run another command in a way this parser does not follow. Refused, not guessed at: write the inner command directly.
+UNKNOWN_WRAPPERS = {"watch", "flock", "unshare", "chroot", "nsenter", "strace", "ltrace", "setpriv", "script", "parallel", "expect", "unbuffer",
+                    "at", "batch", "start-stop-daemon", "systemd-run", "runuser", "capsh", "taskset", "chrt", "numactl", "fakeroot", "firejail",
+                    "bwrap", "proot", "gdb", "valgrind", "sg", "newgrp", "run-parts", "ssh-agent", "dbus-launch", "xvfb-run", "cpulimit", "sshpass"}
+
+
+def shell_command_string(args):
+    """For `sh|bash|zsh [options] -c STRING [...]` return STRING. None if the shell is not given -c (it runs a file or
+    stdin, which cannot be read here). Raises ParseError when -c has no string. Handles -lc, -ec, -xc, --login -c, -o NAME -c."""
+    i, c_seen = 0, False
+    while i < len(args):
+        a = args[i]
+        if a == "--":
+            i += 1
+            break
+        if a.startswith("--"):
+            i += 2 if a in ("--rcfile", "--init-file") else 1
+            continue
+        if re.fullmatch(r"[-+][A-Za-z]+", a):
+            if a[0] == "-" and "c" in a[1:]:
+                c_seen = True
+            i += 2 if a[-1] in "oO" else 1  # a cluster ending in o/O takes a name: -eo pipefail
+            continue
+        break
+    if not c_seen:
+        return None
+    if i >= len(args):
+        raise ParseError("a shell was given -c with no command string")
+    return args[i]
+
+
+def _unwrap_options(w, tokens, i):
+    """Skip the options (and their arguments) of wrapper `w`. Returns (index of next token, extra tokens from env -S)."""
+    table, extra = WRAPPER_OPTS[w], []
+    while i < len(tokens) and tokens[i].startswith("-") and tokens[i] != "-":
+        t = tokens[i]
+        if t == "--":
+            i += 1
+            break
+        name, val = (t.split("=", 1) + [None])[:2] if t.startswith("--") else (t, None)
+        if name not in table and not t.startswith("--"):
+            # an option with its value attached: -n5, -I{}, -sKILL
+            if len(t) > 2 and t[:2] in table and table[t[:2]]:
+                name, val = t[:2], t[2:]
+            elif w == "nice" and re.fullmatch(r"-\d+", t):
+                i += 1
+                continue
+        if name not in table:
+            raise ParseError(f"'{w}' was given an option this hook does not recognise ({t}); write the command without the wrapper")
+        arity = table[name]
+        i += 1
+        if arity:
+            if val is None:
+                if i >= len(tokens):
+                    raise ParseError(f"'{w} {name}' has no value")
+                val, i = tokens[i], i + 1
+            if arity == "split":
+                import shlex
+                try:
+                    extra = shlex.split(val)
+                except ValueError:
+                    raise ParseError("env -S has an unreadable string")
+    return i, extra
+
+
+def program_and_args(tokens):
+    """The program that will really run and its arguments, after variable assignments, shell keywords (if, then, do, !,
+    braces) and the wrappers in WRAPPER_OPTS are peeled off. Raises ParseError for a form it cannot follow."""
+    tokens = list(tokens)
+    i = 0
+    for _ in range(40):
+        while i < len(tokens) and (ASSIGN.fullmatch(tokens[i]) or tokens[i] in RESERVED):
+            i += 1
+        if i >= len(tokens):
+            return "", []
+        w = os.path.basename(tokens[i])
+        if w not in WRAPPER_OPTS:
+            break
+        i += 1
+        if w == "busybox":
+            continue  # the next token is the applet name: treat it as the program
+        i, extra = _unwrap_options(w, tokens, i)
+        if extra:
+            tokens = tokens[:i] + extra + tokens[i:]
+        if w == "timeout":
+            if i < len(tokens) and re.fullmatch(r"[\d.]+[smhd]?", tokens[i]):
+                i += 1
+            else:
+                raise ParseError("'timeout' without a duration")
+        if w == "env":
+            while i < len(tokens) and ASSIGN.fullmatch(tokens[i]):
+                i += 1
+    else:
+        raise ParseError("wrappers nest too deeply")
+    prog = os.path.basename(tokens[i])
+    if tokens[i] not in ("[", "[[") and ("$" in tokens[i] or "`" in tokens[i] or any(ch in tokens[i] for ch in "*?[")):
+        raise ParseError(f"the program to run ('{tokens[i][:40]}') is built at run time, so the hook cannot tell what it is; write its name directly")
+    return prog, tokens[i + 1:]
+
+
+def find_exec_commands(args):
+    """The commands inside `find ... -exec CMD ... ;` (also -execdir, -ok, -okdir), as token lists."""
+    out, i = [], 0
+    while i < len(args):
+        if args[i] in ("-exec", "-execdir", "-ok", "-okdir"):
+            j = i + 1
+            while j < len(args) and args[j] not in (";", "+"):
+                j += 1
+            out.append(args[i + 1:j])
+            i = j
+        i += 1
+    return out
+
+
+def all_segments(cmd, depth=0):
+    """Every segment in the command, including those inside $( ), backticks, `sh -c` strings (any option cluster such as
+    -lc, -ec), `eval`, and `find -exec`."""
+    segs, nested = parse(cmd, depth)
+    out = list(segs)
+    for sub in nested:
+        out += all_segments(sub, depth + 1)
+    extra_cmds, extra_segs = [], []
+    for sg in segs:
+        prog, args = program_and_args(sg.tokens)
+        if prog in SHELL_NAMES:
+            sc = shell_command_string(args)
+            if sc is not None:
+                extra_cmds.append(sc)
+        elif prog == "eval" and args and not any("$(" in t or "`" in t for t in args):
+            extra_cmds.append(" ".join(args))  # eval of a substitution is refused by the bash hook itself
+        elif prog == "find":
+            for toks in find_exec_commands(args):
+                if toks:
+                    extra_segs.append(Seg(toks, [], False))
+    for sub in extra_cmds:
+        out += all_segments(sub, depth + 1)
+    for sg in extra_segs:
+        out.append(sg)
+        prog, args = program_and_args(sg.tokens)
+        if prog in SHELL_NAMES:
+            sc = shell_command_string(args)
+            if sc is not None:
+                out += all_segments(sc, depth + 1)
+    return out
+
+
+# ---------------------------------------------------------------- paths
+def resolve(tok, cwd):
+    """Absolute path for a token, or None when it cannot be known (variable, glob, substitution)."""
+    if any(ch in tok for ch in "*?[") or "$" in tok and not tok.startswith(("$HOME", "${HOME}")) or "`" in tok or "..." in tok and "$(" in tok:
+        return None
+    t = tok.replace("${HOME}", "~").replace("$HOME", "~")
+    t = os.path.expanduser(t)
+    return os.path.normpath(os.path.join(cwd, t))
+
+
+def repo_root(cwd):
+    p = subprocess.run(["git", "-C", cwd, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else cwd
+
+
+NEVER_UNLOCK = {".git/", ".claude/settings.json", ".claude/settings.local.json", ".claude/hooks/", "agents/03-guardian/hooks/"}
+
+
+def unlocked(pattern):
+    """The OWNER may unlock a protected path for one session by starting Claude Code with GUARDIAN_UNLOCK set to a
+    comma-separated list of exact entries from policy.json (for example ".github/workflows/"). The hook reads its own
+    environment, which a command run by the agent cannot change. Git internals, the settings and the hooks themselves
+    can never be unlocked this way."""
+    wanted = {x.strip() for x in os.environ.get("GUARDIAN_UNLOCK", "").split(",") if x.strip()}
+    return pattern in wanted and pattern not in NEVER_UNLOCK
+
+
+def _protected_once(path, root, policy):
+    try:
+        rel = os.path.relpath(path, root)
+    except ValueError:
+        return False
+    if rel.startswith(".."):
+        return False
+    rel = rel.replace(os.sep, "/")
+    for pat in policy["protected_paths"]:
+        if unlocked(pat):
+            continue
+        if pat.endswith("/"):
+            if rel == pat[:-1] or rel.startswith(pat):
+                return True
+        elif fnmatch.fnmatch(rel, pat):
+            return True
+    return False
+
+
+def is_protected(path, root, policy):
+    """True if `path` is under a protected entry of policy.json, either as written or after following symlinks that exist now
+    (a link `wf` -> `.github/workflows` makes `wf/daily-post.yml` the workflow file)."""
+    if path is None:
+        return False
+    paths, roots = {path}, {root}
+    try:
+        paths.add(os.path.realpath(path))
+        roots.add(os.path.realpath(root))
+    except (OSError, ValueError):
+        pass
+    return any(_protected_once(p, r, policy) for p in paths for r in roots)
+
+
+RISKY_NAME = re.compile(r"(?i)(?:^|/)(?:\.env(?:\.(?!example$|sample$|template$|dist$)[^/]+)?|id_(?:rsa|dsa|ecdsa|ed25519)|\.netrc|\.pypirc|\.npmrc|\.git-credentials|credentials(?:\.json)?|service-account[^/]*\.json|[^/]+\.(?:pem|key|p12|pfx|ppk|keystore|jks))$|(?:^|/)\.(?:ssh|aws|gnupg|kube|docker)(?:/|$)|(?:^|/)\.config/gh(?:/|$)|^/proc/[^/]+/environ$|(?:^|/)\.(?:bash|zsh|python)_history$")
+
+
+def risky_name(path):
+    return bool(RISKY_NAME.search(path.replace(os.sep, "/")))
+
+
+EXAMPLE_SUFFIXES = (".example", ".sample", ".template", ".dist")
+# Git settings that can send a push somewhere else, or run a program, when written in a file git reads outside the repo.
+GIT_CONFIG_FILE = re.compile(r"(?:^|/)\.gitconfig$|(?:^|/)\.config/git/|^/etc/gitconfig$")
+
+
+def git_config_file(path):
+    return bool(GIT_CONFIG_FILE.search(path.replace(os.sep, "/")))
+
+
+def brace_expand(tok, limit=64):
+    """Expand {a,b} the way a shell does (innermost first), so `{main,main}` or `.e{n,x}v` can be examined. A sequence
+    like {1..3} is returned unexpanded; callers treat any `{` left over as 'dynamic'. Raises ParseError past `limit`."""
+    out, todo = [], [tok]
+    while todo:
+        t = todo.pop()
+        m = re.search(r"\{([^{}]*,[^{}]*)\}", t)
+        if not m:
+            out.append(t)
+            continue
+        for alt in m.group(1).split(","):
+            todo.append(t[:m.start()] + alt + t[m.end():])
+        if len(out) + len(todo) > limit:
+            raise ParseError("a brace expression expands to too many words")
+    return out
+
+
+def credential_in_arg(tok, cwd):
+    """The name of a credential-bearing file that this argument refers to, or None. Looks at the word itself, the part after
+    `=` (--file=.env, if=.env), after `@` (curl -d @.env), after `:` (git show HEAD:.env), every {a,b} expansion, every file a
+    glob matches in `cwd` (reading the folder, never running anything), and where an existing symlink really points."""
+    cands = set()
+    try:
+        words = brace_expand(tok)
+    except ParseError:
+        words = [tok]
+    for w in words:
+        cands.add(w)
+        for part in re.split(r"[=:]", w)[1:]:
+            cands.add(part)
+        for c in list(cands):
+            cands.add(c.lstrip("@"))
+    for c in list(cands):
+        if c and any(ch in c for ch in "*?["):
+            base = os.path.expanduser(c)
+            try:
+                for hit in sorted(glob.glob(os.path.join(cwd, base) if not os.path.isabs(base) else base))[:200]:
+                    cands.add(hit)
+            except OSError:
+                pass
+    for c in list(cands):
+        if c and not c.startswith("-") and "$" not in c:
+            q = os.path.join(cwd, os.path.expanduser(c))
+            if os.path.islink(q):
+                cands.add(os.path.realpath(q))
+    for c in sorted(cands):
+        if c and risky_name(c) and not c.endswith(EXAMPLE_SUFFIXES):
+            return c.lstrip("@")
+    return None
+
+
+WALK_SKIP = {".git", "node_modules", "__pycache__", ".venv", "venv", ".mypy_cache", ".pytest_cache"}
+WALK_DEPTH, WALK_LIMIT = 4, 20000
+
+
+def credential_below(dirpath):
+    """First credential-bearing file or folder under `dirpath` (breadth-limited: depth 4, 20,000 entries; a bigger tree is
+    only partly looked at, which README 'Known limits' says). Reads folder listings only; never opens a file."""
+    base_depth, seen = dirpath.rstrip(os.sep).count(os.sep), 0
+    try:
+        for dp, dn, fn in os.walk(dirpath):
+            if dp.count(os.sep) - base_depth >= WALK_DEPTH:
+                dn[:] = []
+            dn[:] = [d for d in dn if d not in WALK_SKIP]
+            for name in sorted(dn + fn):
+                seen += 1
+                if seen > WALK_LIMIT:
+                    return None
+                full = os.path.join(dp, name)
+                if risky_name(full) and not full.endswith(EXAMPLE_SUFFIXES):
+                    return full
+    except OSError:
+        return None
+    return None
+
+
+def home_or_above(path):
+    """True when `path` is the home folder or a folder that contains it (a recursive tool pointed there reaches ~/.ssh)."""
+    h = os.path.realpath(os.path.expanduser("~"))
+    p = os.path.realpath(path)
+    return h == p or h.startswith(p.rstrip(os.sep) + os.sep)
+
+
+PATCH_PATH_LINES = (
+    re.compile(r"^(?:---|\+\+\+) (.+?)(?:\t.*)?$"),
+    re.compile(r"^\*\*\* (?!\d)(.+?)(?:\t.*)?$"),
+    re.compile(r"^(?:rename|copy) (?:from|to) (.+)$"),
+    re.compile(r"^Index: (.+)$"),
+    re.compile(r"^diff --git (.+)$"),
+)
+
+
+def patch_paths(text):
+    """Every file name a patch (unified, context, git, or a mailbox of them) says it changes, as written. Names are returned in
+    full; callers try every suffix, because the strip level (-p) decides which prefix is dropped."""
+    out = []
+    for line in text.splitlines():
+        for rx in PATCH_PATH_LINES:
+            m = rx.match(line)
+            if not m:
+                continue
+            chunk = m.group(1).strip()
+            if chunk == "/dev/null":
+                break
+            if not line.startswith("diff --git"):
+                out.append(chunk.strip('"'))  # the whole name, which may contain spaces
+            out += [x.strip('"') for x in chunk.split() if x.strip('"') != "/dev/null"]
+            break
+    seen, uniq = set(), []
+    for c in out:
+        if c not in seen:
+            seen.add(c); uniq.append(c)
+    return uniq
+
+
+def patch_target_hits(names, base, root, policy, max_strip=8):
+    """(protected path, credential file) found among the names a patch touches, checking every strip level so that
+    `-p0`, `-p1` and `-p3` all lead to the same answer. A path with `..` is resolved first. Returns (kind, path) or None."""
+    for n in names:
+        n = n.strip('"').replace("\\", "/")
+        parts = [x for x in n.split("/") if x not in ("", ".")]
+        if n.startswith("/"):
+            levels = [n] + ["/".join(parts[i:]) for i in range(1, min(len(parts), max_strip))]
+        else:
+            levels = ["/".join(parts[i:]) for i in range(0, min(len(parts), max_strip))]
+        for lv in levels:
+            if not lv:
+                continue
+            full = posixpath.normpath(lv if lv.startswith("/") else posixpath.join(base, lv))
+            if is_protected(full, root, policy):
+                return "protected", os.path.relpath(full, root)
+            if (risky_name(full) and not full.endswith(EXAMPLE_SUFFIXES)) or git_config_file(full):
+                return "credential", full
+    return None
+
+
+# ---------------------------------------------------------------- scanning
+def run_scanner(args, cwd, stdin=None):
+    """Return (ok, findings, error). Fails closed: a scanner that cannot run is an error, not a pass."""
+    if not SCANNER.exists():
+        return False, [], f"the secret scanner was not found at {SCANNER}; the hook cannot confirm the commit is clean"
+    p = subprocess.run([sys.executable, "-I", str(SCANNER), *args], cwd=cwd, capture_output=True, text=True, input=stdin)
+    try:
+        out = json.loads(p.stdout)
+    except ValueError:
+        return False, [], "the secret scanner gave no readable result; the hook cannot confirm the commit is clean"
+    return True, out.get("findings", []), None
+
+
+def describe(findings):
+    first = findings[0]
+    where = f"{first.get('source') or first.get('file') or '?'}:{first.get('line', '?')}"
+    return f"{len(findings)} secret-like finding(s), first: rule {first.get('rule')} at {where} (the value is not shown)"
+
+
+# ---------------------------------------------------------------- hook I/O
+def read_input():
+    try:
+        data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError
+        return data
+    except ValueError:
+        print("Guardian hook: the tool call could not be read, so it is blocked. Try again; if it keeps happening tell the owner.", file=sys.stderr)
+        sys.exit(2)
+
+
+def run(main_fn):
+    """Run a hook. Any unexpected error blocks (exit 2). Claude Code treats other non-zero exits as a harmless warning
+    and carries on, so a crash must never be allowed to exit 1."""
+    try:
+        main_fn()
+    except SystemExit:
+        raise
+    except BaseException as e:
+        deny("hook-error", f"the hook failed unexpectedly ({e.__class__.__name__}), so the call is blocked rather than waved through.", "Tell the owner; do not work around it.")
+
+
+def deny(rule, reason, how=None):
+    msg = f"Blocked by Guardian hook [{rule}]: {reason}"
+    if how:
+        msg += f" {how}"
+    msg += " This is a planning-time rule: write a Preflight Brief and ask the owner instead of working around it."
+    print(msg, file=sys.stderr)
+    sys.exit(2)

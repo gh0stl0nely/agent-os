@@ -1,0 +1,47 @@
+--- a/scripts/post_threads.py
++++ b/scripts/post_threads.py
+@@ -12,6 +12,8 @@
+ from pathlib import Path
+ from zoneinfo import ZoneInfo
+ 
++import poster_gate  # fail-closed gate: records intent before posting (see the Guardian change request)
++
+ ROOT = Path(__file__).resolve().parent.parent / "bloor-assets"
+ API = "https://graph.threads.net/v1.0"
+ MAX_TEXT = 500
+@@ -119,6 +121,11 @@
+         return
+ 
+     token = os.environ.get("THREADS_ACCESS_TOKEN") or fail("THREADS_ACCESS_TOKEN is not set")
++    # Record the intent to post BEFORE anything is created on Threads. If this cannot be recorded, or an earlier run
++    # left an unconfirmed claim for today, the gate exits non-zero and nothing is posted.
++    if not poster_gate.claim_or_exit(today, os.environ.get("GITHUB_RUN_ID", "local")):
++        print(f"Already posted for {today} (recorded on the state branch). Nothing done.")
++        return
+     kind = lambda f: "VIDEO" if f.lower().endswith((".mp4", ".mov")) else "IMAGE"
+     topic = {"topic_tag": entry["topic_tag"]} if entry.get("topic_tag") else {}
+ 
+@@ -139,13 +146,22 @@
+         cid = call("POST", "me/threads", {"media_type": "CAROUSEL", "children": ",".join(kids),
+                                           "text": entry["text"], **topic}, token)["id"]
+     wait_ready(cid, token)
++    poster_gate.point_of_no_return()  # from here a failure can no longer prove that nothing was published
+     pid = call("POST", "me/threads_publish", {"creation_id": cid}, token)["id"]
+     link = call("GET", pid, {"fields": "permalink"}, token).get("permalink")
+     state["posted"][today] = {"id": pid, "permalink": link,
+                               "at": datetime.now(ZoneInfo(cfg["timezone"])).isoformat()}
+     (ROOT / "state.json").write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
++    poster_gate.complete(today, state["posted"][today])  # durable record on the state branch; exits 1 loudly if it cannot
+     print(f"Posted: {link}")
+ 
+ 
+ if __name__ == "__main__":
+-    main()
++    _exc = None
++    try:
++        main()
++    except BaseException as e:  # includes SystemExit from fail()
++        _exc = e
++        raise
++    finally:
++        poster_gate.finish(_exc)  # releases the claim only if nothing could have been published
