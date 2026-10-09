@@ -145,8 +145,10 @@ class Env:
         out["save"] = self.save(r) if out["restore"].returncode == 0 else None
         return out
 
-    def gate(self, r, *args):
-        return sh([sys.executable, "-B", "scripts/poster_gate.py", *args], r, check_=False)
+    def gate(self, r, *args, today="2026-10-20"):
+        """Run poster_gate.py. `today` replaces the clock (POSTER_GATE_TODAY) so the fixed test days never become 'the future';
+        pass today=None to use the real clock and the poster's own timezone."""
+        return sh([sys.executable, "-B", "scripts/poster_gate.py", *args], r, env=({"POSTER_GATE_TODAY": today} if today else {"POSTER_GATE_TODAY": ""}), check_=False)
 
 
 with tempfile.TemporaryDirectory(dir=os.path.expanduser("~")) as td:
@@ -464,6 +466,52 @@ with tempfile.TemporaryDirectory(dir=os.path.expanduser("~")) as td:
         c = e.workflow(D[0], label="after-release")
         check(f"S19 ({sig.name}): after the owner checks Threads and releases the claim, the next run posts once", "released" in rel.stdout and c["post"].returncode == 0 and len(e.live()) == 1)
 
+    # ------------------------------------------------------------ S20: complete, release and status reject a malformed or future DATE
+    # The round-3 review: `complete 10/12/2026` was accepted as a key of its own while the real day stayed unrecorded, and the UTC date
+    # after 8 pm Toronto (tomorrow) was accepted too; either would double-post after the owner unpauses.
+    e = Env(root, "s20")
+    e.workflow(D[0], label="day1")
+    owner = e.runner("owner20")
+    before = json.dumps(e.tip(), sort_keys=True)
+    BAD_DATES = ["10/12/2026", "2026-1-5", "2026/10/12", "20261012", "today", "2026-10-12 ", " 2026-10-12", "2026-10-12T11:00", "2026-02-30", "2026-13-01", "2026-00-10",
+                 "2026-10-32", "\uff12\uff10\uff12\uff16-10-12", "26-10-12", "2026-10-1", "-2026-10-12", "2026-10-12\n", "../2026-10-12", "x" * 200]
+    for cmd in ("complete", "release", "status"):
+        results_bad = []
+        for bad in BAD_DATES:
+            args = (cmd, bad, "p9", "https://example.invalid/t/p9") if cmd == "complete" else ((cmd, bad, "reason") if cmd == "release" else (cmd, bad))
+            pr = e.gate(owner, *args)
+            if not (pr.returncode == 2 and "ERROR" in pr.stderr and pr.stdout == "" and ("YYYY-MM-DD" in pr.stderr or "real calendar" in pr.stderr)):
+                results_bad.append((bad[:20], pr.returncode, pr.stderr[:80]))
+        check(f"S20: {cmd} refuses all {len(BAD_DATES)} malformed dates (exit 2, nothing printed on stdout, the error names the right form)", not results_bad, str(results_bad[:3]))
+    check("S20: after all those refusals the state branch is byte-for-byte unchanged", json.dumps(e.tip(), sort_keys=True) == before)
+    st = e.gate(owner, "status", "10/12/2026")
+    check("S20: status with a malformed date no longer answers 'posted' with exit 0 (the round-3 'Mistake 3')", st.returncode == 2 and "posted" not in st.stdout)
+    # future dates, against a fixed clock
+    fut = e.gate(owner, "complete", "2026-10-21", "p9", "https://example.invalid/t/p9", today="2026-10-20")
+    check("S20: complete refuses tomorrow's date (the UTC date after 8 pm Toronto), exit 2, and says what today is", fut.returncode == 2 and "future" in fut.stderr and "2026-10-20" in fut.stderr and "Toronto" in fut.stderr, fut.stderr[:200])
+    check("S20: ...and nothing was recorded for it", "2026-10-21" not in json.dumps(e.tip()))
+    far = e.gate(owner, "status", "2099-01-01", today="2026-10-20")
+    check("S20: status refuses a date far in the future (exit 2, not 3 'nothing recorded')", far.returncode == 2 and "future" in far.stderr)
+    rel = e.gate(owner, "release", "2026-10-21", "x", today="2026-10-20")
+    check("S20: release refuses a future date", rel.returncode == 2)
+    ok_today = e.gate(owner, "status", "2026-10-20", today="2026-10-20")
+    ok_past = e.gate(owner, "status", D[0], today="2026-10-20")
+    check("S20: today and past days are still accepted (status today = none, exit 3; the posted day = exit 0)", ok_today.returncode == 3 and ok_past.returncode == 0, f"{ok_today.returncode} {ok_past.returncode}")
+    cm = e.gate(owner, "complete", D[1], "p2", "https://example.invalid/t/p2", today="2026-10-20")
+    check("S20: a valid complete still works and prints the poster's today so a wrong day is easy to spot", cm.returncode == 0 and "Recorded " + D[1] in cm.stdout and "2026-10-20" in cm.stdout, cm.stdout + cm.stderr)
+    badclock = e.gate(owner, "status", D[0], today="20261020")
+    check("S20: a malformed POSTER_GATE_TODAY is itself refused (the override cannot smuggle in a bad 'today')", badclock.returncode == 2)
+    # the real clock, in the poster's timezone from bloor-assets/config.json (America/Toronto)
+    from datetime import datetime as _dt, timedelta as _td
+    from zoneinfo import ZoneInfo as _Z
+    today_t = _dt.now(_Z("America/Toronto")).date()
+    real_ok = e.gate(owner, "status", today_t.isoformat(), today=None)
+    real_fut = e.gate(owner, "status", (today_t + _td(days=1)).isoformat(), today=None)
+    check("S20: with the real clock, today in Toronto is accepted and tomorrow in Toronto is refused", real_ok.returncode in (0, 3) and real_fut.returncode == 2 and "future" in real_fut.stderr, f"{real_ok.returncode} {real_fut.returncode} {real_fut.stderr[:120]}")
+    # the restore, claim, save and export commands are untouched by the date check
+    check("S20: claim, restore, save and export do not use the owner-date check (the poster's own flow is unchanged)", all(x in (HERE / "poster_gate.py").read_text(encoding="utf-8") for x in ('if cmd in ("complete", "release", "status")',)) and
+          "claim" not in "complete release status")
+
     # ------------------------------------------------------------ the owner-facing text carries the same order
     chk = (HERE.parent / "OWNER-SETUP-CHECKLIST.md").read_text(encoding="utf-8")
     cr = (REPO / "agent-system" / "change-requests" / "03-guardian-poster-fail-closed.md").read_text(encoding="utf-8")
@@ -472,6 +520,8 @@ with tempfile.TemporaryDirectory(dir=os.path.expanduser("~")) as td:
     pos = [sec.find(x) for x in ("Pause", "complete", "status", "Unpause")]
     check("checklist: a section 'poster-state was deleted, rewound or re-created' exists and orders Pause, then complete, then status, then Unpause", i >= 0 and all(x >= 0 for x in pos) and pos == sorted(pos), str(pos))
     check("checklist: the troubleshooting row for 'branch does not exist' points to that section and no longer says to just create the branch", "Create it once" not in chk and "do not just create" in chk.lower())
+    check("checklist and change request: say that DATE must be YYYY-MM-DD, not after today in Toronto, and that the command exits 2 otherwise (S20)",
+          "YYYY-MM-DD" in sec + chk and "exit 2" in chk and "S20" in cr and "malformed date" in cr)
     check("change request: documents the deleted, rewound and re-created branch cases with the same order, and the killed or cancelled runner",
           all(x in cr for x in ("deleted, rewound or re-created", "S14", "S16", "S17", "S19", "SIGKILL", "SIGTERM", "paused")))
 

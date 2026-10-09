@@ -207,5 +207,55 @@ with tempfile.TemporaryDirectory() as td:
     text = Path(res["path"]).read_text(encoding="utf-8") if res["status"] == "built" else ""
     check("adversarial: a typed 'evidence: pass' in the plan is ignored; only ledger claims appear", res["status"] == "built" and "C-fix-003" not in text)
 
+    # ================================================================ round 4: the mandatory four-question screen
+    QS = ["money", "deletion", "outside", "secret"]
+    body_ = first.read_text(encoding="utf-8")
+    check("screen: the built brief prints the four-question screen under Blast radius, and the sections are still the contract's", bc.SCREEN_HEADING in body_ and all(f"- {q}: " in body_ for q in QS)
+          and re.findall(r"^## (.+)$", body_, re.M) == tpl["sections"])
+    check("screen: the printed answers read back to the plan's answers", bc.parse_screen(body_)["secret"]["answer"] == plan("P1-brain-rule")["screen"]["secret"]["answer"] and set(bc.parse_screen(body_)) == set(QS))
+    p = plan("P1-brain-rule")
+    del p["screen"]
+    res = build(p, tmp / "s4")
+    check("screen: a plan with no screen is blocked and names the field", res["status"] == "blocked" and "screen" in res.get("missing", []))
+    for q in QS:
+        p = plan("P1-brain-rule")
+        del p["screen"][q]
+        res = build(p, tmp / "s4")
+        check(f"screen: a plan with no answer for '{q}' is blocked and names the question", res["status"] == "blocked" and f"'{q}'" in problems(res))
+        p = plan("P1-brain-rule")
+        p["screen"][q]["evidence"] = ""
+        res = build(p, tmp / "s4")
+        check(f"screen: an answer for '{q}' without evidence is blocked", res["status"] == "blocked" and f"'{q}'" in problems(res))
+    for q, cls in (("money", "R6"), ("deletion", "R3"), ("outside", "R4"), ("secret", "R5")):
+        for ans in ("yes", "unsure"):
+            p = plan("P1-brain-rule")
+            p["screen"][q] = {"answer": ans, "evidence": "the builder says this touches the question"}
+            res = build(p, tmp / "s4")
+            check(f"screen: '{q}' answered {ans} needs {cls}; a plan declared R2 is blocked and says so", res["status"] == "blocked" and f"'{q}'" in problems(res) and cls in problems(res))
+    p = plan("P3-delete-drafts")
+    p["screen"]["deletion"] = {"answer": "no", "evidence": "the builder says nothing is deleted here"}
+    res = build(p, tmp / "s4")
+    check("screen: a 'no' on deletion cannot lower a delete (the script says yes), the plan still builds only at R3 or above", res["status"] == "built" and "R3" in Path(res["path"]).read_text(encoding="utf-8").split("**Action class:**")[1][:6])
+    p = plan("P3-delete-drafts")
+    p["action_class"] = "R2"
+    p["screen"]["deletion"] = {"answer": "no", "evidence": "the builder says nothing is deleted here"}
+    res = build(p, tmp / "s4")
+    check("screen: the same plan declared R2 with a 'no' on deletion is blocked", res["status"] == "blocked")
+    p = plan("P7-paid-feed")
+    p["action_class"] = "R4"
+    check("screen: a paid subscription declared R4 is blocked (money needs R6)", build(p, tmp / "s4")["status"] == "blocked")
+    # the checker applies the same rules to a hand-written brief
+    r = check_brief.check(good.replace(bc.SCREEN_HEADING, "Screen notes:"), LEDGER)
+    check("screen: a brief with no screen block is rejected by the checker", any(x["check"] == "screen" for x in r["problems"]))
+    r = check_brief.check(re.sub(r"^- secret: .*$", "", good, flags=re.M), LEDGER)
+    check("screen: a brief missing one of the four answers is rejected", any(x["check"] == "screen" and "secret" in x["detail"] for x in r["problems"]))
+    r = check_brief.check(re.sub(r"^- money: no - .*$", "- money: no - ok", good, flags=re.M), LEDGER)
+    check("screen: a brief whose answer has no real evidence is rejected", any(x["check"] == "screen" and "money" in x["detail"] for x in r["problems"]))
+    r = check_brief.check(re.sub(r"^- outside: no - ", "- outside: yes - ", good, flags=re.M), LEDGER)
+    check("screen: a hand-edited 'yes' that needs a higher class than the declared R2 is rejected", any(x["check"] == "screen" and "R4" in x["detail"] for x in r["problems"]))
+    r = check_brief.check(re.sub(r"^- (money|deletion|outside|secret): no - ", r"- \1: maybe - ", good, flags=re.M), LEDGER)
+    check("screen: an answer other than yes, no or unsure is rejected", any(x["check"] == "screen" for x in r["problems"]))
+    check("screen: the checker passes the built brief (screen block included)", check_brief.check(good, LEDGER)["status"] == "pass")
+
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)

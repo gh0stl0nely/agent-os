@@ -18,16 +18,24 @@ Commands (used by the shell wrappers; the poster imports the module):
   complete DATE ID LINK    record that the post is live (the owner uses this by hand after finding the post on Threads)
   release DATE REASON      give up a claim (the poster does this itself only before the publish call; the owner may do it
                      by hand after checking Threads)
+DATE for complete, release and status must be YYYY-MM-DD, a real calendar day, and not later than today in the poster's own
+timezone (config.json "timezone", America/Toronto). Anything else exits 2 and changes nothing. After 8 pm Toronto the UTC date
+is already tomorrow: do not type that one. (POSTER_GATE_TODAY=YYYY-MM-DD replaces "today" for the test suite only.)
   export PATH        write the branch's history in the old format, for a rollback (refuses while a claim is unconfirmed)
   status [DATE]      read-only: list what the branch records (posted / claimed / released); with DATE exit 0 = posted,
-                     11 = claimed and unconfirmed, 3 = nothing recorded for that day
+                     11 = claimed and unconfirmed, 3 = nothing recorded for that day, 2 = DATE is not a valid past-or-today date
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:  # pragma: no cover
+    ZoneInfo = None
 
 sys.dont_write_bytecode = True
 BRANCH = os.environ.get("STATE_BRANCH", "poster-state")
@@ -54,6 +62,49 @@ def rebuild_help():
 
 class Blocked(Exception):
     """An earlier run claimed or posted this date and the outcome is not confirmed. Do not post."""
+
+
+class UsageError(Exception):
+    """The command line is wrong (for example a date that is malformed or in the future). Nothing was read or written."""
+
+
+def poster_today():
+    """Today's date in the poster's own timezone, the one post_threads.py uses to choose the day. POSTER_GATE_TODAY is a
+    test-suite override: it is validated like any date and the owner never needs it."""
+    o = os.environ.get("POSTER_GATE_TODAY")
+    if o:
+        check_date_format(o, "POSTER_GATE_TODAY")
+        return o
+    tzname = "America/Toronto"
+    try:
+        with open(os.path.join(os.path.dirname(FILE) or ".", "config.json"), encoding="utf-8") as f:
+            tzname = json.load(f).get("timezone") or tzname
+    except (OSError, ValueError, AttributeError):
+        pass
+    if ZoneInfo is None:
+        raise UsageError("this Python has no timezone database, so today's date in the poster's timezone cannot be worked out; refusing the date")
+    try:
+        return datetime.now(ZoneInfo(tzname)).strftime("%Y-%m-%d")
+    except Exception:
+        raise UsageError(f"the poster's timezone '{tzname}' is not known on this machine, so today's date cannot be worked out; refusing the date")
+
+
+def check_date_format(d, what="DATE"):
+    if not isinstance(d, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", d):
+        raise UsageError(f"{what} '{str(d)[:30]}' is not in the form YYYY-MM-DD (for example 2026-10-12). A wrongly written date would be stored as a day of its own and the real day would stay unrecorded.")
+    try:
+        datetime.strptime(d, "%Y-%m-%d")
+    except ValueError:
+        raise UsageError(f"{what} '{d}' is not a real calendar day.")
+
+
+def check_date(d, what="DATE"):
+    """A day the owner may record, release or look up: well formed, real, and not later than today in the poster's timezone."""
+    check_date_format(d, what)
+    today = poster_today()
+    if d > today:
+        raise UsageError(f"{what} {d} is in the future: today in the poster's timezone is {today}. (After 8 pm Toronto the UTC date is already tomorrow; use the Toronto date.) Nothing was changed.")
+    return today
 
 
 class GateError(Exception):
@@ -264,6 +315,8 @@ def restore():
 
 
 def status(date=None):
+    if date is not None:
+        check_date(date)
     """Read-only. Shows what the branch records so the owner can compare it with Threads. Exit codes with a DATE:
     0 posted, 11 claimed and unconfirmed, 3 nothing recorded (a released claim counts as nothing recorded)."""
     tip = fetch_tip()
@@ -317,6 +370,8 @@ def export(out_path):
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else ""
     try:
+        if cmd in ("complete", "release", "status") and len(argv) > 2:
+            check_date(argv[2])  # before anything is read or written
         if cmd == "restore":
             restore()
         elif cmd == "save":
@@ -328,6 +383,7 @@ def main(argv):
                 print("usage: poster_gate.py complete DATE ID LINK   (ID and LINK are on the live post in Threads; write 'unknown' if you cannot find the ID)", file=sys.stderr)
                 sys.exit(2)
             complete(argv[2], {"id": argv[3], "permalink": argv[4], "at": now(), "recorded_by": "owner, by hand"})
+            print(f"Recorded {argv[2]} as posted (today in the poster's timezone is {poster_today()}). Check it: python3 scripts/poster_gate.py status {argv[2]}")
         elif cmd == "status":
             sys.exit(status(argv[2] if len(argv) > 2 else None))
         elif cmd == "export":
@@ -337,6 +393,9 @@ def main(argv):
         else:
             print(__doc__)
             sys.exit(2)
+    except UsageError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(2)
     except Blocked as e:
         print(f"BLOCKED: {e}", file=sys.stderr)
         sys.exit(11)

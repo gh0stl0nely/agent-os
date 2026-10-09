@@ -1,6 +1,9 @@
 {
   "description": "Policy for the Guardian's proposed Claude Code hooks. Edit this file to loosen or tighten a rule; the scripts hold no policy of their own. Changing it is an R2 action (Preflight Brief).",
-  "protected_branches": ["main", "master"],
+  "protected_branches": [
+    "main",
+    "master"
+  ],
   "protected_paths": [
     ".git/",
     ".github/workflows/",
@@ -11,10 +14,20 @@
     "agent-system/contracts/"
   ],
   "protected_paths_note": "Paths are relative to the repository root. A trailing slash means everything below. The poster's data (bloor-assets/) is deliberately NOT listed, so maintenance sessions can still edit the queue. The workflow file is listed because a changed workflow can read the repository's secrets.",
-  "safe_delete_roots": ["/tmp/", "/var/tmp/"],
+  "safe_delete_roots": [
+    "/tmp/",
+    "/var/tmp/"
+  ],
   "safe_delete_note": "Recursive deletes are allowed only below these folders (and never the folder itself).",
   "block_external_writes": true,
   "block_external_writes_note": "curl or wget with a non-GET method or an upload body is an external-facing action (R4) and needs a Preflight Brief first.",
-  "publish_roots": ["/tmp/", "/var/tmp/"],
-  "publish_roots_note": "gh may post a file's text (--body-file, -F body=@file, --input) only if it is inside the repository or one of these folders, is not a credential or protected file, and the secret scanner finds nothing in it."
+  "publish_roots": [
+    "/tmp/",
+    "/var/tmp/"
+  ],
+  "publish_roots_note": "gh may post a file's text (--body-file, -F body=@file, --input) only if it is inside the repository or one of these folders, is not a credential or protected file, and the secret scanner finds nothing in it.",
+  "protected_push_refs": [
+    "poster-state"
+  ],
+  "protected_push_refs_note": "Branches no hook-governed session may push to or move by hand. poster-state holds the poster's claim records; only poster_gate.py (run by the owner or the workflow) changes it."
 }

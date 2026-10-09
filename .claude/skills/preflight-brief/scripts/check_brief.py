@@ -146,6 +146,15 @@ def check(text, ledger=None):
         c = bc.classify.classify(title[2:] + ". " + sections.get(tpl["sections"][0], ""))
         if c["status"] == "ok" and bc.idx(c["class"]) > bc.idx(declared):
             bad("class", f"declared {declared} is below the computed class {c['class']} (rule {c['decisive_rule']})")
+    if declared and bc.idx(declared) >= 2 and title:
+        # the mandatory four-question screen is printed under Blast radius; read it back and apply the same rules the builder applied
+        shown = bc.parse_screen(sections.get(tpl["sections"][4], ""))
+        if bc.SCREEN_HEADING not in sections.get(tpl["sections"][4], ""):
+            bad("screen", "the Blast radius section must carry the four-question screen (money, deletion, outside, secret), each with an answer and evidence")
+        else:
+            sp, _ = bc.screen_problems(declared, title[2:] + ". " + sections.get(tpl["sections"][0], ""), shown)
+            for p_ in sp:
+                bad("screen", p_)
 
     return {"status": "reject" if problems else "pass", "problems": problems, "claims_checked": list(dict.fromkeys(table_ids))}
 

@@ -74,3 +74,65 @@ def idx(cls):
 def injection_hits(text):
     clean, _ = classify.prepare(text)
     return [m.group(0)[:50] for rx in classify.INJECTION_RX for m in [rx.search(clean)] if m]
+
+
+SCREEN_HEADING = "Four-question screen (risk-classify):"
+SCREEN_LINE = re.compile(r"^- (money|deletion|outside|secret): (yes|no|unsure) - (.+)$")
+
+
+def final_screen(c, plan_screen):
+    """The answers that count, as the classifier settled them: the more cautious of the script's and the builder's. A builder's 'no'
+    never hides a script 'yes', so the brief shows the script's cue names next to the builder's reason."""
+    out = {}
+    for q in classify.risk_screen.QUESTIONS:
+        rec = c["screen"]["questions"][q]
+        mine = plan_screen.get(q, {})
+        ev = " ".join(str(mine.get("evidence", "")).split())
+        if rec["decided_by"] == "script" and rec["script"]["answer"] != "no":
+            cues = ", ".join(dict.fromkeys(e.get("cue", "?") for e in rec["script"]["evidence"]))
+            ev = f"script cues: {cues}; the builder said {mine.get('answer')}: {ev}"
+        out[q] = {"answer": rec["answer"], "evidence": ev}
+    return out
+
+
+def screen_lines(final):
+    """Render the four answers that count as the lines that go under 'Blast radius'."""
+    return [SCREEN_HEADING] + [f"- {q}: {final[q]['answer']} - {final[q]['evidence']}" for q in classify.risk_screen.QUESTIONS]
+
+
+def parse_screen(section_text):
+    """Read the four answers back out of a brief's Blast radius section. Returns {question: {answer, evidence}} (possibly partial)."""
+    out = {}
+    for line in section_text.splitlines():
+        m = SCREEN_LINE.match(line.strip())
+        if m:
+            out[m.group(1)] = {"answer": m.group(2), "evidence": m.group(3).strip()}
+    return out
+
+
+def screen_problems(declared, text, screen):
+    """Problems with a plan's or brief's screen: missing questions, missing reasons, an incomplete screen, a class below what a yes or unsure requires.
+    `text` is the description the classifier reads. Returns (problems, classification)."""
+    problems = []
+    qs = classify.risk_screen.QUESTIONS
+    if not isinstance(screen, dict):
+        return ["the four-question screen is missing: answer money, deletion, outside and secret (yes, no or unsure), each with evidence"], None
+    for q in qs:
+        v = screen.get(q)
+        if not isinstance(v, dict) or str(v.get("answer", "")).lower() not in ("yes", "no", "unsure"):
+            problems.append(f"screen question '{q}' ({qs[q]['text']}) is not answered with yes, no or unsure")
+        elif len(str(v.get("evidence", "")).strip()) < 10:
+            problems.append(f"screen question '{q}' needs evidence (at least 10 characters) with its {v['answer']}; a 'no' without a reason counts as unsure")
+    if problems:
+        return problems, None
+    c = classify.classify(text, screen_answers=screen)
+    if c["status"] != "ok":
+        return ["the classifier could not read the action"], None
+    if not c["screen"]["complete"]:
+        problems.append("the screen is incomplete for: " + ", ".join(c["screen"]["needs_answers"]))
+    for q in qs:
+        final = c["screen"]["questions"][q]["answer"]
+        if final in ("yes", "unsure") and idx(qs[q]["class"]) > idx(declared):
+            who = c["screen"]["questions"][q]["decided_by"]
+            problems.append(f"screen question '{q}' is {final} ({who}), which needs at least {qs[q]['class']}; the declared class {declared} is below it. A class is never lowered here")
+    return problems, c

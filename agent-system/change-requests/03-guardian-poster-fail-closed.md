@@ -56,6 +56,7 @@ The save step stays, and runs with `if: always()`: when the post is live but ste
 | F4: runbook followed (deleted) | Paused: backup cron posts nothing; `status` shows the day missing (exit 3); `complete` records it; `status` exit 0; after unpausing the cron says "Already posted"; next day posts | S16 |
 | F4: branch rewound, runbook skipped / followed | Skipped: second post (3 live). Followed: no extra post (2 live) | S17a, S17b |
 | F4: branch exists but lost its state file | Same ordered instructions | S17c |
+| `complete`, `release` or `status` typed with a malformed date (`10/12/2026`), a day that does not exist, or a date after today in the poster's timezone (the UTC date after 8 pm Toronto) | Refused with exit 2, before anything is read or written. The round-3 review showed such a date was stored as a day of its own while the real day stayed unrecorded, and a later unpause double-posted. A wrong *past* day cannot be detected (the command prints today's Toronto date and `status DATE` shows the record) | S20 |
 | A run killed (SIGKILL) or cancelled (SIGTERM) after the claim | The claim stays (no cleanup code runs); the next run exits 11; a missed post, never a double; the owner checks Threads and `release`s or `complete`s | S19 |
 
 Known limit, stated plainly: after a publish **HTTP 400** the claim is kept even though nothing is live, because the client cannot tell a rejected publish from a lost response in general. The cost is one blocked day that the owner clears by hand. I chose that over guessing.

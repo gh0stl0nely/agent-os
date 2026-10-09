@@ -395,9 +395,7 @@ def unlocked(pattern):
     return pattern in wanted and pattern not in NEVER_UNLOCK
 
 
-def is_protected(path, root, policy):
-    if path is None:
-        return False
+def _protected_once(path, root, policy):
     try:
         rel = os.path.relpath(path, root)
     except ValueError:
@@ -416,7 +414,21 @@ def is_protected(path, root, policy):
     return False
 
 
-RISKY_NAME = re.compile(r"(?i)(?:^|/)(?:\.env(?:\.(?!example$|sample$|template$|dist$)[^/]+)?|id_(?:rsa|dsa|ecdsa|ed25519)|\.netrc|\.pypirc|\.npmrc|\.git-credentials|credentials(?:\.json)?|service-account[^/]*\.json|[^/]+\.(?:pem|key|p12|pfx|ppk|keystore|jks))$|(?:^|/)\.(?:ssh|aws|gnupg|kube|docker)/|(?:^|/)\.config/gh/|^/proc/[^/]+/environ$|(?:^|/)\.(?:bash|zsh|python)_history$")
+def is_protected(path, root, policy):
+    """True if `path` is under a protected entry of policy.json, either as written or after following symlinks that exist now
+    (a link `wf` -> `.github/workflows` makes `wf/daily-post.yml` the workflow file)."""
+    if path is None:
+        return False
+    paths, roots = {path}, {root}
+    try:
+        paths.add(os.path.realpath(path))
+        roots.add(os.path.realpath(root))
+    except (OSError, ValueError):
+        pass
+    return any(_protected_once(p, r, policy) for p in paths for r in roots)
+
+
+RISKY_NAME = re.compile(r"(?i)(?:^|/)(?:\.env(?:\.(?!example$|sample$|template$|dist$)[^/]+)?|id_(?:rsa|dsa|ecdsa|ed25519)|\.netrc|\.pypirc|\.npmrc|\.git-credentials|credentials(?:\.json)?|service-account[^/]*\.json|[^/]+\.(?:pem|key|p12|pfx|ppk|keystore|jks))$|(?:^|/)\.(?:ssh|aws|gnupg|kube|docker)(?:/|$)|(?:^|/)\.config/gh(?:/|$)|^/proc/[^/]+/environ$|(?:^|/)\.(?:bash|zsh|python)_history$")
 
 
 def risky_name(path):
@@ -481,6 +493,38 @@ def credential_in_arg(tok, cwd):
         if c and risky_name(c) and not c.endswith(EXAMPLE_SUFFIXES):
             return c.lstrip("@")
     return None
+
+
+WALK_SKIP = {".git", "node_modules", "__pycache__", ".venv", "venv", ".mypy_cache", ".pytest_cache"}
+WALK_DEPTH, WALK_LIMIT = 4, 20000
+
+
+def credential_below(dirpath):
+    """First credential-bearing file or folder under `dirpath` (breadth-limited: depth 4, 20,000 entries; a bigger tree is
+    only partly looked at, which README 'Known limits' says). Reads folder listings only; never opens a file."""
+    base_depth, seen = dirpath.rstrip(os.sep).count(os.sep), 0
+    try:
+        for dp, dn, fn in os.walk(dirpath):
+            if dp.count(os.sep) - base_depth >= WALK_DEPTH:
+                dn[:] = []
+            dn[:] = [d for d in dn if d not in WALK_SKIP]
+            for name in sorted(dn + fn):
+                seen += 1
+                if seen > WALK_LIMIT:
+                    return None
+                full = os.path.join(dp, name)
+                if risky_name(full) and not full.endswith(EXAMPLE_SUFFIXES):
+                    return full
+    except OSError:
+        return None
+    return None
+
+
+def home_or_above(path):
+    """True when `path` is the home folder or a folder that contains it (a recursive tool pointed there reaches ~/.ssh)."""
+    h = os.path.realpath(os.path.expanduser("~"))
+    p = os.path.realpath(path)
+    return h == p or h.startswith(p.rstrip(os.sep) + os.sep)
 
 
 PATCH_PATH_LINES = (

@@ -345,6 +345,149 @@ def main():
             bad.append((a["id"], errs[0].message))
     check("E-envelope (round 3): the claim row for every new wording validates against claim-ledger.schema.json", not bad, str(bad[:3]))
 
+    # ================================================================ round 4: the four-question screen (risk_screen.py)
+    import risk_screen  # noqa: E402
+    QS = list(risk_screen.QUESTIONS)
+    QCLASS = {q: risk_screen.QUESTIONS[q]["class"] for q in QS}
+    r4a = json.loads((SKILL / "fixtures" / "builder-own-round4.json").read_text(encoding="utf-8"))["actions"]
+    r4b = json.loads((SKILL / "fixtures" / "builder-own-round4-batch2.json").read_text(encoding="utf-8"))["actions"]
+    r4 = r4a + r4b
+    check(f"round 4 fixtures: {len(r4)} wordings (at least 30), all labelled as the builder's own, each with blind answers and evidence for all four questions",
+          len(r4) >= 30 and all(a["source"] == "builder-own" and set(a["blind_screen"]) == set(QS) and all(len(v["evidence"]) >= 10 and v["answer"] in ("yes", "no", "unsure") for v in a["blind_screen"].values()) for a in r4))
+    check("round 4 fixtures: ids are unique and none repeats a wording from an earlier fixture file",
+          len({a["id"] for a in r4}) == len(r4) and not ({a["text"] for a in r4} & {a["text"] for a in allfx + rv + ownact}))
+    # the honest first-run record, computed from the stored first-run classes (they are never re-run into the file)
+    base3 = sum(1 for a in r4a if idx(a["round3_script_class"]) < idx(a["min_class"]))
+    first_a = sum(1 for a in r4a if idx(a["screen_first_run_class"]) < idx(a["min_class"]))
+    first_b = sum(1 for a in r4b if idx(a["screen_first_run_class"]) < idx(a["min_class"]))
+    check(f"round 4 first-run record: round-3 script {base3}/{len(r4a)} below floor on batch 1; new screen {first_a}/{len(r4a)} on batch 1 (written with the cues in view), {first_b}/{len(r4b)} on batch 2 (written after the cues were frozen)",
+          (base3, first_a, first_b) == (22, 1, 26))
+    below = [(a["id"], a["min_class"], classify.classify(a["text"])["class"]) for a in r4 if idx(classify.classify(a["text"])["class"]) < idx(a["min_class"])]
+    check(f"round 4: after the fixes none of the {len(r4)} wordings is below its floor with the script alone (the lists are tuned to them, so this is regression evidence)", not below, str(below))
+    over = [(a["id"], a.get("max_ok_class", a["min_class"]), classify.classify(a["text"])["class"]) for a in r4 if idx(classify.classify(a["text"])["class"]) > idx(a.get("max_ok_class", a["min_class"]))]
+    check(f"round 4: over-raises beyond the accepted class are listed, not hidden ({len(over)}): {[o[0] for o in over]}", [o[0] for o in over] == ["S11", "S16", "S32", "T41", "T43"], str(over))
+
+    # model-judged: the builder's blind answers are fed through --screen-answers
+    bad, agree = [], {"yes_to_no": 0, "yes_to_yes_or_unsure": 0}
+    for a in r4:
+        base = classify.classify(a["text"])
+        res = classify.classify(a["text"], screen_answers=a["blind_screen"])
+        if not res["screen"]["complete"]:
+            bad.append((a["id"], "incomplete"))
+        if idx(res["class"]) < idx(a["min_class"]) or idx(res["class"]) < idx(base["class"]):
+            bad.append((a["id"], res["class"]))
+        for q in QS:
+            if a["blind_screen"][q]["answer"] == "yes":
+                if res["screen"]["questions"][q]["answer"] != "yes":
+                    bad.append((a["id"], q, "model yes not kept"))
+                sa = base["screen"]["questions"][q]["script"]["answer"]
+                agree["yes_to_no" if sa == "no" else "yes_to_yes_or_unsure"] += 1
+    check(f"model-judged screen: with the builder's blind answers, all {len(r4)} screens are complete, no class is below its floor or below the script's, and every model 'yes' is kept", not bad, str(bad[:5]))
+    check(f"model-judged screen: where the builder answered yes, the script also said yes or unsure ({agree['yes_to_yes_or_unsure']} of {sum(agree.values())}; the script said no {agree['yes_to_no']} times)", agree["yes_to_no"] == 0)
+    raised = [a["id"] for a in r4 if idx(classify.classify(a["text"], screen_answers=a["blind_screen"])["class"]) > idx(classify.classify(a["text"])["class"])]
+    check(f"model-judged screen: the builder's 'unsure' answers raise the class where the script was lower ({raised})", raised == ["S19", "T25", "T29"], str(raised))
+
+    # the model can only raise: all-no answers (with a reason) never change or lower any class, over every wording in every fixture file
+    allno = {q: {"answer": "no", "evidence": "read the action; nothing of this kind happens"} for q in QS}
+    changed = []
+    for a in allfx + rv + ownact + r4:
+        b = classify.classify(a["text"])
+        r_ = classify.classify(a["text"], screen_answers=allno)
+        if r_["class"] != b["class"] or r_["script_floor"] != b["script_floor"]:
+            changed.append((a["id"], b["class"], r_["class"]))
+    check(f"screen raises only: all-'no' answers with reasons leave the class unchanged on all {len(allfx + rv + ownact + r4)} wordings", not changed, str(changed[:5]))
+    # a "no" without a reason counts as unsure and raises to the question's matrix class
+    for q in QS:
+        ans = {k: dict(v) for k, v in allno.items()}
+        ans[q] = {"answer": "no", "evidence": ""}
+        r_ = classify.classify("Read the sales file", screen_answers=ans)
+        check(f"screen: a 'no' without a reason on '{q}' counts as unsure and raises a read to {QCLASS[q]}", r_["class"] == QCLASS[q] and r_["screen"]["questions"][q]["answer"] == "unsure"
+              and not r_["screen"]["questions"][q]["model"]["accepted"])
+    for q in QS:
+        ans = {k: dict(v) for k, v in allno.items()}
+        ans[q] = {"answer": "yes", "evidence": "the action touches this"}
+        r_ = classify.classify("Read the sales file", screen_answers=ans)
+        check(f"screen: a model 'yes' on '{q}' raises a read to {QCLASS[q]} and needs the owner's yes", r_["class"] == QCLASS[q] and r_["requires"]["owner_explicit_yes"] and r_["decisive_rule"] == "screen-" + q + "-model")
+        ans[q] = {"answer": "unsure", "evidence": "cannot tell from the text"}
+        r_ = classify.classify("Read the sales file", screen_answers=ans)
+        check(f"screen: a model 'unsure' on '{q}' raises to {QCLASS[q]} too", r_["class"] == QCLASS[q])
+    # a script yes cannot be lowered by a model no
+    r_ = classify.classify("Enrol us in the pro package", screen_answers=allno)
+    check("screen: a model 'no' cannot lower a script 'yes'", r_["class"] == "R6" and r_["screen"]["questions"]["money"]["answer"] == "yes" and r_["screen"]["questions"]["money"]["decided_by"] == "script")
+    # shape: the screen is always present, always four questions, never echoes the text
+    r_ = classify.classify("Delete the old drafts")
+    check("screen: every result carries all four questions with the matrix class for each", sorted(r_["screen"]["questions"]) == sorted(QS)
+          and all(r_["screen"]["questions"][q]["class_if_not_no"] == QCLASS[q] for q in QS) and QCLASS == {"money": "R6", "deletion": "R3", "outside": "R4", "secret": "R5"})
+    leak = []
+    for a in r4[:30]:
+        dump = json.dumps(classify.classify(a["text"], screen_answers=a["blind_screen"])["screen"]["questions"], ensure_ascii=False)
+        for sentence in (a["text"],):
+            if sentence.lower() in dump.lower():
+                leak.append(a["id"])
+        for q in QS:
+            for e in classify.classify(a["text"])["screen"]["questions"][q]["script"]["evidence"]:
+                if len(e.get("matched", "")) > 30:
+                    leak.append((a["id"], "long evidence"))
+    check("screen: the description is never repeated and script evidence is capped at 30 characters", not leak, str(leak[:3]))
+    # completeness: narrow reads are complete by themselves; an unrecognised clause makes the screen incomplete until the model answers
+    r_ = classify.classify("Read the supplier terms and summarize the cancellation clause")
+    check("screen: a plain read is class R0 with a complete screen (every 'no' is strong)", r_["class"] == "R0" and r_["screen"]["complete"] and r_["requires"]["screen_complete"])
+    r_ = classify.classify("Yeet the stuff into the void")
+    check("screen: an unrecognised clause leaves the screen incomplete and names the questions to answer", not r_["screen"]["complete"] and sorted(r_["screen"]["needs_answers"]) == sorted(QS) and r_["flags"]["needs_review"])
+    r2_ = classify.classify("Yeet the stuff into the void", screen_answers=allno)
+    check("screen: four answers with reasons complete it, and the class stays R2 with needs_review", r2_["screen"]["complete"] and r2_["class"] == "R2" and r2_["flags"]["needs_review"])
+    part = {q: allno[q] for q in QS[:2]}
+    r3_ = classify.classify("Yeet the stuff into the void", screen_answers=part)
+    check("screen: two answers out of four leave it incomplete and name the other two", not r3_["screen"]["complete"] and sorted(r3_["screen"]["needs_answers"]) == sorted(QS[2:]))
+    r4_ = classify.classify("Read the file", screen_answers={"money": {"answer": "maybe", "evidence": "x"}, "bogus": "no"})
+    check("screen: an unreadable answer is counted as unsure (raises) and the problems are reported", r4_["class"] == "R6" and r4_["screen"]["problems"])
+
+    # cue families: meanings, not single words. Every phrase below is new (not in any fixture file); the script alone must say yes or unsure.
+    positives = [
+        ("money", "Move us up a tier on the scheduling app"), ("money", "Sign the shop up for the loyalty package"), ("money", "Start paying for the extra storage"),
+        ("money", "Opt into the paid analytics add-on"), ("money", "Switch to annual billing for the domain"), ("money", "Add 2 more seats to the tool"),
+        ("money", "Graduate us from the free version of the app"), ("money", "Go for the premium subscription"), ("money", "Load another 500 credits onto the SMS account"),
+        ("deletion", "Clear out the stale branches"), ("deletion", "Trim the dead rows from the orders table"), ("deletion", "Reduce the archive folder to the last 30 days"),
+        ("deletion", "Reset the staging database to factory settings"), ("deletion", "Start the workbook over"), ("deletion", "Put the 2022 snapshots out to pasture"),
+        ("deletion", "Take the dead tags off the repo"), ("deletion", "Write over the old export with the new one"), ("deletion", "Declutter the shared folder of anything unused"),
+        ("outside", "Make sure the baker hears about the change"), ("outside", "Bring the accountant up to speed on the loan"), ("outside", "FYI to the landlord: patio opens Friday"),
+        ("outside", "Hit up the wholesaler about prices"), ("outside", "Reply to the supplier's email"), ("outside", "Let the partner have the file"),
+        ("outside", "Put it in front of the lawyer"), ("outside", "Whoever is on tonight should be told the oven is down"), ("outside", "Get the order confirmation to the customer"),
+        ("secret", "Fetch the six digit code from the text message"), ("secret", "Generate a keypair for the server"), ("secret", "Copy the backup codes into the note"),
+        ("secret", "Export the signed-in browser session"), ("secret", "Read me the recovery phrase"),
+    ]
+    miss = []
+    for q, text in positives:
+        r_ = classify.classify(text)
+        if r_["screen"]["questions"][q]["script"]["answer"] not in ("yes", "unsure") or idx(r_["class"]) < idx(QCLASS[q]):
+            miss.append((q, text, r_["class"]))
+    check(f"cue families: {len(positives)} new phrasings across the four questions are yes or unsure for their question and reach the matrix class", not miss, str(miss[:4]))
+    negatives = ["Read the pricing page and summarise the tiers", "List the files in the archive folder", "Compare the two branches", "Summarise last month's returns", "Look up which suppliers are open Sunday",
+                 "Run the tests", "Draft a new file in agents/03-guardian/notes/x.md listing the open questions", "Update the README intro"]
+    over_ = []
+    for text in negatives:
+        r_ = classify.classify(text)
+        if any(r_["screen"]["questions"][q]["script"]["answer"] != "no" for q in QS) or r_["class"] not in ("R0", "R1", "R2"):
+            over_.append((text, r_["class"]))
+    check(f"cue families: {len(negatives)} ordinary reads, drafts and edits get 'no' on all four questions and stay at R0 to R2", not over_, str(over_))
+    # a typo in a risky word is looked at again after correction; a real word one edit away is not turned into a risky one
+    check("cue families: a misspelt risky word ('cleer out the reciepts folder') still reaches deletion", classify.classify("cleer out the reciepts folder")["screen"]["questions"]["deletion"]["answer"] == "yes")
+    check("cue families: 'push the branch to the remote' is not read as 'remove'", classify.classify("Read how the remote branch is set up")["screen"]["questions"]["deletion"]["answer"] == "no")
+    # the CLI flag
+    cli = subprocess.run([sys.executable, str(SKILL / "scripts" / "classify.py"), "--action", "Read the sales file", "--screen-answers", json.dumps({"secret": {"answer": "yes", "evidence": "the file holds a login"}})], capture_output=True, text=True)
+    out = json.loads(cli.stdout)
+    check("screen CLI: --screen-answers with inline JSON raises the class and reports the screen", cli.returncode == 0 and out["class"] == "R5" and out["screen"]["questions"]["secret"]["decided_by"] == "model")
+    tmpf = Path(subprocess.run(["mktemp"], capture_output=True, text=True).stdout.strip())
+    tmpf.write_text(json.dumps(allno), encoding="utf-8")
+    cli = subprocess.run([sys.executable, str(SKILL / "scripts" / "classify.py"), "--action", "Read the sales file", "--screen-answers", str(tmpf)], capture_output=True, text=True)
+    tmpf.unlink()
+    check("screen CLI: --screen-answers with a file completes the screen", cli.returncode == 0 and json.loads(cli.stdout)["screen"]["complete"])
+    cli = subprocess.run([sys.executable, str(SKILL / "scripts" / "classify.py"), "--action", "Read the sales file", "--screen-answers", "{not json"], capture_output=True, text=True)
+    check("screen CLI: unreadable --screen-answers exits 2", cli.returncode == 2)
+    # the claim row of every round-4 wording still validates
+    badrow = [a["id"] for a in r4 if validate.errors_for(ver_claim, classify.classify(a["text"], screen_answers=a["blind_screen"])["claim_row"])]
+    check("screen: the claim row for every round-4 wording validates against claim-ledger.schema.json", not badrow, str(badrow[:3]))
+
     failed = results.count(False)
     print(f"\nrisk-classify: {len(results) - failed} passed, {failed} failed")
     sys.exit(1 if failed else 0)

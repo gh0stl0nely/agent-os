@@ -1,5 +1,5 @@
 {
-  "description": "Synthetic plans for building Preflight Briefs, one per class from R2 to R6 plus extra R2 and R4 cases. They cite claims from fixtures/ledger.jsonl. No real data.",
+  "description": "Synthetic plans for building Preflight Briefs, one per class from R2 to R6 plus extra R2 and R4 cases. They cite claims from fixtures/ledger.jsonl. Round 4: every plan carries the mandatory four-question screen (money, deletion, outside, secret) with evidence. No real data.",
   "plans": [
     {
       "id": "P1-brain-rule", "expected_class": "R2",
@@ -16,6 +16,7 @@
         "blast_radius": "Only the Saturday quantity in the nightly recommendation. The owner still approves every order.",
         "rollback": "Restore the previous value 1.0 in the same file from version control. The Operations Manager does this in under five minutes. Test: run the forecast on a saved Saturday input and confirm it reproduces the old quantities.",
         "cost": "No money. About two minutes of owner review.",
+        "screen": {"money": {"answer": "no", "evidence": "no purchase, plan or price is involved; the cost section says no money"}, "deletion": {"answer": "no", "evidence": "changes one value in a version-controlled file; the old value stays in version control and nothing is removed"}, "outside": {"answer": "no", "evidence": "the change is inside the system and the owner still approves every order"}, "secret": {"answer": "no", "evidence": "no key, token or password is involved; the no_secrets check scanned the diff"}},
         "safety_checks": {
           "no_secrets": {"status": "done", "note": "the diff was scanned"},
           "target_verified": {"status": "done", "note": "the file path and key name exist"},
@@ -39,6 +40,7 @@
         "blast_radius": "Every session in this repository can load the skill. It has no scripts and no network access.",
         "rollback": "Remove the folder .claude/skills/sample-notes in a new commit. The Librarian does this in about five minutes. Test: list the skills and confirm sample-notes no longer appears.",
         "cost": "No money. No extra tokens beyond normal use.",
+        "screen": {"money": {"answer": "no", "evidence": "the skill is a local folder with no paid service; the cost section says no money"}, "deletion": {"answer": "no", "evidence": "copies a new folder in; nothing is removed or replaced"}, "outside": {"answer": "no", "evidence": "the skill has no network access and nobody is told or contacted"}, "secret": {"answer": "no", "evidence": "no key, token or password is involved; the skill has no scripts"}},
         "safety_checks": {
           "no_secrets": {"status": "done", "note": "every file scanned"},
           "target_verified": {"status": "done", "note": "the commit hash matches the inventory"},
@@ -62,6 +64,7 @@
         "blast_radius": "Three files nobody has opened since the newer versions replaced them.",
         "rollback": "Copy the three files back from the dated backup folder. The Data Steward does this in about two minutes. Test: restore one file into a scratch folder and compare its checksum with the original.",
         "cost": "No money.",
+        "screen": {"money": {"answer": "no", "evidence": "no purchase, plan or price is involved; the cost section says no money"}, "deletion": {"answer": "yes", "evidence": "deletes exactly three draft files, with a dated backup copy stored first"}, "outside": {"answer": "no", "evidence": "local files; nobody is told or contacted"}, "secret": {"answer": "no", "evidence": "no key, token or password is involved"}},
         "safety_checks": {
           "no_secrets": {"status": "done", "note": "file names and contents scanned"},
           "target_verified": {"status": "done", "note": "paths match the listing"},
@@ -85,6 +88,7 @@
         "blast_radius": "One supplier order for tomorrow's stock; a wrong quantity means waste or a shortage.",
         "rollback": "Change or cancel the order in the supplier portal before the cutoff. The owner does this in about three minutes. Test: confirm in the portal help page that an order can be edited before the cutoff.",
         "cost": "The cost of the goods ordered, already inside the normal budget.",
+        "screen": {"money": {"answer": "no", "evidence": "a goods order is an R4 order submission in the matrix, inside the normal budget, not a plan, tool or data cost beyond the allowance"}, "deletion": {"answer": "no", "evidence": "adds one order; nothing is removed or replaced"}, "outside": {"answer": "yes", "evidence": "the order is submitted to the supplier, an outside party"}, "secret": {"answer": "no", "evidence": "the owner is signed in to the portal; the agent never types or sees the password"}},
         "safety_checks": {
           "no_secrets": {"status": "done", "note": "the plan holds no credentials"},
           "target_verified": {"status": "done", "note": "supplier and portal are the ones named in the terms"},
@@ -108,6 +112,7 @@
         "blast_radius": "A public post on the shop's account that customers can see and share.",
         "rollback": "Delete the post from the Threads app within minutes of publishing. The owner does this in about two minutes. Test: confirm the delete option exists on a prior post before relying on it.",
         "cost": "No money.",
+        "screen": {"money": {"answer": "no", "evidence": "no purchase, plan or price is involved; the cost section says no money"}, "deletion": {"answer": "no", "evidence": "publishes a queued post; nothing is removed or replaced"}, "outside": {"answer": "yes", "evidence": "a public post on the shop's account is seen by customers"}, "secret": {"answer": "no", "evidence": "the poster uses a stored token that this action does not read or change"}},
         "safety_checks": {
           "no_secrets": {"status": "done", "note": "post text and image names scanned"},
           "target_verified": {"status": "done", "note": "queue entry matches tomorrow's date"},
@@ -131,6 +136,7 @@
         "blast_radius": "Only the owner's own access to the supplier portal.",
         "rollback": "Use the supplier's password reset page to set another password. The owner does this in about five minutes. Test: confirm the reset page works by reading its help article before rotating.",
         "cost": "No money. About ten minutes of owner time.",
+        "screen": {"money": {"answer": "no", "evidence": "no purchase, plan or price is involved; the cost section says no money"}, "deletion": {"answer": "no", "evidence": "the owner changes a password on the supplier site; the agent changes no file"}, "outside": {"answer": "no", "evidence": "the agent writes steps for the owner and contacts nobody"}, "secret": {"answer": "yes", "evidence": "a password is rotated; the owner does it and the agent never sees the value"}},
         "safety_checks": {
           "no_secrets": {"status": "done", "note": "the plan names no value"},
           "target_verified": {"status": "done", "note": "the portal address is the one in the supplier terms"},
@@ -154,6 +160,7 @@
         "blast_radius": "A monthly charge to the shop's card until the subscription ends.",
         "rollback": "Cancel the subscription in the account page and ask for a refund of the last charge. The owner does this in about ten minutes. Test: read the cancellation terms and confirm that a cancel button exists before subscribing.",
         "cost": "20 CAD per month, 240 CAD per year, beyond the plan allowance. Justified only if forecast error on event days improves.",
+        "screen": {"money": {"answer": "yes", "evidence": "a monthly paid subscription of 20 CAD, beyond the plan allowance"}, "deletion": {"answer": "no", "evidence": "adds a subscription; nothing is removed or replaced"}, "outside": {"answer": "no", "evidence": "the owner enters payment details; the agent contacts nobody"}, "secret": {"answer": "no", "evidence": "the owner enters the payment details; the agent never sees a card or a key"}},
         "safety_checks": {
           "no_secrets": {"status": "done", "note": "no card details in the plan"},
           "target_verified": {"status": "done", "note": "vendor site matches the one reviewed"},

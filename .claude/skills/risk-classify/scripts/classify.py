@@ -28,6 +28,15 @@ Design (round 3: rounding down is structurally hard; see SKILL.md and reference.
   6. Instruction-like text inside the description is data: it is flagged, never obeyed, and a flagged description is
      at least R2. A secret-like value inside the description makes the action at least R5 and is never echoed.
   7. The output never repeats the description; it reports only matched keywords, a hash id and per-clause classes.
+  8. THE FOUR-QUESTION SCREEN (round 4, risk_screen.py). Every action is put through four questions: (a) money or a recurring cost,
+     (b) deletion, removal or overwrite of anything persistent, (c) an outside party told or contacted, (d) a secret or credential.
+     The script answers each with evidence from cue FAMILIES (meanings such as "leaving a free tier" or "make sure the crew sees it",
+     not single words) and from the rules that matched. A yes or an unsure raises the class to the matrix class for that question
+     (R6, R3, R4, R5). The model answers the same four with --screen-answers; its answers can only raise, and a "no" without a
+     reason counts as unsure. The screen is complete only when all four are answered with evidence; a Preflight Brief is not built from
+     an incomplete one.
+Options added in round 4:
+  --screen-answers FILE|JSON   the model's answers: {"money": {"answer": "no", "evidence": "..."}, "deletion": ..., "outside": ..., "secret": ...}
 Exit code: 0 classified, 2 blocked (no usable description or an invalid --model-class).
 """
 import argparse
@@ -42,12 +51,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))  # risk_screen.py sits next to this file (python3 -I does not add the script folder)
+import risk_screen  # noqa: E402
 REPO = HERE.parents[3]  # <repo>/.claude/skills/risk-classify/scripts
 MATRIX = REPO / "agent-system" / "contracts" / "autonomy-matrix.md"
 SECRETS_SCRIPTS = REPO / ".claude" / "skills" / "secrets-hygiene" / "scripts"
 CLASSES = ["R0", "R1", "R2", "R3", "R4", "R5", "R6"]
 SCRIPT_REL = ".claude/skills/risk-classify/scripts/classify.py"
-POLICY_VERSION = "3"
+POLICY_VERSION = "4"
 
 
 def load_matrix():
@@ -217,7 +228,8 @@ SECRET_VERB = (r"\b(?P<kw2>create|generate|store|save|put|paste|type|enter|rotat
                r"log in|sign in)\b")
 
 # People and organisations outside the system, plus things you can submit or cancel with them.
-PERSON = (r"supplier|vendor|customer|client|accountant|staff|employee|worker|partner|landlord|bank|cra|lender|"
+PERSON = (r"wholesaler|distributor|florist|courier|driver|baker|barista|cashier|chef|cook|inspector|municipality|city hall|printer|caterer|photographer|designer|account manager|"
+          r"supplier|vendor|customer|client|accountant|staff|employee|worker|partner|landlord|bank|cra|lender|"
           r"team member|team|crew|everyone|everybody|colleague|co-?worker|group chat|channel|mailing list|subscriber|follower|audience|"
           r"family|friend|contact|lawyer|insurer|insurance|school|daycare|doctor|public|owner's partner|manager|bookkeeper|cpa|auditor|contractor|freelancer|tenant|realtor|broker|agency|plumber|electrician|tutor|neighbou?rs?|boss|intern|applicant|candidate|guest|patron|regulars|newsletter list|customer list|parents?|spouse|wife|husband|partner|kids?|children")
 RECIPIENT = (r"(?P<kw2>" + PERSON + r"|order|subscription|booking|reservation|appointment)s?")
@@ -505,7 +517,10 @@ def _scan_rules(segment, kind, hits, clause_no):
         hits.append({"rule": rid, "class": cls, "keywords": sorted({k.strip()[:30] for k in kws}), "why": why, "clause": clause_no})
 
 
-def classify(text, model_class=None):
+CUES = risk_screen.build_cues(PERSON)
+
+
+def classify(text, model_class=None, screen_answers=None):
     """Return the classification record for one description. Pure function apart from reading the matrix."""
     matrix = load_matrix()
     text = text if isinstance(text, str) else ""
@@ -591,6 +606,27 @@ def classify(text, model_class=None):
         hits.append({"rule": "comm-verb-to-named-person", "class": "R4", "keywords": [m.group(0).split()[0].lower()[:30]], "clause": 0,
                      "why": "A contact verb followed by a capitalised name (text Maria, call Dev) reaches that person."})
 
+    # ---- the four-question screen: the script's half ----
+    live0 = [c for c in clauses if not c["courtesy_only"]]
+    unacc_nos = [c["n"] for c in live0 if not c["narrow"] and not c.get("hits") and c["content_words"] >= 1]
+    screen_in = [{"n": c["n"], "text": c["text"], "read_start": c["read_start"], "owned_write": c["owned_write"]} for c in live0]
+    for sc in screen_in:
+        sc["text"] = sc["text"].replace("_", " ")
+    script_scr = risk_screen.script_screen(CUES, scrubbed.replace("_", " "), screen_in, [(h["rule"], h["class"], h["clause"]) for h in hits], unacc_nos)
+    fixed = risk_screen.fix_typos(scrubbed.replace("_", " "))
+    if fixed != scrubbed.replace("_", " "):  # a misspelt risky word: look again at the corrected text; the corrected reading can only add
+        fixed_in = [dict(c, text=risk_screen.fix_typos(c["text"])) for c in screen_in]
+        again = risk_screen.script_screen(CUES, fixed, fixed_in, [], unacc_nos)
+        for q, rec in again.items():
+            if risk_screen.ORDER.index(rec["answer"]) > risk_screen.ORDER.index(script_scr[q]["answer"]):
+                rec["evidence"] = [dict(e, note="after correcting a misspelt word") for e in rec["evidence"]]
+                script_scr[q] = rec
+    for q, rec in script_scr.items():
+        if rec["answer"] in ("yes", "unsure"):
+            kws = sorted({(e.get("matched") or e["cue"])[:30] for e in rec["evidence"]})
+            hits.append({"rule": "screen-" + q, "class": risk_screen.QUESTIONS[q]["class"], "keywords": kws, "clause": 0,
+                         "why": f"Screen question '{q}' ({risk_screen.QUESTIONS[q]['text']}) was answered {rec['answer']} by the script; the matrix class for it applies."})
+
     # de-duplicate hits by (rule, class, clause)
     seen, matched = set(), []
     for h in hits:
@@ -659,6 +695,24 @@ def classify(text, model_class=None):
                         "why": "A secret-like value appears in the description. Agents never handle secret values."})
     script_idx = idx
 
+    # ---- 3b. the screen: merge the model's answers (they can only raise) ----
+    m_answers, m_problems = risk_screen.clean_model_answers(screen_answers)
+    screen, s_raises = risk_screen.merge(script_scr, m_answers)
+    screen["problems"] = m_problems
+    screen["model_answered"] = sorted(m_answers)
+    if script_scr and any(r["answer"] == "unsure" for r in script_scr.values()):
+        flags["needs_review"] = True
+    for q, qcls, final in s_raises:
+        if screen["questions"][q]["decided_by"] != "script" and CLASSES.index(qcls) > idx:
+            idx = CLASSES.index(qcls)
+            matched.append({"rule": "screen-" + q + "-model", "class": qcls, "keywords": [], "clause": 0,
+                            "why": f"The model answered screen question '{q}' as {final}; the matrix class for it applies. A model answer can raise the class, never lower it."})
+            flags["needs_review"] = True
+        elif screen["questions"][q]["decided_by"] != "script":
+            flags["needs_review"] = True
+    if not screen["complete"]:
+        flags["needs_review"] = True
+
     # ---- 4. the model may only raise ----
     model = {"proposed": model_class, "raised_class": False, "ignored_because_lower": False}
     if model_class is not None:
@@ -684,6 +738,7 @@ def classify(text, model_class=None):
         # an action the classifier was unsure about or that carried instruction-like text needs the owner's explicit yes
         # whatever its class: "unsure" must never be cheaper than "sure"
         "owner_explicit_yes": cls in ("R3", "R4") or bool(flags["needs_review"] or injection or hidden),
+        "screen_complete": screen["complete"],
         "human_only": cls == "R5",
         "cost_flag_by_chief_of_staff": cls == "R6",
         "default_if_no_answer": "nothing happens" if idx >= 2 else "not applicable",
@@ -707,6 +762,8 @@ def classify(text, model_class=None):
         reasoning.append("Instruction-like text in the description was treated as data and not followed.")
     if flags["needs_review"]:
         reasoning.append("A person or the model must read the action and may raise the class; nothing may lower it.")
+    reasoning.append("Screen: " + ", ".join(f"{q}={screen['questions'][q]['answer']}" for q in risk_screen.QUESTIONS)
+                     + ("." if screen["complete"] else f". INCOMPLETE: answer {', '.join(screen['needs_answers'])} with evidence (--screen-answers) before a Preflight Brief is built."))
 
     clause_report = []
     for c in clauses:
@@ -734,6 +791,7 @@ def classify(text, model_class=None):
         "decisive_rule": decisive["rule"],
         "matrix_citation": citation,
         "rules_matched": [{k: v for k, v in m.items() if k != "clause"} for m in matched],
+        "screen": screen,
         "clauses": clause_report,
         "requires": requires,
         "flags": flags,
@@ -779,6 +837,7 @@ def main():
     ap.add_argument("--file")
     ap.add_argument("source", nargs="?", help="'-' to read stdin")
     ap.add_argument("--model-class", help="the model's own class; it can only raise the script's class")
+    ap.add_argument("--screen-answers", help="the model's answers to the four screen questions: a JSON file or a JSON string; they can only raise the class")
     ap.add_argument("--envelope", action="store_true")
     ap.add_argument("--task-id", default="T-unset")
     ap.add_argument("--from-agent", default="unknown")
@@ -794,7 +853,15 @@ def main():
         text = sys.stdin.read()
     else:
         text = ""
-    res = classify(text, model_class=args.model_class)
+    answers = None
+    if args.screen_answers:
+        raw = args.screen_answers.strip()
+        try:
+            answers = json.loads(raw if raw.startswith("{") else Path(raw).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            print(json.dumps({"status": "blocked", "reason": "--screen-answers is not readable JSON", "missing": ["the four screen answers as JSON"]}, indent=2))
+            sys.exit(2)
+    res = classify(text, model_class=args.model_class, screen_answers=answers)
     if res["status"] == "ok":
         res["claim_row"]["run_id"] = args.run_id
     out = envelope(res, args) if (args.envelope and res["status"] == "ok") else res

@@ -7,6 +7,8 @@ The Evidence table is filled from the ledger, never from the plan, so a Verifier
 The script refuses (status blocked, no file written) when:
   * a required plan field is missing,
   * the declared class is below R2, or below the class the classifier computes for the action,
+  * the four-question screen (money, deletion, outside party, secret) is missing, lacks evidence, is incomplete, or a yes or unsure
+    needs a higher class than the one declared,
   * any cited claim is missing from the ledger, not verified, or lacks a Verifier pass,
   * the plan contains a secret-like value or instruction-like text aimed at the Guardian.
 On success it writes DIR/PF-YYYYMMDD-n.md, validates it with check_brief, and prints JSON with an agent envelope.
@@ -14,7 +16,12 @@ Exit 0 built, 1 blocked.
 
 plan.json fields: action, requested_by, action_class, decision_by, default_if_no_answer, what_exactly, why,
   claim_ids[], alternatives[] (must include a do-nothing option), blast_radius, rollback, cost,
-  safety_checks{no_secrets,target_verified,dry_run,rollback_tested} each {"status":"done"|"na","note":"..."}.
+  safety_checks{no_secrets,target_verified,dry_run,rollback_tested} each {"status":"done"|"na","note":"..."},
+  screen{money,deletion,outside,secret} each {"answer":"yes"|"no"|"unsure","evidence":"..."}: the mandatory four-question screen
+  from risk-classify (money or a recurring cost? deletion, removal or overwrite? an outside party told? a secret or credential?).
+  A yes or an unsure needs at least the matrix class for that question (R6, R3, R4, R5) as the declared class; every question needs
+  evidence; the screen must be complete; and a "no" never lowers a class the script found. The four answers are printed under
+  "Blast radius" in the brief.
 """
 import argparse
 import json
@@ -31,7 +38,7 @@ import brief_common as bc  # noqa: E402
 import check_brief  # noqa: E402
 
 FIELDS = ["action", "requested_by", "action_class", "decision_by", "default_if_no_answer", "what_exactly", "why",
-          "claim_ids", "alternatives", "blast_radius", "rollback", "cost", "safety_checks"]
+          "claim_ids", "alternatives", "blast_radius", "rollback", "cost", "safety_checks", "screen"]
 CHECK_KEYS = ["no_secrets", "target_verified", "dry_run", "rollback_tested"]
 
 
@@ -45,7 +52,7 @@ def blocked(reasons, **extra):
     return {"status": "blocked", "reasons": reasons, **extra}
 
 
-def render(plan, ledger, brief_id, tpl):
+def render(plan, ledger, brief_id, tpl, final):
     rows = []
     for cid in plan["claim_ids"]:
         ev = ledger[cid]["row"]["evidence"][0]
@@ -72,7 +79,7 @@ def render(plan, ledger, brief_id, tpl):
         f"## {s[1]}", plan["why"], "",
         f"## {s[2]}", "| Claim id | Verifier result | Source |", "|---|---|---|", *rows, "",
         f"## {s[3]}", alts, "",
-        f"## {s[4]}", plan["blast_radius"], "",
+        f"## {s[4]}", plan["blast_radius"], "", *bc.screen_lines(final), "",
         f"## {s[5]}", plan["rollback"], "",
         f"## {s[6]}", plan["cost"], "",
         f"## {s[7]}", *checks, ""])
@@ -91,6 +98,7 @@ def build(plan, ledger, out_dir, today):
 
     problems = []
     declared = plan["action_class"]
+    sc = None
     if declared not in bc.CLASSES[2:]:
         problems.append(f"action_class '{declared}' is not R2 to R6; a Preflight Brief is only for R2 and above")
     else:
@@ -99,6 +107,9 @@ def build(plan, ledger, out_dir, today):
         if c["status"] == "ok" and bc.idx(c["class"]) > bc.idx(declared):
             problems.append(f"declared class {declared} is below the class {c['class']} the classifier computes for this action "
                             f"(rule {c['decisive_rule']}); raise it or rewrite the description. A class is never lowered here")
+        # the mandatory four-question screen: money, deletion, outside party, secret; each answered with evidence, none lowering a class
+        sp, sc = bc.screen_problems(declared, text, plan["screen"])
+        problems += sp
     full = json.dumps(plan, ensure_ascii=False)
     inj = bc.injection_hits(full)
     if inj:
@@ -119,7 +130,7 @@ def build(plan, ledger, out_dir, today):
         return blocked(problems)
 
     brief_id = next_id(out_dir, today)
-    md = render(plan, ledger, brief_id, tpl)
+    md = render(plan, ledger, brief_id, tpl, bc.final_screen(sc, plan["screen"]))
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     path = Path(out_dir) / f"{brief_id}.md"
     verdict = check_brief.check(md, ledger)

@@ -20,7 +20,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import guard_lib as g  # noqa: E402
 
 SHELLS = {"sh", "bash", "zsh", "dash", "ksh", "python", "python3", "node", "perl", "ruby", "php"}
-MUTATORS = {"rm", "mv", "cp", "tee", "truncate", "install", "ln", "chmod", "chown", "touch", "patch", "shred", "unlink", "rmdir", "mkdir", "dd", "rsync"}
+MUTATORS = {"rm", "mv", "cp", "tee", "truncate", "install", "ln", "chmod", "chown", "touch", "patch", "shred", "unlink", "rmdir", "mkdir", "dd", "rsync",
+            "ed", "ex", "vi", "vim", "nvim", "nano", "pico", "emacs", "micro", "sponge"}
 SECRET_VAR = re.compile(r"\$\{?[A-Za-z0-9_]*(?:KEY|TOKEN|SECRET|PASSW(?:OR)?D|CREDENTIAL|PRIVATE)[A-Za-z0-9_]*\}?", re.I)
 INTERPRETERS = {"python", "python3", "python2", "node", "nodejs", "perl", "ruby", "php", "deno", "bun", "lua"}
 INLINE_FLAG = re.compile(r"(?:^|\s)(?:-[A-Za-z]*[ceE]|--eval|--command)\b")
@@ -35,6 +36,19 @@ GIT_READ_SUBS = {"show", "cat-file", "diff", "log", "blame", "annotate", "grep",
 # Environment settings that redirect where git sends data or which program it runs.
 ENV_DANGER = re.compile(r"GIT_(?:SSH|SSH_COMMAND|PROXY_COMMAND|ASKPASS|CONFIG_COUNT|CONFIG_PARAMETERS|CONFIG_GLOBAL|CONFIG_SYSTEM|CONFIG_KEY_\d+|CONFIG_VALUE_\d+|DIR|WORK_TREE|EXEC_PATH|EXTERNAL_DIFF|TEMPLATE_DIR)=.*|(?:LD_PRELOAD|BASH_ENV)=.*")
 INLINE_CRED = re.compile(r"(?i)\.env\b(?!\.(?:example|sample|template|dist))|id_(?:rsa|dsa|ecdsa|ed25519)|\.ssh\b|\.aws\b|\.netrc|\.pypirc|\.npmrc|\.git-credentials|\.config/gh|hosts\.yml|\.pem\b|\.p12\b|\.pfx\b|\.keystore|credentials|service-account|/etc/shadow")
+# Environment names `printenv NAME` may print. Anything else may be a token (round 4: an allow-list, not a list of bad names).
+SAFE_ENV = {"HOME", "PATH", "USER", "LOGNAME", "SHELL", "PWD", "LANG", "LC_ALL", "TERM", "TMPDIR", "EDITOR", "HOSTNAME", "TZ", "PYTHONDONTWRITEBYTECODE", "CLAUDE_PROJECT_DIR"}
+INLINE_ENV = re.compile(r"(?i)os\.environ|os\.getenv|\benviron\b|process\.env|\bENV\s*\[|\$ENV\s*\{|\bgetenv\s*\(|Deno\.env|Bun\.env|System\.getenv|ENV\.fetch|\bos\.Getenv")
+INDIRECT_VAR = re.compile(r"\$\{!([A-Za-z_][A-Za-z0-9_]*)([*@])?\}")
+SECRETY_PREFIX = re.compile(r"(?i)^(?:|GH|GITHUB|AWS|AZURE|GOOGLE|GCP|ANTHROPIC|OPENAI|NPM|PYPI|SLACK|STRIPE|SQUARE|NOTION|THREADS|TOKEN|KEY|SECRET|PASS|API|AUTH|CRED|PRIVATE|SSH)")
+AWK_SHELLOUT = re.compile(r"\bsystem\s*\(|\|\s*getline|\|&|print[^;}]*\|\s*\"?\s*(?:sh|bash|zsh|cat|tee|mail)\b|\"\s*\|\s*getline")
+# Programs that read whole folders; if one is pointed at a folder that holds a credential file, it reads the credential.
+RECURSIVE_ALWAYS = {"tar", "bsdtar", "rg", "ag", "7z", "7za", "7zr", "cpio"}
+GREP_FAMILY = {"grep", "egrep", "fgrep", "rgrep", "zgrep"}
+EDITORS = {"ed", "ex", "vi", "vim", "nvim", "view", "nano", "pico", "emacs", "micro", "sponge"}
+SERVER_PROGS = {"http-server", "live-server", "serve", "ngrok", "cloudflared", "localtunnel", "lt", "miniserve", "httpd", "nginx", "caddy", "simplehttpserver"}
+CONTAINER_PROGS = {"docker", "podman", "nerdctl", "docker-compose", "podman-compose"}
+CONTAINER_RISKY = {"run", "exec", "build", "buildx", "compose", "create", "start", "cp", "push", "login", "save", "load", "import", "commit", "up"}
 FORK_BOMB = re.compile(r":\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:")
 
 
@@ -219,6 +233,182 @@ def check_publish_file(v, cwd, root, pol, via):
             g.deny("secret-in-publish", g.describe(f) + f" in the file {via} would post publicly.", "Remove the value first; tell the owner to revoke it if it was ever real.")
 
 
+def check_write_target(prog, t, cwd, root, pol, how="write"):
+    """A file `prog` is about to create or overwrite. Protected paths (symlinks followed), git settings files and
+    credential files are refused."""
+    p = g.resolve(t, cwd)
+    if p is None:
+        return
+    if g.is_protected(p, root, pol):
+        g.deny("protected-path", f"{prog} would {how} {os.path.relpath(p, root)}, a protected path.", "Propose the change in a change request; the owner applies it.")
+    if g.git_config_file(p):
+        g.deny("git-config", f"{prog} would {how} {t}, a git settings file that can redirect where pushes go (R2/R4).")
+    real = os.path.realpath(p)
+    if (g.risky_name(p) or g.risky_name(real)) and not p.endswith(g.EXAMPLE_SUFFIXES):
+        g.deny("write-credential-file", f"{prog} would {how} '{t}', a file that normally holds a secret; credentials are the owner's to place (R5).")
+
+
+def option_values(args, shorts=(), longs=()):
+    """Values given to the options in `shorts` (-o X, -oX) and `longs` (--output X, --output=X)."""
+    out, i = [], 0
+    while i < len(args):
+        a = args[i]
+        if a in shorts or a in longs:
+            if i + 1 < len(args):
+                out.append(args[i + 1])
+            i += 2
+            continue
+        for l in longs:
+            if a.startswith(l + "="):
+                out.append(a.split("=", 1)[1])
+        for sh in shorts:
+            if len(sh) == 2 and a.startswith(sh) and len(a) > 2 and not a.startswith("--"):
+                out.append(a[2:])
+        i += 1
+    return out
+
+
+def check_recursive_credentials(prog, args, short, long_, rest, cwd):
+    """tar, cp -r, grep -r, find, zip -r, rsync -a ... pointed at a folder: refuse when the folder is, or holds, a credential
+    file, or is the home folder (which holds ~/.ssh). The folder listing is read; no file is opened."""
+    if prog in RECURSIVE_ALWAYS:
+        on = True
+    elif prog == "find":
+        # find lists names; it reads contents only through an action. A bulk rm/-delete has its own rule.
+        acts = {"-exec", "-execdir", "-ok", "-okdir", "-fprint", "-fprint0", "-fprintf", "-fls"}
+        i_rm = any(a in ("-exec", "-execdir") and j + 1 < len(args) and os.path.basename(args[j + 1]) == "rm" for j, a in enumerate(args))
+        on = bool(acts & set(args)) and "-delete" not in args and not i_rm
+    elif prog == "zip":
+        on = bool(short & set("rR")) or "--recurse-paths" in long_
+    elif prog in ("cp", "rsync", "scp"):
+        on = bool(short & set("rRa")) or bool(long_ & {"--recursive", "--archive"})
+    elif prog in GREP_FAMILY:
+        on = bool(short & set("rR")) or bool(long_ & {"--recursive", "--dereference-recursive"}) or any(a.startswith("--directories=recurse") for a in args)
+    else:
+        return
+    if not on:
+        return
+    operands = rest[1:] if prog in GREP_FAMILY or prog in ("rg", "ag") else rest
+    dirs = []
+    for t in args:
+        if t.startswith("-") and t != "-":
+            continue
+        p = g.resolve(t, cwd)
+        if p and os.path.isdir(p):
+            dirs.append((t, p))
+    if prog in GREP_FAMILY or prog in ("rg", "ag"):
+        if not operands:
+            dirs.append((".", cwd))
+    elif prog == "find":
+        first = [a for a in args if not a.startswith(("-", "(", "!"))][:1]
+        if not first:
+            dirs.append((".", cwd))
+    for t, p in dirs:
+        if g.home_or_above(p):
+            g.deny("read-credential-dir", f"{prog} would read every file under '{t}', which is the home folder (or contains it), and ~/.ssh, ~/.aws and ~/.config/gh are in there; agents never see secret values (R5).", "Name the project folder you mean.")
+        hit = g.credential_below(p)
+        if hit:
+            g.deny("read-credential-dir", f"{prog} would read every file under '{t}', and '{os.path.relpath(hit, p)}' inside it normally holds a secret; agents never see secret values (R5).", "Name the files you need, or ask the owner to move the credential file out.")
+
+
+def scan_message_file(path, cwd, via):
+    p = g.resolve(path, cwd)
+    if p is None or not os.path.isfile(p):
+        return
+    ok, f, err = g.run_scanner(["--paths", p], cwd)
+    if not ok:
+        g.deny("scanner-unavailable", err)
+    f = [x for x in f if x.get("rule") != "plan-handles-secret"]
+    if f:
+        g.deny("secret-in-message", g.describe(f) + f" in the file {via} would use as a message, which becomes public in this repository.", "Remove the value first; tell the owner to revoke it if it was ever real.")
+
+
+def check_more(prog, args, short, long_, rest, sg, cwd, root, pol):
+    """Round 4: the review's shapes that were neither blocked nor listed."""
+    # printing the environment or variables (a name outside a short safe list may be a token)
+    if prog == "printenv":
+        bad = [a for a in rest if a not in SAFE_ENV]
+        if bad:
+            g.deny("print-secret-variable", f"printenv {bad[0][:30]} prints an environment variable that may be a token; only {', '.join(sorted(SAFE_ENV)[:6])}... are allowed. Agents never see secret values (R5).")
+    for t in sg.tokens:
+        for m in INDIRECT_VAR.finditer(t):
+            if not m.group(2) or SECRETY_PREFIX.match(m.group(1)):
+                g.deny("print-secret-variable", f"'{m.group(0)[:30]}' reads variables by name (indirect expansion) or lists those with a key-like prefix; agents never see secret values (R5).")
+    if prog in ("declare", "typeset", "readonly", "local") and ("p" in short or "x" in short or not args) or prog == "export" and ("p" in short or not args):
+        g.deny("env-dump", f"{prog} would print variables, which can include tokens; agents never see secret values (R5).")
+    if prog in ("awk", "gawk", "mawk", "nawk") and any(re.search(r"\bENVIRON\b", t) for t in args):
+        g.deny("print-secret-variable", "awk's ENVIRON array holds every environment variable, tokens included; agents never see secret values (R5).")
+    # reading the whole of a folder that holds a credential
+    check_recursive_credentials(prog, args, short, long_, rest, cwd)
+    # writers that reach a protected path without a redirect
+    if prog == "dd":
+        for a in args:
+            if a.startswith("of="):
+                check_write_target(prog, a[3:], cwd, root, pol)
+    elif prog == "curl":
+        for v in option_values(args, ("-o",), ("--output",)) + option_values(args, (), ("--output-dir",)):
+            check_write_target(prog, v, cwd, root, pol)
+        if (short & set("OJ") or "--remote-name" in long_) and (g.is_protected(cwd, root, pol)):
+            g.deny("protected-path", "curl -O would save a file into the current folder, which is a protected path.")
+    elif prog == "wget":
+        for v in option_values(args, ("-O", "-o", "-a", "-P"), ("--output-document", "--output-file", "--append-output", "--directory-prefix")):
+            check_write_target(prog, v, cwd, root, pol)
+        if g.is_protected(cwd, root, pol):
+            g.deny("protected-path", "wget would save a file into the current folder, which is a protected path.")
+    elif prog in ("tar", "bsdtar") and ("x" in short or long_ & {"--extract", "--get"} or "x" in (args[0] if args and not args[0].startswith("-") else "")):
+        for v in option_values(args, ("-C",), ("--directory",)):
+            check_write_target(prog, v, cwd, root, pol, "extract into")
+        if g.is_protected(cwd, root, pol) and not option_values(args, ("-C",), ("--directory",)):
+            g.deny("protected-path", f"{prog} would extract into the current folder, which is a protected path.")
+    elif prog == "unzip":
+        for v in option_values(args, ("-d",), ()):
+            check_write_target(prog, v, cwd, root, pol, "extract into")
+    elif prog == "rsync" and any(a.startswith("--delete") or a in ("--del", "--remove-source-files") for a in args):
+        dest = rest[-1] if rest else ""
+        p = g.resolve(dest, cwd)
+        if p is None or not any(p.startswith(r) and p.rstrip("/") + "/" != r for r in pol["safe_delete_roots"]):
+            g.deny("recursive-delete", "rsync --delete removes files at the destination that are not at the source (R3), outside the temporary folders.", "Delete explicitly, below /tmp, or write a Preflight Brief with a backup.")
+    elif prog == "shred":
+        for t in rest:
+            p = g.resolve(t, cwd)
+            if p is None or not any(p.startswith(r) and p.rstrip("/") + "/" != r for r in pol["safe_delete_roots"]):
+                g.deny("irreversible-overwrite", f"shred overwrites '{t}' so it cannot be recovered (R3), outside the temporary folders.", "Write a Preflight Brief with a backup and rollback step.")
+    elif prog in ("awk", "gawk", "mawk", "nawk") and AWK_SHELLOUT.search(" ".join(args)):
+        g.deny("inline-code", f"{prog} was given a program that runs another command; the hook cannot read what that command is.", "Put the command in the shell where it can be checked.")
+    elif prog in ("ssh", "mosh", "telnet", "ssh-copy-id", "ssh-add", "ssh-keygen"):
+        g.deny("remote-shell", f"{prog} opens a session on another machine, or creates or loads keys: it can run any command (including on this machine, via localhost) and touches credentials (R4/R5).", "The owner does this.")
+    elif prog in CONTAINER_PROGS and rest[:1] and rest[0] in CONTAINER_RISKY:
+        g.deny("container-run", f"{prog} {rest[0]} runs or builds code the hook cannot read, usually with the working folder mounted (R2/R5).", "Run the program directly where it can be checked.")
+    elif prog in SERVER_PROGS or (prog.startswith("python") and any(a in ("http.server", "SimpleHTTPServer", "pyftpdlib", "smtpd") for a in args)) or (prog == "php" and "S" in short) or (prog == "ruby" and "httpd" in " ".join(args)):
+        g.deny("serve-files", f"{prog} would serve the working folder to the network (or open a tunnel to it), which can expose files with secrets (R4/R5).", "Not from an agent session.")
+    elif prog in ("pip", "pip3", "pipx", "uv", "uvx", "poetry", "npm", "npx", "pnpm", "yarn", "bun", "bunx", "deno") or (prog.startswith("python") and "pip" in args):
+        check_installers(prog, args)
+    elif prog == "cargo" and "install" in rest and "--git" in long_:
+        g.deny("install-from-url", "cargo install --git builds and installs code fetched from a URL nobody has read (R2).")
+
+
+URLISH = re.compile(r"(?i)^(?:https?|ftp|git|ssh|file)://|^git\+|^(?:github|gitlab|bitbucket|gist):|^[\w.-]+/[\w.-]+(?:#.*)?$|^[\w.-]+@[\w.-]+:")
+
+
+def check_installers(prog, args):
+    """Installing from a URL, a git address or an `owner/repo` shorthand fetches code nobody has read (R2). Plain registry
+    names are allowed (see README: the package's own install scripts still run)."""
+    words = [a for a in args if not a.startswith("-") or a.startswith(("-r", "-e", "-c", "--requirement", "--editable", "--index-url", "--extra-index-url", "--find-links", "--git", "-i", "-f"))]
+    for i, a in enumerate(args):
+        v = a.split("=", 1)[1] if "=" in a and a.startswith("--") else None
+        if a in ("-i", "-f", "--index-url", "--extra-index-url", "--find-links", "-r", "--requirement", "-e", "--editable") and i + 1 < len(args):
+            v = args[i + 1]
+        if v is not None and URLISH.search(v) and not v.startswith(("./", "../", "/")):
+            g.deny("install-from-url", f"{prog} would fetch from '{v[:50]}', an address or repository that is not the package registry: code nobody has read (R2).", "Ask the owner to vet it with the skill-vetting skill, then install it.")
+    verbs = {"install", "i", "add", "ci", "run", "dlx", "exec", "x", "tool", "global", "update", "upgrade"}
+    if prog in ("pip", "pip3", "pipx", "uv", "uvx", "poetry", "npm", "pnpm", "yarn", "bun", "bunx", "npx", "deno") or "pip" in args:
+        for a in args:
+            if a.startswith("-"):
+                continue
+            if a not in verbs and URLISH.search(a) and not a.startswith(("./", "../", "/")):
+                g.deny("install-from-url", f"{prog} would fetch and run '{a[:50]}', an address, git repository or owner/repo shorthand: code nobody has read (R2).", "Ask the owner to vet it with the skill-vetting skill, then install it.")
+
+
 def check_rm(prog, args, cwd, root, pol):
     short, long_, targets = flags_of(args)
     rec = bool(short & set("rR")) or "--recursive" in long_
@@ -263,6 +453,32 @@ def check_git(args, cwd, root, pol, sg, state):
                 g.deny("read-credential-file", f"git {sub} would print '{hit}', a file that normally holds a secret, from the working tree or from history; agents never see secret values (R5).", "Ask the owner to read it.")
     if sub in ("apply", "am"):
         check_patch(sub, a, sg, cwd, root, pol)
+    if sub == "credential" or (sub == "config" and any(x.startswith("credential") for x in a) and False):
+        g.deny("git-credential", "git credential fill/approve/reject reads or stores the credential helper's secrets; agents never see secret values (R5).", "Ask the owner.")
+    if sub in ("commit", "tag"):  # a message read from a file becomes public text
+        for fv in option_values(a, shorts=("-F",), longs=("--file",)):
+            if fv != "-":
+                scan_message_file(fv, cwd, f"git {sub} -F")
+    on_known_prot = branch in prot
+    if on_known_prot:
+        if sub in ("commit", "cherry-pick", "revert", "am") and not (sub == "am" and set(a) & AM_STATE):
+            g.deny("local-main-change", f"git {sub} while on {branch} adds commits straight to the main line. Work on a branch and open a pull request.", "git switch -c build/<role> first.")
+        if sub == "pull" and len(rest) >= 2:
+            g.deny("local-main-change", f"git pull from '{rest[0]} {rest[1]}' while on {branch} merges another branch into the main line. A plain `git pull` is fine.", "Work on a branch and open a pull request.")
+        if sub == "reset" and rest and not {"--hard"} & set(a):
+            g.deny("local-main-change", f"git reset to another commit while on {branch} moves the main line.", "Work on a branch.")
+    if sub == "update-ref" and "d" not in short:
+        for t in rest:
+            if re.sub(r"^refs/heads/", "", t) in prot or re.sub(r"^refs/heads/", "", t) in pol.get("protected_push_refs", []):
+                g.deny("local-main-change", f"git update-ref {t} moves a protected branch without a merge.")
+    if sub == "branch" and (short & set("fmMcC") or long_ & {"--force", "--move", "--copy"}) and any(re.sub(r"^refs/heads/", "", r) in prot for r in rest):
+        g.deny("local-main-change", "forcing, moving or copying over a protected branch name moves the main line.")
+    if sub == "fetch":
+        for r in rest[1:]:
+            if ":" in r and re.sub(r"^\+?(?:refs/heads/)?", "", r.split(":")[-1]) in prot:
+                g.deny("local-main-change", f"git fetch {r} overwrites a protected local branch.")
+    if sub == "worktree" and rest and rest[0] in ("remove", "prune") and (short & set("f") or "--force" in long_):
+        g.deny("worktree-force-remove", "git worktree remove --force deletes a working folder with uncommitted work (R3).")
     if sub == "push":
         if long_ & {"--repo", "--receive-pack", "--exec"}:
             g.deny("push-to-url", "--repo, --receive-pack and --exec change where a push goes or what runs on the way (R4).", "Push to the configured remote by name.")
@@ -304,8 +520,12 @@ def check_git(args, cwd, root, pol, sg, state):
                 dest = branch if branch not in ("", "?") else "main" if branch == "?" else dest
             if re.sub(r"^refs/heads/", "", dest) in prot:
                 g.deny("push-to-main", f"pushing to {dest} changes the main line directly. Builders push a branch and open a pull request; only the owner merges.")
+            if re.sub(r"^refs/heads/", "", dest) in pol.get("protected_push_refs", []):
+                g.deny("push-to-protected-ref", f"pushing to {dest} would change the poster's claim state, which the poster gate owns; a wrong value there can cause a double post (R4).", "Use agents/03-guardian/poster-state/poster_gate.py, or ask the owner.")
         if not refspecs and on_prot:
             g.deny("push-to-main", f"the current branch is {branch}; pushing it changes the main line directly.", "Work on a branch and open a pull request.")
+        if not refspecs and branch in pol.get("protected_push_refs", []):
+            g.deny("push-to-protected-ref", f"the current branch is {branch}, the poster's claim state; push it only through the poster gate.")
         state["scan_outgoing"] = cwd
     elif sub == "reset" and ("hard" in "".join(long_) or any(x == "--hard" for x in a)):
         g.deny("reset-hard", "git reset --hard throws away uncommitted work (R3).")
@@ -415,6 +635,7 @@ def check_segment(sg, cwd, root, pol, state, prev):
     short, long_, rest = flags_of(args)
     for op, target in sg.redirects:
         check_redirect(op, target, cwd, root, pol, cwd_for_glob=cwd)
+    check_more(prog, args, short, long_, rest, sg, cwd, root, pol)
     # A program that only names paths is exempt for its OWN arguments, but not for what a wrapper in front of it consumed
     # (`xargs -a .env echo` reads .env through xargs).
     wrapper_part = sg.tokens[:max(0, len(sg.tokens) - len(args))]
@@ -432,6 +653,8 @@ def check_segment(sg, cwd, root, pol, state, prev):
         code = " ".join(args)
         if INLINE_CRED.search(code):
             g.deny("inline-credential", f"{prog} was given inline code that mentions a credential file or folder; agents never see secret values (R5).", "Ask the owner; do not read credentials from code either.")
+        if INLINE_ENV.search(code) or (prog in ("ruby", "perl") and re.search(r"\bENV\b", code)):
+            g.deny("print-secret-variable", f"{prog} was given inline code that reads the environment (os.environ, process.env, getenv ...), which can print tokens; agents never see secret values (R5).", "Ask the owner; name the one harmless variable you need in a script file that can be reviewed.")
         if INLINE_SHELLOUT.search(code):
             g.deny("inline-code", f"{prog} was given inline code that runs another command or deletes files; the hook cannot read what that command is.", "Put the command in the shell where it can be checked, or write a script file and review it.")
     if prog == "cd" and rest:
@@ -509,6 +732,10 @@ def check_redirect(op, target, cwd, root, pol, cwd_for_glob=None):
         g.deny("git-config", f"redirecting output to {target} changes a git settings file, which can redirect where pushes go (R2/R4).")
     if g.risky_name(target) and not target.endswith((".example", ".sample", ".template")):
         g.deny("write-credential-file", f"writing to '{target}' stores a secret-bearing file; credentials are the owner's to place (R5).")
+    if p is not None:
+        real = os.path.realpath(p)
+        if real != p and g.risky_name(real) and not real.endswith((".example", ".sample", ".template")):
+            g.deny("write-credential-file", f"'{target}' is a link to {real}, a secret-bearing file; credentials are the owner's to place (R5).")
 
 
 def check_net(prog, args, short, long_):
@@ -534,7 +761,11 @@ def check_net(prog, args, short, long_):
 GH_GROUPS_DENIED = ("pr merge", "repo delete", "repo archive", "repo rename", "repo edit", "repo transfer", "release delete", "secret set", "secret delete",
                     "secret remove", "variable set", "variable delete", "ssh-key", "gpg-key", "workflow run", "workflow enable", "workflow disable",
                     "run rerun", "auth token", "auth refresh", "auth login", "auth logout", "label delete", "ruleset", "alias", "extension", "codespace",
-                    "gist create", "gist edit", "release create", "release upload", "release edit", "repo create", "repo fork", "repo sync")
+                    "gist create", "gist edit", "release create", "release upload", "release edit", "repo create", "repo fork", "repo sync",
+                    # round 4: these change what other people see or what the owner is asked to decide (R2/R4)
+                    "pr close", "pr ready", "pr reopen", "pr lock", "pr unlock", "pr edit", "pr update-branch", "pr checkout",
+                    "issue close", "issue reopen", "issue delete", "issue lock", "issue unlock", "issue transfer", "issue pin", "issue unpin",
+                    "release delete-asset", "cache delete", "run delete", "run cancel", "workflow delete", "label create", "label edit", "label clone")
 GH_API_FLAGS_WITH_VALUE = {"-X", "--method", "-f", "-F", "--field", "--raw-field", "-H", "--header", "-q", "--jq", "-t", "--template", "--cache", "--hostname", "--input", "-p", "--preview"}
 # The only writes through `gh api` that a build session needs: comment on its own pull request, open a pull request, edit a comment.
 GH_API_ALLOWED_WRITES = (
@@ -579,6 +810,8 @@ def check_gh(args, cwd, root, pol):
             if d == "pr merge":
                 g.deny("merge-pr", "merging a pull request is the owner's decision; builders open a PR and stop.")
             g.deny("gh-privileged", f"'gh {s2}' changes repository settings, secrets or tooling, publishes files, runs the poster, or prints a token. These are R2 to R5 actions for the owner.")
+    if s2 == "pr review" and any(x in ("-a", "--approve", "-r", "--request-changes") for x in rest):
+        g.deny("gh-privileged", "approving or blocking a pull request is the owner's decision (R4); a build session only comments.")
     if s2 == "auth status" and any(x in ("-t", "--show-token") for x in rest):
         g.deny("gh-privileged", "'gh auth status --show-token' prints the GitHub token; agents never see secret values (R5).")
     i = 0
@@ -658,6 +891,20 @@ def check_gh_api(rest, cwd, root, pol):
 MCP_PRIVILEGED = re.compile(r"(?i)^mcp__.*(merge|delete|dispatch|workflow|ruleset|branch_protection|protect|secret|force|transfer|archive)")
 
 
+def scan_command_text(cmd, cwd):
+    """A token typed into a commit message, tag, comment body, here-document or any argument is public once it is posted
+    (this repository is public). The whole command line is scanned with the same scanner as files, and the value is never printed."""
+    if len(cmd) > 2_000_000:
+        g.deny("secret-in-command", "the command is too large to scan for secrets.", "Write the text to a file and review it first.")
+    ok, f, err = g.run_scanner(["--text", "-"], cwd, stdin=cmd)
+    if not ok:
+        g.deny("scanner-unavailable", err)
+    f = [x for x in f if x.get("rule") not in ("plan-handles-secret", "risky-filename")]
+    if f:
+        g.deny("secret-in-command", g.describe(f) + " in this command line (a commit or tag message, a comment body, a here-document or an argument). Commands, messages and comments end up in a public repository.",
+               "Remove the value and describe it instead (\"a GitHub token, 40 characters\"); tell the owner to revoke it if it was ever real.")
+
+
 def main():
     data = g.read_input()
     name = data.get("tool_name")
@@ -688,6 +935,7 @@ def main():
             prev = sg
     except g.ParseError as e:
         g.deny("unparseable", f"the hook could not read this command safely ({e}).", "Split it into simpler commands, or write names out in full.")
+    scan_command_text(cmd, cwd)
     if "commit_cwd" in state:
         scan_commit(state, root)
     if "scan_outgoing" in state:

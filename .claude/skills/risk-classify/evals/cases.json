@@ -121,6 +121,12 @@
       "kind": "structural",
       "why": "Round 3 (review of PR #2, round 2, item 1): the reviewer's 61 wordings, the builder's own 88 + 17 (labelled), and property checks: read-first and read-last never lower, compound pairs never below the higher part, the model can only raise, R0 and R1 only from narrow forms, a lexicon of risky verbs in eight sentence shapes, euphemisms and passive voice, 23 decorations.",
       "type": "fixtures"
+    },
+    {
+      "id": "E-round4-screen",
+      "kind": "structural",
+      "why": "The mandatory four-question screen (money, deletion, outside party, secret): cue families, model answers that can only raise, a 'no' without a reason counts as unsure, completeness, 89 builder-own wordings in two batches with blind answers (batch 2 written after the cues were frozen), no class lowered on any earlier fixture.",
+      "type": "fixtures"
     }
   ]
 }
