@@ -12,6 +12,7 @@
 - Owner rules: plain and human, no prices, never the word "gone", no slogan hooks ("Fight me", "Let that sink in"), only facts from the current graphics or menu. Show the owner the draft before changing a day's post.
 
 ## Lessons learned
+- Posting is started at 11:00 Toronto by a Claude scheduled task ("Daily Threads post at 11:00", fires 10:58) that calls workflow_dispatch with mode post. GitHub's own cron runs start 3 to 7 hours late (measured Oct 16 and 17), so they are only a backup; they stop when the day is already posted.
 - The workflow commits `state.json` after posting. A push to `main` during a run once made that commit fail (Oct 15), so the post went out but was not recorded. The save step now rebases and retries; still avoid pushing while a run is in progress.
 - GitHub's scheduler starts runs late (first live run: 11:00 job never started on time). The workflow now starts at 10:35 Toronto and the script waits until 11:00.
 - A manual trigger (`gh api -X POST .../dispatches`) can silently not start a run; always confirm a new run appears.
