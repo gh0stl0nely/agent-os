@@ -5,52 +5,49 @@ How the agents run, how they call each other, and where every file goes. The dia
 ## 1. How a run flows
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph TRIG["Triggers"]
-        T1["Schedule<br/>Claude scheduled task"]
-        T2["GitHub issue<br/>labelled role:id"]
+        direction TB
+        T1["Schedule"]
+        T2["GitHub issue<br/>role:id"]
         T3["Owner request"]
     end
 
-    COS["chief-of-staff<br/>orchestrator, runs as the main thread"]:::planned
+    COS["chief-of-staff<br/>orchestrator"]:::planned
 
-    subgraph ROLES["Role agents: .claude/agents/id.md"]
+    subgraph ROLES["Role agents"]
+        direction TB
         OPS["operations-manager"]:::planned
         GM["growth-marketer"]:::planned
-        CTL["controller"]:::planned
-        MORE["other roles in ROLES.md"]:::planned
+        MORE["other roles"]:::planned
     end
 
-    VER["verifier<br/>independent gate"]
+    VER["verifier<br/>gate"]
 
-    subgraph RES["What a role uses"]
-        SK["Skills<br/>.claude/skills/"]
-        MCP["Connectors (MCP)<br/>Square, Notion, QuickBooks..."]
+    subgraph RES["Uses"]
+        direction TB
+        SK["Skills"]
+        MCP["Connectors"]
         KB["knowledge/ + shared/"]
-        EXT["External repos<br/>pinned in shared/external-resources.md"]
     end
 
     subgraph OUT["Results"]
-        OWN["Owner<br/>brief, Preflight Brief for R2+"]
-        ISS["GitHub issue<br/>handoff to another role"]
-        EXE["Executors<br/>e.g. Threads poster"]
+        direction TB
+        OWN["Owner"]
+        ISS["GitHub issue"]
+        EXE["Executors"]
     end
 
-    T1 --> COS
-    T2 --> COS
-    T3 --> COS
-    T1 -. "until the orchestrator is built,<br/>the trigger calls the role directly" .-> OPS
-    COS -->|"calls (Agent tool)"| ROLES
-    ROLES -->|"claims + evidence"| VER
-    VER -->|"ok / needs_revision / blocked / escalate"| ROLES
-    ROLES --- RES
-    ROLES --> OWN
-    ROLES --> ISS
-    ROLES --> EXE
-    ISS -. "picked up on that role's next run" .-> T2
+    TRIG --> COS
+    COS -->|calls| ROLES
+    ROLES <-->|"claims / verdict"| VER
+    RES --- ROLES
+    ROLES --> OUT
 
     classDef planned stroke-dasharray: 5 5
 ```
+
+Until the orchestrator is built, each trigger calls its role directly. A GitHub issue a role creates becomes a trigger for the role it names.
 
 Rules the diagram encodes:
 - A role calls only the roles in its `can_call` list. Gates (the verifier) never call producers.
