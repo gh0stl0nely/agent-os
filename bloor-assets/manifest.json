@@ -1,14 +1,20 @@
 {
   "assets": [
     {
-      "file": "special-mochi.jpeg",
-      "alt_text": "Menu graphic listing six specialty mochi donut flavors available Oct 5–18, including Japanese Neapolitan, Pumpkin Tiramisu and Mango Pandan Sticky Rice, from Isabella's.",
+      "file": "special-mochis-halloween.png",
+      "alt_text": "Isabella's Specialty Mochis menu graphic for Oct 19 to Nov 1 with six Halloween mochi donuts at $4.50 each: Purple Potion (ube glaze, halloween candies), Mummy (original glaze, white chocolate drizzle), Night Crawler (chocolate glaze, oreo crumbs, gummy worms), Matcha Monster (strong Japanese matcha), Brainiac (strawberry) and Bloodshot (white chocolate, raspberry drizzle). Mix and match box of 6 is $25 and box of 12 is $45, no tax.",
       "keywords": [
+        "Halloween mochi donuts Toronto",
+        "Halloween donuts Toronto",
+        "spooky donuts Toronto",
         "mochi donuts Toronto",
-        "specialty flavors"
+        "specialty mochi donuts",
+        "donuts near Bloor",
+        "ube donut Toronto",
+        "matcha donut Toronto"
       ],
-      "use_when": "Announcing the current specialty flavors",
-      "expires": "2026-10-18"
+      "use_when": "Announcing the Halloween specialty mochi flavours and box prices (Oct 19 to Nov 1)",
+      "expires": "2026-11-01"
     },
     {
       "file": "donut-videos.mp4",
