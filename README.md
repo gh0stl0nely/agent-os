@@ -7,7 +7,7 @@ Role agents for Isabella's Donuts and the owner's household. Each agent mirrors 
 - **Next:** `operations-manager`, the nightly supplier order.
 - **Live outside the agent system:** the daily Threads poster (`bloor-assets/`, `scripts/post_threads.py`).
 
-The full plan is in [ROLES.md](ROLES.md).
+The full plan is in [ROLES.md](ROLES.md). How it fits together: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Layout
 
@@ -15,6 +15,7 @@ The full plan is in [ROLES.md](ROLES.md).
 |---|---|
 | `CLAUDE.md` | Rules every agent follows (kept short: it loads on every run) |
 | `ROLES.md` | Every planned role, its status and build order |
+| `ARCHITECTURE.md` | Diagrams: how runs flow, call depth, where every file goes, a role's lifecycle |
 | `BUILD-PROTOCOL.md` | How to build a role, and the role definition template |
 | `.claude/agents/<id>.md` | One definition per built role: instructions, tools, skills, connectors, who it may call |
 | `.claude/skills/` | Skills, each with scripts, synthetic fixtures and evals |
