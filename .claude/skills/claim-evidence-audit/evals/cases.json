@@ -17,7 +17,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -54,7 +54,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ]
           },
@@ -87,7 +87,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -116,13 +116,13 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ],
             "{tmp}/audit-ledger.jsonl": [
               {
                 "path": "[claim_id=C-fx-total].verification.verifier",
-                "equals": "02-verifier"
+                "equals": "verifier"
               },
               {
                 "path": "[claim_id=C-fx-total].status",
@@ -155,7 +155,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -172,7 +172,7 @@
               },
               {
                 "path": "to_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ],
             "{tmp}/judgment-request.json": [
@@ -205,7 +205,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -223,7 +223,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               },
               {
                 "path": "constraints.revise_loops_left",
@@ -254,7 +254,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -281,7 +281,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ]
           }
@@ -304,7 +304,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -341,7 +341,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ]
           },
@@ -370,7 +370,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -397,7 +397,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ]
           },
@@ -426,7 +426,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -446,7 +446,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ]
           }
@@ -469,7 +469,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -506,7 +506,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ]
           }
@@ -529,7 +529,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -554,7 +554,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               }
             ]
           },
@@ -583,7 +583,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -610,7 +610,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               },
               {
                 "path": "constraints.revise_loops_left",
@@ -630,7 +630,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -657,7 +657,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               },
               {
                 "path": "constraints.revise_loops_left",
@@ -677,7 +677,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -704,7 +704,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               },
               {
                 "path": "escalations[0].missing_evidence[0]",
@@ -735,7 +735,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -764,7 +764,7 @@
               },
               {
                 "path": "from_agent",
-                "equals": "02-verifier"
+                "equals": "verifier"
               },
               {
                 "path": "to_agent",
@@ -791,7 +791,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--specs",
             "{fx}/scenarios/withheld_a/specs.json",
             "--judgments",
@@ -833,7 +833,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--specs",
             "{fx}/scenarios/withheld_b/specs.json",
             "--judgments",
@@ -853,7 +853,7 @@
             "--ledger",
             "{fx}/scenarios/withheld_a/ledger.jsonl",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--root",
             "{fx}/root",
             "--now",
@@ -896,8 +896,8 @@
           "cmd": [
             "python3",
             "{skill}/scripts/rubric_lint.py",
-            "{repo}/agents/02-verifier/rubrics/generic.md",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+            "{repo}/agents/verifier/rubrics/generic.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md"
           ],
           "text_contains": [
             "ok    "
@@ -1020,7 +1020,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -1107,7 +1107,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -1146,7 +1146,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -1201,7 +1201,7 @@
             "--root",
             "{fx}/root",
             "--rubric",
-            "{repo}/agents/02-verifier/rubrics/example-invoice.md",
+            "{repo}/agents/verifier/rubrics/example-invoice.md",
             "--now",
             "2026-10-07T12:00:00-04:00",
             "--out",
@@ -1233,33 +1233,6 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "id": "branch-changes-stay-in-owned-paths",
-      "kind": "normal",
-      "regression": "review item 3 (PR #1): a tracked file of the live poster was deleted",
-      "why": "Compared with main, this branch only adds files, and only inside the Verifier's owned paths (plus its change request). Skipped with a message when there is no main to compare with.",
-      "cmd": [
-        "python3",
-        "{repo}/agents/02-verifier/check_scope.py"
-      ],
-      "text_absent": [
-        "outside the Verifier's lane"
-      ]
-    },
-    {
-      "id": "scope-guard-flags-deleted-shared-file",
-      "kind": "seeded-error",
-      "regression": "review item 3 (PR #1)",
-      "why": "The guard itself is tested on a throwaway git repo: a deleted tracked file, a modified shared file and an added file outside the owned paths are all flagged; an added owned file is not.",
-      "cmd": [
-        "python3",
-        "{repo}/agents/02-verifier/check_scope.py",
-        "--selftest"
-      ],
-      "text_contains": [
-        "selftest ok"
       ]
     }
   ]

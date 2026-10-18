@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve()
-sys.path.insert(0, str(HERE.parents[4] / "agents" / "02-verifier" / "lib"))
+sys.path.insert(0, str(HERE.parents[4] / "agents" / "verifier" / "lib"))
 sys.path.insert(0, str(HERE.parents[2] / "source-check" / "scripts"))
 import source_check  # noqa: E402
 import vlib  # noqa: E402

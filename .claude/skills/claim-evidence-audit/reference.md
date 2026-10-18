@@ -15,7 +15,7 @@
 | CLAIM_ROW_MISSING | the envelope lists a claim id with no ledger row |
 | SELF_VERIFIED (warn) | the producer marked its own claim verified; ignored |
 | ROW_NOT_IN_ENVELOPE (warn) | a ledger row the envelope does not list; not audited |
-| MISROUTED (warn) | envelope not addressed to `02-verifier` |
+| MISROUTED (warn) | envelope not addressed to `verifier` |
 
 ## Check reason codes
 Pass: `supported`, `recomputed_exact`, `recomputed_rounding`, `recomputed_within_abs`, `recomputed_within_rel`, `verified`.

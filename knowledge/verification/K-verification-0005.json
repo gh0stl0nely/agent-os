@@ -15,5 +15,5 @@
   "last_confirmed_at": "2026-10-07T14:45:00-04:00",
   "expires_at": "2027-10-07T14:45:00-04:00",
   "status": "verified",
-  "owner_agent": "02-verifier"
+  "owner_agent": "verifier"
 }

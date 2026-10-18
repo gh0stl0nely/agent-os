@@ -11,7 +11,7 @@ description: Measure how many seeded errors the Verifier actually catches, by er
 A checker nobody checks drifts. This replays known errors and says plainly how many were caught.
 
 ## Inputs
-- `agents/02-verifier/golden/cases/*.json`: seeded-error cases and clean controls (synthetic only). Shared fixtures are in `golden/root/`.
+- `agents/verifier/golden/cases/*.json`: seeded-error cases and clean controls (synthetic only). Shared fixtures are in `golden/root/`.
 - Optional `--judgments FILE`: fresh model judgments (case id to `{source_support, adversarial}`), from a session that did not write the cases. Without it the run uses the recorded builder replay. The two `code-after-judgment` cases (G-13, G-14) always keep their built-in faulty judgments, because they test that the code overrules a faulty judge; an honest judge would turn them into different cases. A case missing from the file gets no judgments and reports pending (not measured).
 - Previous results in `golden/history/` for the drift comparison.
 

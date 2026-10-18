@@ -24,7 +24,7 @@ import sys
 from decimal import ROUND_HALF_EVEN, ROUND_HALF_UP, Decimal
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "02-verifier" / "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "verifier" / "lib"))
 import vlib  # noqa: E402
 
 

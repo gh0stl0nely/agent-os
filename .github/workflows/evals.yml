@@ -1,0 +1,30 @@
+name: Role checks and evals
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "bloor-assets/**"   # daily post history and queue edits need no agent checks
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Roles and definitions agree
+        run: python3 contracts/check_roles.py
+      - name: Contract examples
+        run: python3 contracts/validate.py
+      - name: Skill evals
+        run: python3 agents/verifier/run_evals.py
+      - name: Verifier golden set
+        run: python3 .claude/skills/golden-set-calibration/scripts/run_golden.py

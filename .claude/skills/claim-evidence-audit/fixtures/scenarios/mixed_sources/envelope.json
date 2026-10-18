@@ -1,7 +1,7 @@
 {
   "task_id": "T-fx-mixed",
   "from_agent": "fixture-producer",
-  "to_agent": "02-verifier",
+  "to_agent": "verifier",
   "goal": "Synthetic: verify these claims.",
   "status": "requested",
   "inputs": [],

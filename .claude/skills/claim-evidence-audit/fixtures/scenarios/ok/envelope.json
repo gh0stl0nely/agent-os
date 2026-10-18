@@ -1,7 +1,7 @@
 {
   "task_id": "T-fx-ok",
   "from_agent": "fixture-producer",
-  "to_agent": "02-verifier",
+  "to_agent": "verifier",
   "goal": "Synthetic: verify these claims before they reach the owner.",
   "status": "requested",
   "inputs": [],
