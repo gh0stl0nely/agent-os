@@ -1,7 +1,7 @@
 {
   "task_id": "T-fx-badenv",
   "from_agent": "fixture-producer",
-  "to_agent": "02-verifier",
+  "to_agent": "verifier",
   "status": "requested",
   "inputs": [],
   "constraints": {

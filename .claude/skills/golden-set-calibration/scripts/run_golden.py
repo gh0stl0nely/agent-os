@@ -21,7 +21,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve()
 REPO = HERE.parents[4]
 SK = HERE.parents[2]
-sys.path.insert(0, str(REPO / "agents" / "02-verifier" / "lib"))
+sys.path.insert(0, str(REPO / "agents" / "verifier" / "lib"))
 for d in ("claim-evidence-audit", "recompute-in-code", "source-check", "adversarial-review"):
     sys.path.insert(0, str(SK / d / "scripts"))
 import audit as audit_mod  # noqa: E402
@@ -29,8 +29,8 @@ import recompute  # noqa: E402
 import structure_check  # noqa: E402
 import vlib  # noqa: E402
 
-GOLDEN = REPO / "agents" / "02-verifier" / "golden"
-RUBRICS = REPO / "agents" / "02-verifier" / "rubrics"
+GOLDEN = REPO / "agents" / "verifier" / "golden"
+RUBRICS = REPO / "agents" / "verifier" / "rubrics"
 FIXED_NOW = "2026-10-07T12:00:00-04:00"
 STRUCTURAL = ["missing_evidence", "verified_without_evidence", "assumed_status", "malformed_row"]
 CONTROL_TYPES = ("control", "injection_ignored")

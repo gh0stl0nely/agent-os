@@ -27,7 +27,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "02-verifier" / "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "verifier" / "lib"))
 import vlib  # noqa: E402
 
 _LINE = re.compile(r"^(?:lines?|rows?)[: ]\s*(\d+)(?:\s*-\s*(\d+))?$", re.I)

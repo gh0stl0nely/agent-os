@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that a rubric file has the fixed shape (see agents/02-verifier/rubrics/_SHAPE.md).
+"""Check that a rubric file has the fixed shape (see agents/verifier/rubrics/_SHAPE.md).
 
 Usage: rubric_lint.py RUBRIC.md [RUBRIC2.md ...]
 Exit code: 0 all fit, 1 at least one does not.
@@ -7,7 +7,7 @@ Exit code: 0 all fit, 1 at least one does not.
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "02-verifier" / "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "verifier" / "lib"))
 import vlib  # noqa: E402
 
 

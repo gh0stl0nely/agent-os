@@ -11,7 +11,7 @@
         "--ledger",
         "{fx}/clean.jsonl",
         "--rubric",
-        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+        "{repo}/agents/verifier/rubrics/example-invoice.md"
       ],
       "expect_exit": 0,
       "stdout_json": [
@@ -31,7 +31,7 @@
         "--ledger",
         "{fx}/no_locator.jsonl",
         "--rubric",
-        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+        "{repo}/agents/verifier/rubrics/example-invoice.md"
       ],
       "expect_exit": 0,
       "stdout_json": [
@@ -51,7 +51,7 @@
         "--ledger",
         "{fx}/unit_error.jsonl",
         "--rubric",
-        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+        "{repo}/agents/verifier/rubrics/example-invoice.md"
       ],
       "expect_exit": 1,
       "stdout_json": [
@@ -71,7 +71,7 @@
         "--ledger",
         "{fx}/unit_error.jsonl",
         "--rubric",
-        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+        "{repo}/agents/verifier/rubrics/example-invoice.md"
       ],
       "expect_exit": 1,
       "stdout_json": [
@@ -91,7 +91,7 @@
         "--ledger",
         "{fx}/double_count.jsonl",
         "--rubric",
-        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+        "{repo}/agents/verifier/rubrics/example-invoice.md"
       ],
       "expect_exit": 1,
       "stdout_json": [
@@ -115,7 +115,7 @@
         "--ledger",
         "{fx}/hedged.jsonl",
         "--rubric",
-        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+        "{repo}/agents/verifier/rubrics/example-invoice.md"
       ],
       "expect_exit": 1,
       "stdout_json": [
@@ -140,7 +140,7 @@
         "--ledger",
         "{fx}/injected.jsonl",
         "--rubric",
-        "{repo}/agents/02-verifier/rubrics/example-invoice.md"
+        "{repo}/agents/verifier/rubrics/example-invoice.md"
       ],
       "expect_exit": 1,
       "stdout_json": [

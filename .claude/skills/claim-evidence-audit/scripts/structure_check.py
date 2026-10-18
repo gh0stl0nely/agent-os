@@ -15,7 +15,7 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "02-verifier" / "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "agents" / "verifier" / "lib"))
 import vlib  # noqa: E402
 
 # code -> meaning, for the report and the SKILL.md table
@@ -33,7 +33,7 @@ CODES = {
     "CLAIM_ROW_MISSING": "the envelope lists a claim id that has no ledger row",
     "SELF_VERIFIED": "the producer marked its own claim verified; ignored, the claim is re-verified (warn)",
     "ROW_NOT_IN_ENVELOPE": "a ledger row is not listed in the envelope (warn, not audited)",
-    "MISROUTED": "the envelope is not addressed to 02-verifier (warn)",
+    "MISROUTED": "the envelope is not addressed to verifier (warn)",
 }
 
 
@@ -47,7 +47,7 @@ def check_structure(envelope, rows, now):
         return [_f(None, "ENVELOPE_INVALID", "reject", "envelope is not a JSON object")]
     for e in vlib.schema_errors("agent-envelope", envelope):
         findings.append(_f(None, "ENVELOPE_INVALID", "reject", e))
-    if envelope.get("to_agent") not in (None, "02-verifier"):
+    if envelope.get("to_agent") not in (None, "verifier"):
         findings.append(_f(None, "MISROUTED", "warn", f"to_agent is {envelope.get('to_agent')!r}"))
     seen = {}
     horizon = now + timedelta(minutes=5)

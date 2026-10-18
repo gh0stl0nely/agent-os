@@ -25,7 +25,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve()
 SK = HERE.parents[2]
-sys.path.insert(0, str(HERE.parents[4] / "agents" / "02-verifier" / "lib"))
+sys.path.insert(0, str(HERE.parents[4] / "agents" / "verifier" / "lib"))
 for d in ("claim-evidence-audit", "recompute-in-code", "source-check", "adversarial-review"):
     sys.path.insert(0, str(SK / d / "scripts"))
 import build_packet  # noqa: E402
@@ -35,7 +35,7 @@ import structure_check  # noqa: E402
 import vlib  # noqa: E402
 import weakness_scan  # noqa: E402
 
-VERIFIER = "02-verifier"
+VERIFIER = "verifier"
 EXIT = {"ok": 0, "needs_revision": 10, "blocked": 11, "escalate": 12, "awaiting_judgment": 20}
 
 
@@ -279,10 +279,10 @@ def audit(envelope, rows, root, rubric, judgments=None, specs=None, now=None, re
     missing = [m for c in nonpass for m in c["missing_evidence"]]
     ids = [c["claim_id"] for c in report["claims"] if isinstance(c["claim_id"], str) and c["claim_id"].startswith("C-")]
     n = len(report["claims"])
-    to_agent = "01-chief-of-staff" if revision_to == "chief-of-staff" or status != "needs_revision" else producer
+    to_agent = "chief-of-staff" if revision_to == "chief-of-staff" or status != "needs_revision" else producer
     summary = ", ".join(f"{v} {k}" for k, v in report["summary"].items() if v)
     out_env = {"task_id": task_id, "from_agent": VERIFIER,
-               "to_agent": "02-verifier" if status == "awaiting_judgment" else to_agent,
+               "to_agent": "verifier" if status == "awaiting_judgment" else to_agent,
                "goal": ("The audit could not run because the envelope does not fit the contract; nothing was verified."
                         if status == "blocked" else
                         f"Model judgments needed for {len(pending)} claim(s) from {producer}." if status == "awaiting_judgment"
