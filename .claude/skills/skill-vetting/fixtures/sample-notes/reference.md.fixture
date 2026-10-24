@@ -1,0 +1,4 @@
+# Reference
+
+A heading is a line that starts with one or more `#` characters followed by a space.
+See https://spec.commonmark.org/ for the format definition. The link is for people to read; nothing here tells an agent to fetch or follow it.

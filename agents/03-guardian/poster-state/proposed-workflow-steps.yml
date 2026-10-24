@@ -1,0 +1,33 @@
+# PROPOSED by the Guardian. NOT installed. Changing .github/workflows/daily-post.yml is an R2 action on a live system
+# (Preflight Brief + the owner's yes). Full design, order of changes, runbook and rollback:
+# agent-system/change-requests/03-guardian-poster-fail-closed.md. This file shows only the steps that change.
+#
+# Files that go into scripts/ in the same change: poster_gate.py, restore_state.sh, save_state.sh
+# and the patch post_threads.gate.patch applied to scripts/post_threads.py (about 20 lines).
+#
+#      steps:
+#        - uses: actions/checkout@v4
+#        - name: Restore post history          # NEW: fails closed if the branch is missing, invalid or behind
+#          id: restore
+#          run: bash scripts/restore_state.sh
+#        - name: Post to Threads               # unchanged text; the script now claims before posting
+#          env:
+#            THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+#          run: ...                            # as today
+#        - name: Save post history             # REPLACES the step that pushed to main
+#          if: always() && steps.restore.outcome == 'success'   # runs even when the post step failed
+#          run: bash scripts/save_state.sh
+#
+# `if: always()` matters: when the post is live but the in-script record failed, this step is the second chance to
+# record it. It is skipped only when restore failed (the run is already stopped and nothing was posted).
+#
+# Old step being replaced (pushes to main, which a protected main would reject):
+#        - name: Save post history
+#          run: |
+#            if ! git diff --quiet bloor-assets/state.json; then
+#              git config user.name "github-actions"
+#              git config user.email "github-actions@users.noreply.github.com"
+#              git add bloor-assets/state.json
+#              git commit -m "Record today's post"
+#              git push
+#            fi

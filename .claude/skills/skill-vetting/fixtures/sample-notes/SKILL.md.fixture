@@ -1,0 +1,18 @@
+---
+name: sample-notes
+description: Count words and list headings in a notes file the user names. Use when the user asks for a word count or an outline of a markdown notes file.
+allowed-tools: Read, Grep, Glob
+license: MIT
+---
+
+# sample-notes
+
+Counts words and lists the headings of one markdown file.
+
+## Procedure
+1. Read the file the user names.
+2. Run `python3 scripts/count_words.py FILE` and report the numbers it prints.
+3. List the headings in order.
+
+## Evidence rules
+Report the script output as given; do not estimate.

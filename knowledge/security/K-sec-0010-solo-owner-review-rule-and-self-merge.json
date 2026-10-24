@@ -1,0 +1,19 @@
+{
+  "id": "K-sec-0010",
+  "type": "fact",
+  "namespace": "security",
+  "claim": "GitHub's required-reviews page says 'Pull request authors cannot approve their own pull requests' and that required approvals must come from people with write or admin permission. The protected-branches page says admins are exempt from a rule by default and that 'Do not allow bypassing the above settings' applies the rule to admins; it also says force pushes are blocked on protected branches by default and that deletions are blocked by default. For a solo owner whose Claude sessions authenticate as the same admin account (verified 2026-10-07: pull request #2 was opened by gh0stl0nely and that account has admin permission), a rule needing 1 or more approvals locks everyone out, so the workable rule is: require a pull request with 0 approvals, block force pushes and deletions, do not allow bypassing. That rule does NOT stop a session merging its own pull request, because the same account may press merge. Only the Guardian hooks, or a second GitHub account used only by review sessions with approvals set to 1 (its token is an R5 step for the owner), do. The fetched protected-branches page does not say whether 0 approvals is allowed; the owner must confirm the 0-approval setting on screen.",
+  "source": {
+    "ref": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+    "locator": "Do not allow bypassing the above settings; allow force pushes; allow deletions; also approving-a-pull-request-with-required-reviews (author cannot approve); identity from GET /repos/gh0stl0nely/business-assets permissions.admin and pull request #2 author, read 2026-10-07",
+    "retrieved_at": "2026-10-07T16:30:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "medium",
+  "stated_by": "source",
+  "written_at": "2026-10-07T16:30:00-04:00",
+  "last_confirmed_at": "2026-10-07T16:30:00-04:00",
+  "expires_at": "2026-12-07T16:30:00-05:00",
+  "status": "verified",
+  "owner_agent": "03-guardian"
+}

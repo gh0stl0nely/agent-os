@@ -1,0 +1,19 @@
+{
+  "id": "K-sec-0004",
+  "type": "fact",
+  "namespace": "security",
+  "claim": "GitHub's security-features page lists push protection as enabled by default and free on public repositories. The push-protection page separately says the repository-level setting is off by default and is turned on by a repository admin under Settings, Security and quality, Advanced Security, then Secret Protection and Push protection. The two statements may refer to different layers (account-level versus repository-level), so the owner must confirm in the Settings page that repository-level push protection shows as enabled. Anyone with write access can bypass a block by giving a reason (used in tests, false positive, or fix later), and delegated bypass can limit who may do so.",
+  "source": {
+    "ref": "https://docs.github.com/en/code-security/secret-scanning/enabling-secret-scanning-features/enabling-push-protection-for-your-repository",
+    "locator": "steps to enable; also about-push-protection page and github-security-features page",
+    "retrieved_at": "2026-10-07T14:42:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "medium",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:42:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:42:00-04:00",
+  "expires_at": "2026-12-07T14:42:00-05:00",
+  "status": "verified",
+  "owner_agent": "03-guardian"
+}
