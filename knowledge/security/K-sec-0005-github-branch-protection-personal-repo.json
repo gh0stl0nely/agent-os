@@ -1,0 +1,19 @@
+{
+  "id": "K-sec-0005",
+  "type": "fact",
+  "namespace": "security",
+  "claim": "Protected branches, including the requirement of a pull request with approving reviews, are available on public repositories on GitHub Free. GitHub's protected-branches page ties bypass lists and push restrictions to organization-owned repositories, and it does not describe exempting a specific user or app from the pull-request requirement on a personal-account repository. The same page does not say whether the github-actions bot can push to a protected branch. So for a personal repository, no safe plan may assume the daily poster's bot can push to a protected main.",
+  "source": {
+    "ref": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+    "locator": "plan availability; bypass and push restriction sections",
+    "retrieved_at": "2026-10-07T14:43:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "medium",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:43:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:43:00-04:00",
+  "expires_at": "2026-12-07T14:43:00-05:00",
+  "status": "verified",
+  "owner_agent": "03-guardian"
+}

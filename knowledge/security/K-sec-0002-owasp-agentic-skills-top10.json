@@ -1,0 +1,19 @@
+{
+  "id": "K-sec-0002",
+  "type": "fact",
+  "namespace": "security",
+  "claim": "The OWASP Agentic Skills Top 10 (version 1.0, 2026 edition, shown as a new project proposal in active development) names ten risks for agent skills: AST01 malicious skills, AST02 supply chain compromise, AST03 over-privileged skills, AST04 insecure metadata, AST05 untrusted external instructions, AST06 weak isolation, AST07 update drift, AST08 poor scanning, AST09 no governance, AST10 cross-platform reuse. The page gives a title, severity and key mitigation per item rather than a full description, so the Guardian's concrete checks per item are its own design, not OWASP text.",
+  "source": {
+    "ref": "https://owasp.org/www-project-agentic-skills-top-10/",
+    "locator": "summary table of AST01 to AST10",
+    "retrieved_at": "2026-10-07T14:40:00-04:00"
+  },
+  "trust_grade": "A",
+  "confidence": "medium",
+  "stated_by": "source",
+  "written_at": "2026-10-07T14:40:00-04:00",
+  "last_confirmed_at": "2026-10-07T14:40:00-04:00",
+  "expires_at": "2027-01-07T14:40:00-05:00",
+  "status": "verified",
+  "owner_agent": "03-guardian"
+}
